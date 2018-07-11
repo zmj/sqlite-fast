@@ -43,7 +43,9 @@ namespace Sqlite.Fast
 
             internal void SetDefaultMappings()
             {
-                MemberInfo[] members = typeof(TRecord).GetTypeInfo().GetMembers(BindingFlags.Public | BindingFlags.Instance);
+                var members = typeof(TRecord).GetTypeInfo()
+                    .GetMembers(BindingFlags.Public | BindingFlags.Instance)
+                    .OrderBy(m => m.MetadataToken);
                 foreach (var member in members)
                 {
                     if (!CanAssignMember(member))

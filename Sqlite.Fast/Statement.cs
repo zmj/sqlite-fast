@@ -20,6 +20,7 @@ namespace Sqlite.Fast
 
         public void Execute()
         {
+            CheckDisposed();
             var rows = new Rows(_statement, _columnCount);
             foreach (var row in rows) { }
         }
@@ -28,12 +29,38 @@ namespace Sqlite.Fast
 
         public Rows<TRecord> Execute<TRecord>(RowToRecordMap<TRecord> rowMap, CancellationToken ct = default)
         {
+            CheckDisposed();
             if (rowMap.ColumnMaps.Length != _columnCount)
             {
                 throw new ArgumentException($"Row-to-record map expects {rowMap.ColumnMaps.Length} columns; query returns {_columnCount} columns");
             }
             var rows = new Rows(_statement, _columnCount);
             return new Rows<TRecord>(rows, rowMap, ct);
+        }
+        
+        private void BindInternal(int parameterIndex, long parameterValue)
+        {
+            CheckDisposed();
+            Result r = Sqlite.BindInteger(_statement, parameterIndex + 1, parameterValue);
+            if (r != Result.Ok)
+            {
+                throw new SqliteException(r, $"Failed to bind {parameterValue} to parameter {parameterIndex}");
+            }
+        }
+
+        public void Bind(int parameterIndex, long parameterValue) => BindInternal(parameterIndex, parameterValue);
+        public void Bind(int parameterIndex, ulong parameterValue) => BindInternal(parameterIndex, (long)parameterValue);
+        public void Bind(int parameterIndex, int parameterValue) => BindInternal(parameterIndex, parameterValue);
+        public void Bind(int parameterIndex, uint parameterValue) => BindInternal(parameterIndex, parameterValue);
+
+        public void Bind(int parameterIndex, string parameterValue)
+        {
+            CheckDisposed();
+            Result r = Sqlite.BindText(_statement, parameterIndex + 1, parameterValue, Encoding.UTF8.GetByteCount(parameterValue), new IntPtr(-1));
+            if (r != Result.Ok)
+            {
+                throw new SqliteException(r, $"Failed to bind '{parameterValue}' to parameter {parameterIndex}");
+            }
         }
 
         private void CheckDisposed()

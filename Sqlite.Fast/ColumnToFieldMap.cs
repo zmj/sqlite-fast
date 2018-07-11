@@ -51,11 +51,57 @@ namespace Sqlite.Fast
             _assign = assign;
         }
 
-        public void AssignInteger(ref TRecord rec, long data) => _assign(ref rec, _convertInteger(data));
-        public void AssignFloat(ref TRecord rec, double data) => _assign(ref rec, _convertFloat(data));
-        public void AssignText(ref TRecord rec, ReadOnlySpan<byte> data) => _assign(ref rec, _convertText(data));
-        public void AssignBlob(ref TRecord rec, ReadOnlySpan<byte> data) => _assign(ref rec, _convertBlob(data));
-        public void AssignNull(ref TRecord rec) => _assign(ref rec, _convertNull());
+        public void AssignInteger(ref TRecord rec, long data)
+        {
+            if (_convertInteger == null)
+            {
+                throw ConversionMissingException(DataType.Integer);
+            }
+            _assign(ref rec, _convertInteger(data));
+        }
+
+        public void AssignFloat(ref TRecord rec, double data)
+        {
+            if (_convertFloat == null)
+            {
+                throw ConversionMissingException(DataType.Float);
+            }
+            _assign(ref rec, _convertFloat(data));
+        }
+
+        public void AssignText(ref TRecord rec, ReadOnlySpan<byte> data)
+        {
+            if (_convertText == null)
+            {
+                throw ConversionMissingException(DataType.Text);
+            }
+            _assign(ref rec, _convertText(data));
+        }
+
+        public void AssignBlob(ref TRecord rec, ReadOnlySpan<byte> data)
+        {
+            if (_convertBlob == null)
+            {
+                throw ConversionMissingException(DataType.Blob);
+            }
+            _assign(ref rec, _convertBlob(data));
+        }
+
+        public void AssignNull(ref TRecord rec)
+        {
+            if (_convertNull == null)
+            {
+                throw ConversionMissingException(DataType.Null);
+            }
+            _assign(ref rec, _convertNull());
+        }
+
+        private static string FriendlyFieldType => $"{typeof(TRecord).Name}.{typeof(TField).Name}";
+
+        private static Exception ConversionMissingException(DataType dataType)
+        {
+            return new ArgumentException($"Member of type {FriendlyFieldType} has no defined conversion for SQLite {dataType}");
+        }
     }
 
     internal static class ColumnToFieldMap
@@ -108,11 +154,11 @@ namespace Sqlite.Fast
             public IColumnToFieldMap<TRecord> Compile()
             {
                 return new ColumnToFieldMap<TRecord, TField>(
-                    _integerConverter ?? ThrowIntegerConverterMissing<TField>(Member),
-                    _floatConverter ?? ThrowFloatConverterMissing<TField>(Member),
-                    _textConverter ?? ThrowTextConverterMissing<TField>(Member),
-                    _blobConverter ?? ThrowBlobConverterMissing<TField>(Member),
-                    _nullConverter ?? ThrowNullConverterMissing<TField>(Member),
+                    _integerConverter,
+                    _floatConverter,
+                    _textConverter,
+                    _blobConverter,
+                    _nullConverter,
                     CompileAssigner(Member));
             }
 
@@ -181,36 +227,6 @@ namespace Sqlite.Fast
                 }
                 throw new ArgumentException($"Field is {typeof(TField).Name} not {typeof(TCallerField).Name}");
             }
-        }
-
-        internal static string GetFriendlyName(MemberInfo member)
-        {
-            return $"{member.DeclaringType.Name}.{member.Name}";
-        }
-
-        internal static IntegerConverter<T> ThrowIntegerConverterMissing<T>(MemberInfo member)
-        {
-            return _ => throw new ArgumentException($"No integer converter defined for {GetFriendlyName(member)}");
-        }
-
-        internal static FloatConverter<T> ThrowFloatConverterMissing<T>(MemberInfo member)
-        {
-            return _ => throw new ArgumentException($"No float converter defined for {GetFriendlyName(member)}");
-        }
-
-        internal static TextConverter<T> ThrowTextConverterMissing<T>(MemberInfo member)
-        {
-            return _ => throw new ArgumentException($"No text converter defined for {GetFriendlyName(member)}");
-        }
-
-        internal static BlobConverter<T> ThrowBlobConverterMissing<T>(MemberInfo member)
-        {
-            return _ => throw new ArgumentException($"No blob converter defined for {GetFriendlyName(member)}");
-        }
-
-        internal static NullConverter<T> ThrowNullConverterMissing<T>(MemberInfo member)
-        {
-            return () => throw new ArgumentException($"No null converter defined for {GetFriendlyName(member)}");
         }
 
         internal static class DefaultConverters

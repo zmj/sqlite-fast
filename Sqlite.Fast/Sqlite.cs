@@ -21,7 +21,11 @@ namespace Sqlite.Fast
         [DllImport(DllName, EntryPoint = "sqlite3_finalize")]
         public static extern Result Finalize(IntPtr stmt);
 
-        // bind
+        [DllImport(DllName, EntryPoint = "sqlite3_bind_int64")]
+        public static extern Result BindInteger(IntPtr stmt, int paramIndex, long value);
+
+        [DllImport(DllName, EntryPoint = "sqlite3_bind_text")]
+        public static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.LPStr)] string value, int valueByteCount, IntPtr destructor);
 
         [DllImport(DllName, EntryPoint = "sqlite3_step")]
         public static extern Result Step(IntPtr stmt);
