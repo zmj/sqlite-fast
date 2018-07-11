@@ -35,15 +35,24 @@ namespace Sqlite.Fast
             internal Builder()
             {
                 if (typeof(TRecord).GetTypeInfo().StructLayoutAttribute.Value
-                    == System.Runtime.InteropServices.LayoutKind.Auto)
+                    != System.Runtime.InteropServices.LayoutKind.Sequential)
                 {
-                    throw new ArgumentException($"Target type {typeof(TRecord).Name} must have sequential or explicit StructLayout");
+                    throw new ArgumentException($"Target type {typeof(TRecord).Name} must have sequential StructLayout");
                 }
             }
 
             internal void SetDefaultMappings()
             {
-                throw new NotImplementedException();
+                MemberInfo[] members = typeof(TRecord).GetTypeInfo().GetMembers(BindingFlags.Public | BindingFlags.Instance);
+                foreach (var member in members)
+                {
+                    if (!CanAssignMember(member))
+                    {
+                        continue;
+                    }
+                    ColumnToFieldMap.IBuilder<TRecord> columnMap = GetOrAdd(member);
+                    columnMap.SetDefaultConverters();
+                }
             }
 
             private ColumnToFieldMap.IBuilder<TRecord> GetOrAdd(MemberInfo member)
@@ -59,7 +68,11 @@ namespace Sqlite.Fast
 
             private ColumnToFieldMap.Builder<TRecord, TField> GetOrAdd<TField>(Expression<Func<TRecord, TField>> propertyOrField)
             {
-                return GetOrAdd(GetMemberInfo(propertyOrField)).AsConcrete<TField>();
+                if(GetAssignableMember(propertyOrField, out MemberInfo member))
+                {
+                    return GetOrAdd(member).AsConcrete<TField>();
+                }
+                throw new ArgumentException($"Expression is not get/set-able field or property of {typeof(TRecord).Name}");
             }
 
             public RowToRecordMap<TRecord> Compile()
@@ -103,20 +116,31 @@ namespace Sqlite.Fast
                 return this;
             }
 
-            private static MemberInfo GetMemberInfo<TField>(Expression<Func<TRecord, TField>> propertyOrField)
+            public Builder<TRecord> Ignore<TField>(Expression<Func<TRecord, TField>> propertyOrField)
             {
-                if (propertyOrField.Body is MemberExpression member && ShouldMapMember(member.Member))
+                if (GetAssignableMember(propertyOrField, out MemberInfo member))
                 {
-                    return member.Member;
+                    _columnMapBuilders.RemoveAll(columnMap => columnMap.Member == member);
                 }
-                throw new ArgumentException($"Expression is not get/set-able field or property of {typeof(TRecord).Name}");
+                return this;
             }
 
-            private static bool ShouldMapMember(MemberInfo member)
+            private static bool GetAssignableMember<TField>(Expression<Func<TRecord, TField>> propertyOrField, out MemberInfo member)
+            {
+                if (propertyOrField.Body is MemberExpression memberExpression && CanAssignMember(memberExpression.Member))
+                {
+                    member = memberExpression.Member;
+                    return true;
+                }
+                member = null;
+                return false;
+            }
+
+            private static bool CanAssignMember(MemberInfo member)
             {
                 if (member is PropertyInfo property)
                 {
-                    return property.CanRead && property.CanWrite;
+                    return property.CanWrite;
                 }
                 else if (member is FieldInfo field)
                 {
