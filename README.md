@@ -82,6 +82,6 @@ private static long QueryAll_SqliteFast(string dbPath, int maxKey, CancellationT
 
 ### Installation
 
-This library will be available on NuGet in the future.
+This library is available on NuGet: https://www.nuget.org/packages/Sqlite.Fast/
 
 `sqlite3.dll` is not included in this library. It's up to you to choose and include the appropriate build for your target platform.
