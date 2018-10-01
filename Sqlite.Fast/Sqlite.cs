@@ -9,49 +9,49 @@ namespace Sqlite.Fast
     {
         private const string DllName = "sqlite3.dll";
 
-        [DllImport(DllName, EntryPoint = "sqlite3_open")]
+        [DllImport(DllName, EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Open([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr conn);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_close_v2")]
+        [DllImport(DllName, EntryPoint = "sqlite3_close_v2", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result CloseV2(IntPtr conn);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_prepare_v2")]
+        [DllImport(DllName, EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result PrepareV2(IntPtr conn, [MarshalAs(UnmanagedType.LPStr)] string sql, int sqlByteCount, out IntPtr stmt, out IntPtr endSql);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_finalize")]
+        [DllImport(DllName, EntryPoint = "sqlite3_finalize", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Finalize(IntPtr stmt);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_bind_int64")]
+        [DllImport(DllName, EntryPoint = "sqlite3_bind_int64", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result BindInteger(IntPtr stmt, int paramIndex, long value);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_bind_text")]
+        [DllImport(DllName, EntryPoint = "sqlite3_bind_text", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.LPStr)] string value, int valueByteCount, IntPtr destructor);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_step")]
+        [DllImport(DllName, EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Step(IntPtr stmt);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_reset")]
+        [DllImport(DllName, EntryPoint = "sqlite3_reset", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Reset(IntPtr stmt);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_column_count")]
+        [DllImport(DllName, EntryPoint = "sqlite3_column_count", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ColumCount(IntPtr stmt);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_column_type")]
+        [DllImport(DllName, EntryPoint = "sqlite3_column_type", CallingConvention = CallingConvention.Cdecl)]
         public static extern DataType ColumnType(IntPtr stmt, int colIndex);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_column_bytes")]
+        [DllImport(DllName, EntryPoint = "sqlite3_column_bytes", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ColumnBytes(IntPtr stmt, int colIndex);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_column_int64")]
+        [DllImport(DllName, EntryPoint = "sqlite3_column_int64", CallingConvention = CallingConvention.Cdecl)]
         public static extern long ColumnInteger(IntPtr stmt, int colIndex);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_column_double")]
+        [DllImport(DllName, EntryPoint = "sqlite3_column_double", CallingConvention = CallingConvention.Cdecl)]
         public static extern double ColumnFloat(IntPtr stmt, int colIndex);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_column_text")]
+        [DllImport(DllName, EntryPoint = "sqlite3_column_text", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr ColumnText(IntPtr stmt, int colIndex);
 
-        [DllImport(DllName, EntryPoint = "sqlite3_column_blob")]
+        [DllImport(DllName, EntryPoint = "sqlite3_column_blob", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr ColumnBlob(IntPtr stmt, int colIndex);
     }
 
