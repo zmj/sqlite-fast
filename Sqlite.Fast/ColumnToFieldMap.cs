@@ -315,6 +315,16 @@ namespace Sqlite.Fast
             }
 
             public static TextConverter<string> TextToString;
+            public static TextConverter<Guid> TextToGuid;
+            public static TextConverter<Guid?> TextToGuidNull;
+
+            public static Delegate GetTextConverter(Type type)
+            {
+                if (type == typeof(string)) return TextToString ?? (TextToString = TextToStringMethod);
+                if (type == typeof(Guid)) return TextToGuid ?? (TextToGuid = TextToGuidMethod);
+                if (type == typeof(Guid?)) return TextToGuidNull ?? (TextToGuidNull = value => (Guid?)TextToGuidMethod(value));
+                return null;
+            }
 
             private static string TextToStringMethod(ReadOnlySpan<byte> utf8Bytes)
             {
@@ -344,10 +354,43 @@ namespace Sqlite.Fast
                 }
             }
 
-            public static Delegate GetTextConverter(Type type)
+            private static Guid TextToGuidMethod(ReadOnlySpan<byte> utf8Bytes)
             {
-                if (type == typeof(string)) return TextToString ?? (TextToString = TextToStringMethod);
-                return null;
+                Span<byte> bytes = stackalloc byte[16];
+                bool high = true;
+                for (int src = 0, dst = 0; src < utf8Bytes.Length && dst < bytes.Length; src++)
+                {
+                    if (utf8Bytes[src] == '-')
+                    {
+                        continue;
+                    }
+                    byte b = utf8Bytes[src];
+                    if (b > 'F')
+                    {
+                        b -= 32;
+                    }
+                    if (b > '9')
+                    {
+                        b -= 7;
+                    }
+                    b -= 48;
+                    if (high)
+                    {
+                        b <<= 4;
+                        bytes[dst] = b;
+                    }
+                    else
+                    {
+                        bytes[dst++] |= b;
+                    }
+                    high = !high;
+                }
+                return new Guid(
+                    bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3],
+                    (short)(bytes[4] << 8 | bytes[5]),
+                    (short)(bytes[6] << 8 | bytes[7]),
+                    bytes[8], bytes[9], bytes[10], bytes[11],
+                    bytes[12], bytes[13], bytes[14], bytes[15]);
             }
 
             public static Delegate GetBlobConverter(Type type) => null;
