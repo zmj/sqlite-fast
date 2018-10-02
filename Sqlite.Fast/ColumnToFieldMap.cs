@@ -274,10 +274,28 @@ namespace Sqlite.Fast
                 if (type == typeof(sbyte?)) return IntegerToSbyteNull ?? (IntegerToSbyteNull = (long value) => (sbyte)value);
                 if (type == typeof(decimal)) return IntegerToDecimal ?? (IntegerToDecimal = (long value) => value);
                 if (type == typeof(decimal?)) return IntegerToDecimalNull ?? (IntegerToDecimalNull = (long value) => value);
-                // compile enum and enum
+                if (type.GetTypeInfo().IsEnum)
+                {
+                    return IntegerToEnum(type);
+                }
+                if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) 
+                    && type.GenericTypeArguments[0].GetTypeInfo().IsEnum)
+                {
+                    return IntegerToEnum(type);
+                }
                 return null;
             }
 
+            private static Delegate IntegerToEnum(Type type)
+            {
+                var value = Expression.Parameter(typeof(long));
+                return Expression.Lambda(
+                    typeof(IntegerConverter<>).MakeGenericType(new[] { type }),
+                    Expression.Convert(value, type),
+                    value)
+                    .Compile();
+            }
+                        
             private static FloatConverter<double> FloatToDouble;
             private static FloatConverter<double?> FloatToDoubleNull;
             private static FloatConverter<float> FloatToFloat;
