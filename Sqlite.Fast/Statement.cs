@@ -25,7 +25,18 @@ namespace Sqlite.Fast
             foreach (var row in rows) { }
         }
 
-        // ExecuteScalar?
+        public bool Execute<TRecord>(RowToRecordMap<TRecord> rowMap, ref TRecord record)
+        {
+            CheckDisposed();
+            var rows = Execute(rowMap);
+            bool assigned = false;
+            foreach (var row in rows)
+            {
+                row.AssignTo(ref record);
+                assigned = true;
+            }
+            return assigned;
+        }
 
         public Rows<TRecord> Execute<TRecord>(RowToRecordMap<TRecord> rowMap, CancellationToken ct = default)
         {
