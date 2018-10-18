@@ -216,7 +216,7 @@ namespace Sqlite.Fast
 
             public void SetNullConverter(NullConverter<TField> nullConverter)
             {
-                _nullConverter = null;
+                _nullConverter = nullConverter;
             }
 
             public Builder<TRecord, TCallerField> AsConcrete<TCallerField>()
