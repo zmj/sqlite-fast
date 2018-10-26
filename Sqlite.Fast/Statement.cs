@@ -67,7 +67,7 @@ namespace Sqlite.Fast
         public void Bind(int parameterIndex, string parameterValue)
         {
             CheckDisposed();
-            Result r = Sqlite.BindText(_statement, parameterIndex + 1, parameterValue, Encoding.UTF8.GetByteCount(parameterValue), new IntPtr(-1));
+            Result r = Sqlite.BindText16(_statement, parameterIndex + 1, parameterValue, parameterValue.Length << 1, new IntPtr(-1));
             if (r != Result.Ok)
             {
                 throw new SqliteException(r, $"Failed to bind '{parameterValue}' to parameter {parameterIndex}");

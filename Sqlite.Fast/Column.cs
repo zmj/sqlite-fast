@@ -22,13 +22,13 @@ namespace Sqlite.Fast
 
         public double GetFloatData() => Sqlite.ColumnFloat(_statement, Index);
 
-        public Span<byte> GetTextData()
+        public Span<char> GetTextData()
         {
-            IntPtr data = Sqlite.ColumnText(_statement, Index);
-            int length = Sqlite.ColumnBytes(_statement, Index);
+            IntPtr data = Sqlite.ColumnText16(_statement, Index);
+            int length = Sqlite.ColumnBytes16(_statement, Index) >> 1;
             unsafe
             {
-                return new Span<byte>(data.ToPointer(), length);
+                return new Span<char>(data.ToPointer(), length);
             }
         }
 

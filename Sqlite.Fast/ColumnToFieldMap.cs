@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Buffers;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Sqlite.Fast
@@ -11,14 +13,14 @@ namespace Sqlite.Fast
     {
         void AssignInteger(ref TRecord rec, long data);
         void AssignFloat(ref TRecord rec, double data);
-        void AssignText(ref TRecord rec, ReadOnlySpan<byte> data);
+        void AssignText(ref TRecord rec, ReadOnlySpan<char> data);
         void AssignBlob(ref TRecord rec, ReadOnlySpan<byte> data);
         void AssignNull(ref TRecord rec);
     }
 
     public delegate T IntegerConverter<T>(long data);
     public delegate T FloatConverter<T>(double data);
-    public delegate T TextConverter<T>(ReadOnlySpan<byte> data);
+    public delegate T TextConverter<T>(ReadOnlySpan<char> data);
     public delegate T BlobConverter<T>(ReadOnlySpan<byte> data);
     public delegate T NullConverter<T>();
 
@@ -69,7 +71,7 @@ namespace Sqlite.Fast
             _assign(ref rec, _convertFloat(data));
         }
 
-        public void AssignText(ref TRecord rec, ReadOnlySpan<byte> data)
+        public void AssignText(ref TRecord rec, ReadOnlySpan<char> data)
         {
             if (_convertText == null)
             {
@@ -320,77 +322,37 @@ namespace Sqlite.Fast
 
             public static Delegate GetTextConverter(Type type)
             {
-                if (type == typeof(string)) return TextToString ?? (TextToString = TextToStringMethod);
+                if (type == typeof(string)) return TextToString ?? (TextToString = (ReadOnlySpan<char> text) => text.ToString());
                 if (type == typeof(Guid)) return TextToGuid ?? (TextToGuid = TextToGuidMethod);
                 if (type == typeof(Guid?)) return TextToGuidNull ?? (TextToGuidNull = value => (Guid?)TextToGuidMethod(value));
                 return null;
             }
 
-            private static string TextToStringMethod(ReadOnlySpan<byte> utf8Bytes)
+            private static Guid TextToGuidMethod(ReadOnlySpan<char> text)
             {
-                if (utf8Bytes.Length == 0)
+                if (text.Length > 64)
                 {
-                    return string.Empty;
+                    throw new ArgumentOutOfRangeException($"Guid too long '{text.ToString()}'");
                 }
-                const int maxStackAlloc = 256;
-                if (utf8Bytes.Length <= maxStackAlloc)
+                Span<byte> utf8Bytes = stackalloc byte[128];
+                ToUtf8(text, utf8Bytes);
+                if (Utf8Parser.TryParse(utf8Bytes, out Guid value, out _))
                 {
-                    unsafe
-                    {
-                        byte* stackCopy = stackalloc byte[utf8Bytes.Length];
-                        utf8Bytes.CopyTo(new Span<byte>(stackCopy, utf8Bytes.Length));
-                        return Encoding.UTF8.GetString(stackCopy, utf8Bytes.Length);
-                    }
+                    return value;
                 }
-                byte[] heapCopy = ArrayPool<byte>.Shared.Rent(utf8Bytes.Length);
-                try
-                {
-                    utf8Bytes.CopyTo(new Span<byte>(heapCopy));
-                    return Encoding.UTF8.GetString(heapCopy, 0, utf8Bytes.Length);
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(heapCopy);
-                }
+                throw new ArgumentException($"Unable to parse guid '{text.ToString()}'");
             }
 
-            private static Guid TextToGuidMethod(ReadOnlySpan<byte> utf8Bytes)
+            private static void ToUtf8(ReadOnlySpan<char> text, Span<byte> utf8Bytes)
             {
-                Span<byte> bytes = stackalloc byte[16];
-                bool high = true;
-                for (int src = 0, dst = 0; src < utf8Bytes.Length && dst < bytes.Length; src++)
+                unsafe
                 {
-                    if (utf8Bytes[src] == '-')
+                    fixed (char* src = text)
+                    fixed (byte* dst = utf8Bytes)
                     {
-                        continue;
+                        Encoding.UTF8.GetBytes(src, charCount: text.Length, dst, byteCount: utf8Bytes.Length);
                     }
-                    byte b = utf8Bytes[src];
-                    if (b > 'F')
-                    {
-                        b -= 32;
-                    }
-                    if (b > '9')
-                    {
-                        b -= 7;
-                    }
-                    b -= 48;
-                    if (high)
-                    {
-                        b <<= 4;
-                        bytes[dst] = b;
-                    }
-                    else
-                    {
-                        bytes[dst++] |= b;
-                    }
-                    high = !high;
                 }
-                return new Guid(
-                    bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3],
-                    (short)(bytes[4] << 8 | bytes[5]),
-                    (short)(bytes[6] << 8 | bytes[7]),
-                    bytes[8], bytes[9], bytes[10], bytes[11],
-                    bytes[12], bytes[13], bytes[14], bytes[15]);
             }
 
             public static Delegate GetBlobConverter(Type type) => null;

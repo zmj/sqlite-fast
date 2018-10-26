@@ -27,6 +27,9 @@ namespace Sqlite.Fast
         [DllImport(DllName, EntryPoint = "sqlite3_bind_text", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.LPStr)] string value, int valueByteCount, IntPtr destructor);
 
+        [DllImport(DllName, EntryPoint = "sqlite3_bind_text16", CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result BindText16(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.LPWStr)] string value, int valueByteCount, IntPtr destructor);
+        
         [DllImport(DllName, EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Step(IntPtr stmt);
 
@@ -42,6 +45,9 @@ namespace Sqlite.Fast
         [DllImport(DllName, EntryPoint = "sqlite3_column_bytes", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ColumnBytes(IntPtr stmt, int colIndex);
 
+        [DllImport(DllName, EntryPoint = "sqlite3_column_bytes16", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ColumnBytes16(IntPtr stmt, int colIndex);
+
         [DllImport(DllName, EntryPoint = "sqlite3_column_int64", CallingConvention = CallingConvention.Cdecl)]
         public static extern long ColumnInteger(IntPtr stmt, int colIndex);
 
@@ -50,6 +56,9 @@ namespace Sqlite.Fast
 
         [DllImport(DllName, EntryPoint = "sqlite3_column_text", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr ColumnText(IntPtr stmt, int colIndex);
+
+        [DllImport(DllName, EntryPoint = "sqlite3_column_text16", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr ColumnText16(IntPtr stmt, int colIndex);
 
         [DllImport(DllName, EntryPoint = "sqlite3_column_blob", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr ColumnBlob(IntPtr stmt, int colIndex);
