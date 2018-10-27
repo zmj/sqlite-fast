@@ -343,15 +343,12 @@ namespace Sqlite.Fast
                 throw new ArgumentException($"Unable to parse guid '{text.ToString()}'");
             }
 
-            private static void ToUtf8(ReadOnlySpan<char> text, Span<byte> utf8Bytes)
+            private static unsafe void ToUtf8(ReadOnlySpan<char> text, Span<byte> utf8Bytes)
             {
-                unsafe
+                fixed (char* src = &MemoryMarshal.GetReference(text))
+                fixed (byte* dst = &MemoryMarshal.GetReference(utf8Bytes))
                 {
-                    fixed (char* src = text)
-                    fixed (byte* dst = utf8Bytes)
-                    {
-                        Encoding.UTF8.GetBytes(src, charCount: text.Length, dst, byteCount: utf8Bytes.Length);
-                    }
+                    Encoding.UTF8.GetBytes(src, charCount: text.Length, dst, byteCount: utf8Bytes.Length);
                 }
             }
 

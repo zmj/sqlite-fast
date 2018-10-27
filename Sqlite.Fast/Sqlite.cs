@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+[assembly:System.Runtime.CompilerServices.InternalsVisibleTo("Sqlite.Fast.Tests")]
 
 namespace Sqlite.Fast
 {
