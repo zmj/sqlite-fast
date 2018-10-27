@@ -1,6 +1,6 @@
 # SQLite-Fast
 
-SQLite-Fast is a high performance, low allocation SQLite wrapper targeting .NET Standard 1.6.
+SQLite-Fast is a high performance, low allocation SQLite wrapper targeting .NET Standard 1.6. This library is available on NuGet: https://www.nuget.org/packages/Sqlite.Fast/
 
 ### Use Case
  
@@ -79,9 +79,3 @@ private static long QueryAll_SqliteFast(string dbPath, int maxKey, CancellationT
     return recordsQueried;
 }
 ```
-
-### Installation
-
-This library is available on NuGet: https://www.nuget.org/packages/Sqlite.Fast/
-
-`sqlite3.dll` is not included in this library. It's up to you to choose and include the appropriate build for your target platform.
