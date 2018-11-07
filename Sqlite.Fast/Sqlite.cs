@@ -29,7 +29,7 @@ namespace Sqlite.Fast
         public static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.LPStr)] string value, int valueByteCount, IntPtr destructor);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_text16", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result BindText16(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.LPWStr)] string value, int valueByteCount, IntPtr destructor);
+        public static extern Result BindText16(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U2)] in char value, int valueByteCount, IntPtr destructor);
         
         [DllImport(DllName, EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Step(IntPtr stmt);

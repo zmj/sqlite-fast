@@ -8,7 +8,9 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Test1()
         {
-            Row row;
+            using (new TestTable("create table t (x int)"))
+            {
+            }
         }
     }
 }

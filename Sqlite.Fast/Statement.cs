@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace Sqlite.Fast
 {
@@ -67,10 +66,21 @@ namespace Sqlite.Fast
         public void Bind(int parameterIndex, string parameterValue)
         {
             CheckDisposed();
-            Result r = Sqlite.BindText16(_statement, parameterIndex + 1, parameterValue, parameterValue.Length << 1, new IntPtr(-1));
+            Bind(parameterIndex, parameterValue.AsSpan());
+        }
+
+        public void Bind(int parameterIndex, ReadOnlySpan<char> parameterValue)
+        {
+            CheckDisposed();
+            Result r = Sqlite.BindText16(
+                _statement, 
+                parameterIndex + 1,
+                in MemoryMarshal.GetReference(parameterValue), 
+                parameterValue.Length << 1, 
+                new IntPtr(-1));
             if (r != Result.Ok)
             {
-                throw new SqliteException(r, $"Failed to bind '{parameterValue}' to parameter {parameterIndex}");
+                throw new SqliteException(r, $"Failed to bind '{parameterValue.ToString()}' to parameter {parameterIndex}");
             }
         }
 
