@@ -6,22 +6,27 @@ namespace Sqlite.Fast.Tests
 {
     internal class TestTable : IDisposable
     {
-        public Connection Connection { get; }
+        private readonly Connection _conn;
 
         public TestTable(string createTableSql)
         {
-            Connection = Connection.Open(":memory:");
+            _conn = Connection.Open(":memory:");
             try
             {
-                Connection.NewStatement(createTableSql).Execute();
+                using (var createTable = _conn.NewStatement(createTableSql)) 
+                {
+                    createTable.Execute();
+                }
             }
             catch
             {
-                Connection.Dispose();
+                _conn.Dispose();
                 throw;
             }
         }
 
-        public void Dispose() => Connection.Dispose();
+        public Statement Stmt(string sql) => _conn.NewStatement(sql);
+
+        public void Dispose() => _conn.Dispose();
     }
 }

@@ -48,7 +48,7 @@ namespace Sqlite.Fast
             return new Rows<TRecord>(rows, rowMap, ct);
         }
         
-        private void BindInternal(int parameterIndex, long parameterValue)
+        private Statement BindInteger(int parameterIndex, long parameterValue)
         {
             CheckDisposed();
             Result r = Sqlite.BindInteger(_statement, parameterIndex + 1, parameterValue);
@@ -56,20 +56,20 @@ namespace Sqlite.Fast
             {
                 throw new SqliteException(r, $"Failed to bind {parameterValue} to parameter {parameterIndex}");
             }
+            return this;
         }
 
-        public void Bind(int parameterIndex, long parameterValue) => BindInternal(parameterIndex, parameterValue);
-        public void Bind(int parameterIndex, ulong parameterValue) => BindInternal(parameterIndex, (long)parameterValue);
-        public void Bind(int parameterIndex, int parameterValue) => BindInternal(parameterIndex, parameterValue);
-        public void Bind(int parameterIndex, uint parameterValue) => BindInternal(parameterIndex, parameterValue);
+        public Statement Bind(int parameterIndex, long parameterValue) => BindInteger(parameterIndex, parameterValue);
+        public Statement Bind(int parameterIndex, ulong parameterValue) => BindInteger(parameterIndex, (long)parameterValue);
+        public Statement Bind(int parameterIndex, int parameterValue) => BindInteger(parameterIndex, parameterValue);
+        public Statement Bind(int parameterIndex, uint parameterValue) => BindInteger(parameterIndex, parameterValue);
 
-        public void Bind(int parameterIndex, string parameterValue)
-        {
-            CheckDisposed();
-            Bind(parameterIndex, parameterValue.AsSpan());
-        }
+        public Statement Bind(int parameterIndex, string parameterValue)
+            => BindText(parameterIndex, parameterValue.AsSpan());
+        public Statement Bind(int parameterIndex, ReadOnlySpan<char> parameterValue)
+            => BindText(parameterIndex, parameterValue);
 
-        public void Bind(int parameterIndex, ReadOnlySpan<char> parameterValue)
+        private Statement BindText(int parameterIndex, ReadOnlySpan<char> parameterValue)
         {
             CheckDisposed();
             Result r = Sqlite.BindText16(
@@ -82,6 +82,7 @@ namespace Sqlite.Fast
             {
                 throw new SqliteException(r, $"Failed to bind '{parameterValue.ToString()}' to parameter {parameterIndex}");
             }
+            return this;
         }
 
         private void CheckDisposed()
