@@ -26,7 +26,7 @@ namespace Sqlite.Fast
 
     public delegate void FieldAssigner<TRecord, TField>(ref TRecord rec, TField data);
 
-    internal class ColumnToFieldMap<TRecord, TField> : IColumnToFieldMap<TRecord>
+    internal sealed class ColumnToFieldMap<TRecord, TField> : IColumnToFieldMap<TRecord>
     {
         private readonly IntegerConverter<TField> _convertInteger;
         private readonly FloatConverter<TField> _convertFloat;
@@ -138,7 +138,7 @@ namespace Sqlite.Fast
             Builder<TRecord, TField> AsConcrete<TField>();
         }
 
-        internal class Builder<TRecord, TField> : IBuilder<TRecord>
+        internal sealed class Builder<TRecord, TField> : IBuilder<TRecord>
         {
             public MemberInfo Member { get; }
 

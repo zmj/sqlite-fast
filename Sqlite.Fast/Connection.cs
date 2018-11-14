@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public class Connection : IDisposable
+    public sealed class Connection : IDisposable
     {
         private readonly IntPtr _connnection;
 
@@ -46,9 +46,10 @@ namespace Sqlite.Fast
             }
         }
 
-        ~Connection() => Dispose();
+        ~Connection() => Dispose(disposing: false);
+        public void Dispose() => Dispose(disposing: true);
 
-        public void Dispose()
+        private void Dispose(bool disposing)
         {
             if (_disposed)
             {
@@ -56,6 +57,11 @@ namespace Sqlite.Fast
             }
             Result r = Sqlite.CloseV2(_connnection);
             _disposed = true;
+            if (!disposing)
+            {
+                return;
+            }
+            GC.SuppressFinalize(this);
             if (r != Result.Ok)
             {
                 throw new SqliteException(r, "Failed to close database connection");

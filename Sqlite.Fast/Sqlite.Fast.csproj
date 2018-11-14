@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
-    <Version>1.0.5-alpha</Version>
+    <Version>1.0.6-alpha</Version>
     <Authors>zmj</Authors>
     <Description>A high-performance SQLite wrapper. Details and examples: https://github.com/zmj/sqlite-fast</Description>
     <PackageProjectUrl>https://github.com/zmj/sqlite-fast</PackageProjectUrl>

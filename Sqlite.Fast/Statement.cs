@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Sqlite.Fast
 {
-    public class Statement : IDisposable
+    public sealed class Statement : IDisposable
     {
         private readonly IntPtr _statement;
         private readonly int _columnCount;
@@ -93,16 +93,22 @@ namespace Sqlite.Fast
             }
         }
 
-        ~Statement() => Dispose();
+        ~Statement() => Dispose(disposing: false);
+        public void Dispose() => Dispose(disposing: true);
 
-        public void Dispose()
-        {
+        private void Dispose(bool disposing)
+        { 
             if (_disposed)
             {
                 return;
             }
             Result r = Sqlite.Finalize(_statement);
             _disposed = true;
+            if (!disposing)
+            {
+                return;
+            }
+            GC.SuppressFinalize(this);
             if (r != Result.Ok)
             {
                 throw new SqliteException(r, "Failed to finalize prepared sql statement");

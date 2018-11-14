@@ -23,7 +23,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Execute_SelectOne() 
         {
-            using (var tbl = new TestTable("create table t (x int")) 
+            using (var tbl = new TestTable("create table t (x int)")) 
             using (var insert = tbl.Stmt("insert into t values(1)"))
             using (var select = tbl.Stmt("select x from t"))
             {
@@ -37,7 +37,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Execute_Rebind() 
         {
-            using (var tbl = new TestTable("create table t (x int")) 
+            using (var tbl = new TestTable("create table t (x int)")) 
             using (var insert = tbl.Stmt("insert into t values(@x)"))
             using (var sum = tbl.Stmt("select sum(x) from t"))
             {
@@ -52,7 +52,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Execute_SelectMany() 
         {
-            using (var tbl = new TestTable("create table t (x int"))
+            using (var tbl = new TestTable("create table t (x int)"))
             using (var insert = tbl.Stmt("insert into t values(@x)"))
             using (var select = tbl.Stmt("select x from t"))
             {
@@ -72,7 +72,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Execute_SelectMany_Twice() 
         {
-            using (var tbl = new TestTable("create table t (x int"))
+            using (var tbl = new TestTable("create table t (x int)"))
             using (var insert = tbl.Stmt("insert into t values(@x)"))
             using (var select = tbl.Stmt("select x from t"))
             {

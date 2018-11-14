@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public class RowToRecordMap<TRecord>
+    public sealed class RowToRecordMap<TRecord>
     {
         internal IColumnToFieldMap<TRecord>[] ColumnMaps { get; }
 
@@ -28,7 +28,7 @@ namespace Sqlite.Fast
             return builder;
         }
 
-        public class Builder<TRecord>
+        public sealed class Builder<TRecord>
         {
             private readonly List<ColumnToFieldMap.IBuilder<TRecord>> _columnMapBuilders = new List<ColumnToFieldMap.IBuilder<TRecord>>();
 
