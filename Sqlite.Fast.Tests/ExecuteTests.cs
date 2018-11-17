@@ -13,15 +13,8 @@ namespace Sqlite.Fast.Tests
             }
         }
 
-        private struct R<T> 
-        { 
-            public T Value; 
-            public static readonly RowToRecordMap<R<T>> Map 
-                = RowToRecordMap.Default<R<T>>().Compile();
-        }
-
         [Fact]
-        public void Execute_SelectOne() 
+        public void SelectOne() 
         {
             using (var tbl = new TestTable("create table t (x int)")) 
             using (var insert = tbl.Stmt("insert into t values(1)"))
@@ -29,13 +22,13 @@ namespace Sqlite.Fast.Tests
             {
                 insert.Execute();
                 R<int> r = default;
-                select.Execute(R<int>.Map, ref r);
+                select.Execute(r.Map, ref r);
                 Assert.Equal(1, r.Value);
             }
         }
 
         [Fact]
-        public void Execute_Rebind() 
+        public void Rebind() 
         {
             using (var tbl = new TestTable("create table t (x int)")) 
             using (var insert = tbl.Stmt("insert into t values(@x)"))
@@ -44,13 +37,13 @@ namespace Sqlite.Fast.Tests
                 insert.Bind(0, 1).Execute();
                 insert.Bind(0, 2).Execute();
                 R<int> r = default;
-                sum.Execute(R<int>.Map, ref r);
+                sum.Execute(r.Map, ref r);
                 Assert.Equal(3, r.Value);
             }
         }
 
         [Fact]
-        public void Execute_SelectMany() 
+        public void SelectMany() 
         {
             using (var tbl = new TestTable("create table t (x int)"))
             using (var insert = tbl.Stmt("insert into t values(@x)"))
@@ -60,7 +53,7 @@ namespace Sqlite.Fast.Tests
                 insert.Bind(0, 2).Execute();
                 int sum = 0;
                 R<int> r = default;
-                foreach (var row in select.Execute(R<int>.Map))
+                foreach (var row in select.Execute(r.Map))
                 {
                     row.AssignTo(ref r);
                     sum += r.Value;
@@ -70,7 +63,7 @@ namespace Sqlite.Fast.Tests
         }
 
         [Fact]
-        public void Execute_SelectMany_Twice() 
+        public void SelectMany_Twice() 
         {
             using (var tbl = new TestTable("create table t (x int)"))
             using (var insert = tbl.Stmt("insert into t values(@x)"))
@@ -79,8 +72,8 @@ namespace Sqlite.Fast.Tests
                 insert.Bind(0, 1).Execute();
                 insert.Bind(0, 2).Execute();
                 int sum = 0;
-                var rows = select.Execute(R<int>.Map);
                 R<int> r = default;
+                var rows = select.Execute(r.Map);
                 foreach (var row in rows)
                 {
                     row.AssignTo(ref r);

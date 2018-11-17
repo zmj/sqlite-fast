@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Buffers;
-using System.Buffers.Text;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Sqlite.Fast
 {
@@ -108,7 +103,7 @@ namespace Sqlite.Fast
 
     internal static class ColumnToFieldMap
     {
-        public static IBuilder<TRecord> Create<TRecord>(MemberInfo member)
+        internal static IBuilder<TRecord> Create<TRecord>(MemberInfo member)
         {
             var constructor = typeof(Builder<,>)
                 .MakeGenericType(new[] { typeof(TRecord), GetMemberType(member) })
@@ -189,11 +184,11 @@ namespace Sqlite.Fast
             public void SetDefaultConverters()
             {
                 var memberType = GetMemberType(Member);
-                _integerConverter = (IntegerConverter<TField>)DefaultConverters.GetIntegerConverter(memberType);
-                _floatConverter = (FloatConverter<TField>)DefaultConverters.GetFloatConverter(memberType);
-                _textConverter = (TextConverter<TField>)DefaultConverters.GetTextConverter(memberType);
-                _blobConverter = (BlobConverter<TField>)DefaultConverters.GetBlobConverter(memberType);
-                _nullConverter = (NullConverter<TField>)DefaultConverters.GetNullConverter(memberType);
+                _integerConverter = DefaultConverters.GetIntegerConverter<TField>();
+                _floatConverter = DefaultConverters.GetFloatConverter<TField>();
+                _textConverter = DefaultConverters.GetTextConverter<TField>();
+                _blobConverter = DefaultConverters.GetBlobConverter<TField>();
+                _nullConverter = DefaultConverters.GetNullConverter<TField>();
             }
 
             public void SetIntegerConverter(IntegerConverter<TField> integerConverter)
@@ -228,170 +223,6 @@ namespace Sqlite.Fast
                     return builder;
                 }
                 throw new ArgumentException($"Field is {typeof(TField).Name} not {typeof(TCallerField).Name}");
-            }
-        }
-
-        internal static class DefaultConverters
-        {
-            private static IntegerConverter<long> IntegerToLong;
-            private static IntegerConverter<long?> IntegerToLongNull;
-            private static IntegerConverter<ulong> IntegerToUlong;
-            private static IntegerConverter<ulong> IntegerToUlongNull;
-            private static IntegerConverter<int> IntegerToInt;
-            private static IntegerConverter<int?> IntegerToIntNull;
-            private static IntegerConverter<uint> IntegerToUint;
-            private static IntegerConverter<uint?> IntegerToUintNull;
-            private static IntegerConverter<short> IntegerToShort;
-            private static IntegerConverter<short?> IntegerToShortNull;
-            private static IntegerConverter<ushort> IntegerToUshort;
-            private static IntegerConverter<ushort?> IntegerToUshortNull;
-            private static IntegerConverter<char> IntegerToChar;
-            private static IntegerConverter<char?> IntegerToCharNull;
-            private static IntegerConverter<byte> IntegerToByte;
-            private static IntegerConverter<byte?> IntegerToByteNull;
-            private static IntegerConverter<sbyte> IntegerToSbyte;
-            private static IntegerConverter<sbyte?> IntegerToSbyteNull;
-            private static IntegerConverter<decimal> IntegerToDecimal;
-            private static IntegerConverter<decimal?> IntegerToDecimalNull;
-
-            public static Delegate GetIntegerConverter(Type type)
-            {
-                if (type == typeof(long)) return IntegerToLong ?? (IntegerToLong = (long value) => value);
-                if (type == typeof(long?)) return IntegerToLongNull ?? (IntegerToLongNull = (long value) => value);
-                if (type == typeof(ulong)) return IntegerToUlong ?? (IntegerToUlong = (long value) => (ulong)value);
-                if (type == typeof(ulong?)) return IntegerToUlongNull ?? (IntegerToUlongNull = (long value) => (ulong)value);
-                if (type == typeof(int)) return IntegerToInt ?? (IntegerToInt = (long value) => (int)value);
-                if (type == typeof(int?)) return IntegerToIntNull ?? (IntegerToIntNull = (long value) => (int)value);
-                if (type == typeof(uint)) return IntegerToUint ?? (IntegerToUint = (long value) => (uint)value);
-                if (type == typeof(uint?)) return IntegerToUintNull ?? (IntegerToUintNull = (long value) => (uint)value);
-                if (type == typeof(short)) return IntegerToShort ?? (IntegerToShort = (long value) => (short)value);
-                if (type == typeof(short?)) return IntegerToShortNull ?? (IntegerToShortNull = (long value) => (short)value);
-                if (type == typeof(ushort)) return IntegerToUshort ?? (IntegerToUshort = (long value) => (ushort)value);
-                if (type == typeof(ushort?)) return IntegerToUshortNull ?? (IntegerToUshortNull = (long value) => (ushort)value);
-                if (type == typeof(char)) return IntegerToChar ?? (IntegerToChar = (long value) => (char)value);
-                if (type == typeof(char?)) return IntegerToCharNull ?? (IntegerToCharNull = (long value) => (char)value);
-                if (type == typeof(byte)) return IntegerToByte ?? (IntegerToByte = (long value) => (byte)value);
-                if (type == typeof(byte?)) return IntegerToByteNull ?? (IntegerToByteNull = (long value) => (byte)value);
-                if (type == typeof(sbyte)) return IntegerToSbyte ?? (IntegerToSbyte = (long value) => (sbyte)value);
-                if (type == typeof(sbyte?)) return IntegerToSbyteNull ?? (IntegerToSbyteNull = (long value) => (sbyte)value);
-                if (type == typeof(decimal)) return IntegerToDecimal ?? (IntegerToDecimal = (long value) => value);
-                if (type == typeof(decimal?)) return IntegerToDecimalNull ?? (IntegerToDecimalNull = (long value) => value);
-                if (type.GetTypeInfo().IsEnum)
-                {
-                    return IntegerToEnum(type);
-                }
-                if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>) 
-                    && type.GenericTypeArguments[0].GetTypeInfo().IsEnum)
-                {
-                    return IntegerToEnum(type);
-                }
-                return null;
-            }
-
-            private static Delegate IntegerToEnum(Type type)
-            {
-                var value = Expression.Parameter(typeof(long));
-                return Expression.Lambda(
-                    typeof(IntegerConverter<>).MakeGenericType(new[] { type }),
-                    Expression.Convert(value, type),
-                    value)
-                    .Compile();
-            }
-                        
-            private static FloatConverter<double> FloatToDouble;
-            private static FloatConverter<double?> FloatToDoubleNull;
-            private static FloatConverter<float> FloatToFloat;
-            private static FloatConverter<float?> FloatToFloatNull;
-            private static FloatConverter<decimal> FloatToDecimal;
-            private static FloatConverter<decimal?> FloatToDecimalNull;
-
-            public static Delegate GetFloatConverter(Type type)
-            {
-                if (type == typeof(double)) return FloatToDouble ?? (FloatToDouble = (double value) => value);
-                if (type == typeof(double?)) return FloatToDoubleNull ?? (FloatToDoubleNull = (double value) => value);
-                if (type == typeof(float)) return FloatToFloat ?? (FloatToFloat = (double value) => (float)value);
-                if (type == typeof(float?)) return FloatToFloatNull ?? (FloatToFloatNull = (double value) => (float)value);
-                if (type == typeof(decimal)) return FloatToDecimal ?? (FloatToDecimal = (double value) => (decimal)value);
-                if (type == typeof(decimal?)) return FloatToDecimalNull ?? (FloatToDecimalNull = (double value) => (decimal)value);
-                return null;
-            }
-
-            public static TextConverter<string> TextToString;
-            public static TextConverter<Guid> TextToGuid;
-            public static TextConverter<Guid?> TextToGuidNull;
-
-            public static Delegate GetTextConverter(Type type)
-            {
-                if (type == typeof(string)) return TextToString ?? (TextToString = (ReadOnlySpan<char> text) => text.ToString());
-                if (type == typeof(Guid)) return TextToGuid ?? (TextToGuid = TextToGuidMethod);
-                if (type == typeof(Guid?)) return TextToGuidNull ?? (TextToGuidNull = value => (Guid?)TextToGuidMethod(value));
-                return null;
-            }
-
-            private static Guid TextToGuidMethod(ReadOnlySpan<char> text)
-            {
-                if (text.Length > 64)
-                {
-                    throw new ArgumentOutOfRangeException($"Guid too long '{text.ToString()}'");
-                }
-                Span<byte> utf8Bytes = stackalloc byte[128];
-                ToUtf8(text, utf8Bytes);
-                if (Utf8Parser.TryParse(utf8Bytes, out Guid value, out _))
-                {
-                    return value;
-                }
-                throw new ArgumentException($"Unable to parse guid '{text.ToString()}'");
-            }
-
-            private static unsafe void ToUtf8(ReadOnlySpan<char> text, Span<byte> utf8Bytes)
-            {
-                fixed (char* src = &MemoryMarshal.GetReference(text))
-                fixed (byte* dst = &MemoryMarshal.GetReference(utf8Bytes))
-                {
-                    Encoding.UTF8.GetBytes(src, charCount: text.Length, dst, byteCount: utf8Bytes.Length);
-                }
-            }
-
-            public static Delegate GetBlobConverter(Type type) => null;
-
-            private static NullConverter<string> NullToString;
-            private static NullConverter<long?> NullToLongNull;
-            private static NullConverter<ulong?> NullToUlongNull;
-            private static NullConverter<int?> NullToIntNull;
-            private static NullConverter<uint?> NullToUintNull;
-            private static NullConverter<short?> NullToShortNull;
-            private static NullConverter<ushort?> NullToUshortNull;
-            private static NullConverter<char?> NullToCharNull;
-            private static NullConverter<byte?> NullToByteNull;
-            private static NullConverter<sbyte?> NullToSbyteNull;
-
-            public static Delegate GetNullConverter(Type type)
-            {
-                if (type == typeof(string)) return NullToString ?? (NullToString = () => null);
-                if (type == typeof(long?)) return NullToLongNull ?? (NullToLongNull = () => null);
-                if (type == typeof(ulong?)) return NullToUlongNull ?? (NullToUlongNull = () => null);
-                if (type == typeof(int?)) return NullToIntNull ?? (NullToIntNull = () => null);
-                if (type == typeof(uint?)) return NullToUintNull ?? (NullToUintNull = () => null);
-                if (type == typeof(short?)) return NullToShortNull ?? (NullToShortNull = () => null);
-                if (type == typeof(ushort?)) return NullToUshortNull ?? (NullToUshortNull = () => null);
-                if (type == typeof(char?)) return NullToCharNull ?? (NullToCharNull = () => null);
-                if (type == typeof(byte?)) return NullToByteNull ?? (NullToByteNull = () => null);
-                if (type == typeof(sbyte?)) return NullToSbyteNull ?? (NullToSbyteNull = () => null);
-                if (type.GetTypeInfo().IsClass)
-                {
-                    return Expression.Lambda(
-                        typeof(NullConverter<>).MakeGenericType(new[] { type }),
-                        Expression.Convert(Expression.Constant(null), type))
-                        .Compile();
-                }
-                if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                {
-                    return Expression.Lambda(
-                        typeof(NullConverter<>).MakeGenericType(new[] { type }),
-                        Expression.Convert(Expression.Constant(null), type))
-                        .Compile();
-                }
-                return null;
             }
         }        
     }
