@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
 
 namespace Sqlite.Fast
 {
@@ -10,20 +9,17 @@ namespace Sqlite.Fast
     {
         private readonly Row _row;
         private readonly RowToRecordMap<TRecord> _map;
-        private readonly CancellationToken _ct;
 
-        internal Row(Row row, RowToRecordMap<TRecord> map, CancellationToken ct)
+        internal Row(Row row, RowToRecordMap<TRecord> map)
         {
             _row = row;
             _map = map;
-            _ct = ct;
         }
 
         public void AssignTo(ref TRecord record)
         {
             foreach (Column col in _row.Columns)
             {
-                _ct.ThrowIfCancellationRequested();
                 IColumnToFieldMap<TRecord> colMap = _map.ColumnMaps[col.Index]; // length checked at Execute
                 DataType dataType = col.GetDataType();
                 switch (dataType)
@@ -54,31 +50,27 @@ namespace Sqlite.Fast
     {
         private readonly Rows _rows;
         private readonly RowToRecordMap<TRecord> _map;
-        private readonly CancellationToken _ct;
 
-        internal Rows(Rows rows, RowToRecordMap<TRecord> map, CancellationToken ct)
+        internal Rows(Rows rows, RowToRecordMap<TRecord> map)
         {
             _rows = rows;
             _map = map;
-            _ct = ct;
         }
 
-        public Enumerator GetEnumerator() => new Enumerator(_rows.GetEnumerator(), _map, _ct);
+        public Enumerator GetEnumerator() => new Enumerator(_rows.GetEnumerator(), _map);
         IEnumerator<Row<TRecord>> IEnumerable<Row<TRecord>>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public struct Enumerator : IEnumerator<Row<TRecord>>
         {
             private readonly RowToRecordMap<TRecord> _map;
-            private readonly CancellationToken _ct;
 
             private Rows.Enumerator _rowEnumerator;
 
-            internal Enumerator(Rows.Enumerator rowEnumerator, RowToRecordMap<TRecord> map, CancellationToken ct)
+            internal Enumerator(Rows.Enumerator rowEnumerator, RowToRecordMap<TRecord> map)
             {
                 _rowEnumerator = rowEnumerator;
                 _map = map;
-                _ct = ct;
                 Current = default;
             }
 
@@ -87,14 +79,12 @@ namespace Sqlite.Fast
 
             public bool MoveNext()
             {
-                _ct.ThrowIfCancellationRequested();
                 if (!_rowEnumerator.MoveNext())
                 {
                     Current = default;
-                    _rowEnumerator.Reset();
                     return false;
                 }
-                Current = new Row<TRecord>(_rowEnumerator.Current, _map, _ct);
+                Current = new Row<TRecord>(_rowEnumerator.Current, _map);
                 return true;
             }
 
@@ -106,7 +96,6 @@ namespace Sqlite.Fast
 
             public void Dispose()
             {
-                Reset();
                 _rowEnumerator = default;
             }
         }

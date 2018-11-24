@@ -6,11 +6,11 @@ namespace Sqlite.Fast
 {
     internal readonly struct Row
     {
-        public Columns Columns { get; }
+        public readonly Columns Columns;
 
-        public Row(IntPtr statement, int columnCount)
+        public Row(IntPtr statement, int columnCount, VersionToken version)
         {
-            Columns = new Columns(statement, columnCount);
+            Columns = new Columns(statement, columnCount, version);
         }
     }
 
@@ -18,24 +18,28 @@ namespace Sqlite.Fast
     {
         private readonly IntPtr _statement;
         private readonly int _columnCount;
+        private readonly VersionToken _version;
 
-        public Rows(IntPtr statement, int columnCount)
+        public Rows(IntPtr statement, int columnCount, VersionToken version)
         {
             _statement = statement;
             _columnCount = columnCount;
+            _version = version;
         }
 
-        public Enumerator GetEnumerator() => new Enumerator(_statement, _columnCount);
+        public Enumerator GetEnumerator() => new Enumerator(_statement, _columnCount, _version);
 
         public struct Enumerator
         {
             private readonly IntPtr _statement;
             private readonly int _columnCount;
+            private readonly VersionToken _version;
 
-            public Enumerator(IntPtr statement, int columnCount)
+            public Enumerator(IntPtr statement, int columnCount, VersionToken version)
             {
                 _statement = statement;
                 _columnCount = columnCount;
+                _version = version;
                 Current = default;
             }
 
@@ -43,24 +47,33 @@ namespace Sqlite.Fast
 
             public bool MoveNext()
             {
+                CheckVersion();
                 Result r = Sqlite.Step(_statement);
                 if (r != Result.Row)
                 {
-                    r = Sqlite.Reset(_statement);
                     if (r.IsError())
                     {
-                        throw new SqliteException(r, "Query execution failed");
+                        throw new SqliteException(r, "Statement execution failed");
                     }
                     return false;
                 }
-                Current = new Row(_statement, _columnCount);
+                Current = new Row(_statement, _columnCount, _version);
                 return true;
             }
 
             public void Reset()
             {
+                CheckVersion();
                 Current = default;
                 Sqlite.Reset(_statement);
+            }
+
+            private void CheckVersion()
+            {
+                if (_version.IsStale)
+                {
+                    throw new InvalidOperationException("Result enumerator used after source statement reset");
+                }
             }
         }
     }

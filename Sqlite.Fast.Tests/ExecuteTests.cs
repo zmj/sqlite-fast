@@ -123,7 +123,7 @@ namespace Sqlite.Fast.Tests
                 enumerator.Current.AssignTo(ref r);
                 Assert.Equal(1, r.Value);
                 select.Bind(0, 2);
-                Assert.Throws<Exception>(() => enumerator.MoveNext());
+                Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
             }
         }
 
@@ -162,7 +162,7 @@ namespace Sqlite.Fast.Tests
                 enumerator.Current.AssignTo(ref r);
                 Assert.Equal(3, r.Value);
                 select.Execute(r.Map, ref r);
-                Assert.Throws<Exception>(() => enumerator.MoveNext());
+                Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
             }
         }
     }

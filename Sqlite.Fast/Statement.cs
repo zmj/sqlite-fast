@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Runtime.InteropServices;
 
 namespace Sqlite.Fast
@@ -9,6 +8,8 @@ namespace Sqlite.Fast
         private readonly IntPtr _statement;
         private readonly int _columnCount;
 
+        private readonly VersionTokenSource _versionSource = new VersionTokenSource();
+        private bool _needsReset = false;
         private bool _disposed = false;
 
         internal Statement(IntPtr statement, int columnCount)
@@ -20,37 +21,57 @@ namespace Sqlite.Fast
         public void Execute()
         {
             CheckDisposed();
-            var rows = new Rows(_statement, _columnCount);
-            foreach (var row in rows) { }
+            Rows rows = ExecuteInternal();
+            rows.GetEnumerator().MoveNext();
         }
 
         public bool Execute<TRecord>(RowToRecordMap<TRecord> rowMap, ref TRecord record)
         {
             CheckDisposed();
-            var rows = Execute(rowMap);
-            bool assigned = false;
-            foreach (var row in rows)
+            ValidateRowMap(rowMap);
+            var rows = new Rows<TRecord>(ExecuteInternal(), rowMap).GetEnumerator();
+            if (!rows.MoveNext())
             {
-                row.AssignTo(ref record);
-                assigned = true;
+                return false;
             }
-            return assigned;
+            rows.Current.AssignTo(ref record);
+            return true;
         }
 
-        public Rows<TRecord> Execute<TRecord>(RowToRecordMap<TRecord> rowMap, CancellationToken ct = default)
+        public Rows<TRecord> Execute<TRecord>(RowToRecordMap<TRecord> rowMap)
         {
             CheckDisposed();
+            ValidateRowMap(rowMap);
+            return new Rows<TRecord>(ExecuteInternal(), rowMap);
+        }
+            
+        private Rows ExecuteInternal()
+        {
+            ResetIfNecessary();
+            _needsReset = true;
+            return new Rows(_statement, _columnCount, _versionSource.Token);
+        }
+
+        private void ValidateRowMap<TRecord>(RowToRecordMap<TRecord> rowMap)
+        {
             if (rowMap.ColumnMaps.Length != _columnCount)
             {
-                throw new ArgumentException($"Row-to-record map expects {rowMap.ColumnMaps.Length} columns; query returns {_columnCount} columns");
+                throw new ArgumentException($"Row-to-record map expects {rowMap.ColumnMaps.Length} columns; statement returns {_columnCount} columns");
             }
-            var rows = new Rows(_statement, _columnCount);
-            return new Rows<TRecord>(rows, rowMap, ct);
         }
-        
+
+        private void ResetIfNecessary()
+        {
+            if (!_needsReset) return;
+            Sqlite.Reset(_statement);
+            _needsReset = false;
+            _versionSource.Version++;
+        }
+                
         private Statement BindInteger(int parameterIndex, long parameterValue)
         {
             CheckDisposed();
+            ResetIfNecessary();
             Result r = Sqlite.BindInteger(_statement, parameterIndex + 1, parameterValue);
             if (r != Result.Ok)
             {
@@ -72,6 +93,7 @@ namespace Sqlite.Fast
         private Statement BindText(int parameterIndex, ReadOnlySpan<char> parameterValue)
         {
             CheckDisposed();
+            ResetIfNecessary();
             Result r = Sqlite.BindText16(
                 _statement, 
                 parameterIndex + 1,
