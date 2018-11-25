@@ -6,16 +6,16 @@ namespace Sqlite.Fast
     public sealed class Statement : IDisposable
     {
         private readonly IntPtr _statement;
-        private readonly int _columnCount;
-
+        public readonly int ColumnCount;
         private readonly VersionTokenSource _versionSource = new VersionTokenSource();
+
         private bool _needsReset = false;
         private bool _disposed = false;
 
         internal Statement(IntPtr statement, int columnCount)
         {
             _statement = statement;
-            _columnCount = columnCount;
+            ColumnCount = columnCount;
         }
 
         public void Execute()
@@ -25,45 +25,22 @@ namespace Sqlite.Fast
             rows.GetEnumerator().MoveNext();
         }
 
-        public bool Execute<TRecord>(RowToRecordMap<TRecord> rowMap, ref TRecord record)
+        internal Rows ExecuteInternal()
         {
             CheckDisposed();
-            ValidateRowMap(rowMap);
-            var rows = new Rows<TRecord>(ExecuteInternal(), rowMap).GetEnumerator();
-            if (!rows.MoveNext())
-            {
-                return false;
-            }
-            rows.Current.AssignTo(ref record);
-            return true;
-        }
-
-        public Rows<TRecord> Execute<TRecord>(RowToRecordMap<TRecord> rowMap)
-        {
-            CheckDisposed();
-            ValidateRowMap(rowMap);
-            return new Rows<TRecord>(ExecuteInternal(), rowMap);
-        }
-            
-        private Rows ExecuteInternal()
-        {
             ResetIfNecessary();
             _needsReset = true;
-            return new Rows(_statement, _columnCount, _versionSource.Token);
-        }
-
-        private void ValidateRowMap<TRecord>(RowToRecordMap<TRecord> rowMap)
-        {
-            if (rowMap.ColumnMaps.Length != _columnCount)
-            {
-                throw new ArgumentException($"Row-to-record map expects {rowMap.ColumnMaps.Length} columns; statement returns {_columnCount} columns");
-            }
+            return new Rows(_statement, ColumnCount, _versionSource.Token);
         }
 
         private void ResetIfNecessary()
         {
             if (!_needsReset) return;
-            Sqlite.Reset(_statement);
+            Result r = Sqlite.Reset(_statement);
+            if (r != Result.Ok)
+            {
+                throw new SqliteException(r, "Failed to reset statement");
+            }
             _needsReset = false;
             _versionSource.Version++;
         }

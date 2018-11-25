@@ -8,10 +8,9 @@ namespace Sqlite.Fast.Tests
     {
         public T Value;
 
-        private static readonly RowToRecordMap<R<T>> TypeMap
-            = RowToRecordMap.Default<R<T>>().Compile();
+        private static readonly Converter<R<T>> Converter
+            = Fast.Converter.Builder<R<T>>().Compile();
 
-        public RowToRecordMap<R<T>> Map => TypeMap;
+        public Converter<R<T>> C => Converter;
     }
-
 }

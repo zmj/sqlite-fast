@@ -49,16 +49,20 @@ namespace Sqlite.Fast
             {
                 CheckVersion();
                 Result r = Sqlite.Step(_statement);
-                if (r != Result.Row)
+                if (r == Result.Row)
                 {
-                    if (r.IsError())
-                    {
-                        throw new SqliteException(r, "Statement execution failed");
-                    }
+                    Current = new Row(_statement, _columnCount, _version);
+                    return true;
+                }
+                else if (r == Result.Done)
+                {
+                    Current = default;
                     return false;
                 }
-                Current = new Row(_statement, _columnCount, _version);
-                return true;
+                else
+                {
+                    throw new SqliteException(r, "Statement execution failed");
+                }
             }
 
             public void Reset()

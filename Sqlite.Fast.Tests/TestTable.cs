@@ -10,10 +10,10 @@ namespace Sqlite.Fast.Tests
 
         public TestTable(string createTableSql)
         {
-            _conn = Connection.Open(":memory:");
+            _conn = new Connection(":memory:");
             try
             {
-                using (var createTable = _conn.NewStatement(createTableSql)) 
+                using (var createTable = _conn.CompileStatement(createTableSql)) 
                 {
                     createTable.Execute();
                 }
@@ -25,7 +25,8 @@ namespace Sqlite.Fast.Tests
             }
         }
 
-        public Statement Stmt(string sql) => _conn.NewStatement(sql);
+        public Statement Stmt(string sql) => _conn.CompileStatement(sql);
+        public Statement<T> Stmt<T>(string sql, Converter<T> converter) => _conn.CompileStatement(sql, converter);
 
         public void Dispose() => _conn.Dispose();
     }

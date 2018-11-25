@@ -7,42 +7,29 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public sealed class RowToRecordMap<TRecord>
+    public sealed class Converter<TRecord>
     {
-        internal IColumnToFieldMap<TRecord>[] ColumnMaps { get; }
+        internal readonly IColumnToFieldMap<TRecord>[] ColumnMaps;
 
-        internal RowToRecordMap(IEnumerable<IColumnToFieldMap<TRecord>> columnMaps)
+        internal Converter(IEnumerable<IColumnToFieldMap<TRecord>> columnMaps)
         {
             ColumnMaps = columnMaps.ToArray();
         }
-    }
 
-    public static class RowToRecordMap
-    {
-        public static Builder<TRecord> Empty<TRecord>() => new Builder<TRecord>();
-
-        public static Builder<TRecord> Default<TRecord>()
-        {
-            var builder = new Builder<TRecord>();
-            builder.SetDefaultMappings();
-            return builder;
-        }
-
-        public sealed class Builder<TRecord>
+        public sealed class Builder
         {
             private readonly List<ColumnToFieldMap.IBuilder<TRecord>> _columnMapBuilders = new List<ColumnToFieldMap.IBuilder<TRecord>>();
+            private readonly bool _withDefaults;
 
-            internal Builder()
+            internal Builder(bool withDefaultConversions = true)
             {
                 if (typeof(TRecord).GetTypeInfo().StructLayoutAttribute.Value
                     != System.Runtime.InteropServices.LayoutKind.Sequential)
                 {
                     throw new ArgumentException($"Target type {typeof(TRecord).Name} must have sequential StructLayout");
                 }
-            }
+                _withDefaults = withDefaultConversions;
 
-            internal void SetDefaultMappings()
-            {
                 var members = typeof(TRecord).GetTypeInfo()
                     .GetMembers(BindingFlags.Public | BindingFlags.Instance)
                     .OrderBy(m => m.MetadataToken);
@@ -52,8 +39,8 @@ namespace Sqlite.Fast
                     {
                         continue;
                     }
-                    ColumnToFieldMap.IBuilder<TRecord> columnMap = GetOrAdd(member);
-                    columnMap.SetDefaultConverters();
+                    ColumnToFieldMap.IBuilder<TRecord> columnMap = ColumnToFieldMap.Create<TRecord>(member);
+                    _columnMapBuilders.Add(columnMap);
                 }
             }
 
@@ -70,55 +57,55 @@ namespace Sqlite.Fast
 
             private ColumnToFieldMap.Builder<TRecord, TField> GetOrAdd<TField>(Expression<Func<TRecord, TField>> propertyOrField)
             {
-                if(GetAssignableMember(propertyOrField, out MemberInfo member))
+                if (GetAssignableMember(propertyOrField, out MemberInfo member))
                 {
                     return GetOrAdd(member).AsConcrete<TField>();
                 }
                 throw new ArgumentException($"Expression is not get/set-able field or property of {typeof(TRecord).Name}");
             }
 
-            public RowToRecordMap<TRecord> Compile()
+            public Converter<TRecord> Compile()
             {
                 var columnMaps = new List<IColumnToFieldMap<TRecord>>(capacity: _columnMapBuilders.Count);
                 foreach (var colBuilder in _columnMapBuilders)
                 {
-                    IColumnToFieldMap<TRecord> colMap = colBuilder.Compile();
+                    IColumnToFieldMap<TRecord> colMap = colBuilder.Compile(_withDefaults);
                     columnMaps.Add(colMap);
                 }
-                return new RowToRecordMap<TRecord>(columnMaps);
+                return new Converter<TRecord>(columnMaps);
             }
 
-            public Builder<TRecord> Custom<TField>(Expression<Func<TRecord, TField>> propertyOrField, IntegerConverter<TField> integerConverter)
+            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, IntegerConverter<TField> integerConverter)
             {
                 GetOrAdd(propertyOrField).SetIntegerConverter(integerConverter);
                 return this;
             }
 
-            public Builder<TRecord> Custom<TField>(Expression<Func<TRecord, TField>> propertyOrField, FloatConverter<TField> floatConverter)
+            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, FloatConverter<TField> floatConverter)
             {
                 GetOrAdd(propertyOrField).SetFloatConverter(floatConverter);
                 return this;
             }
 
-            public Builder<TRecord> Custom<TField>(Expression<Func<TRecord, TField>> propertyOrField, TextConverter<TField> textConverter)
+            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, TextConverter<TField> textConverter)
             {
                 GetOrAdd(propertyOrField).SetTextConverter(textConverter);
                 return this;
             }
 
-            public Builder<TRecord> Custom<TField>(Expression<Func<TRecord, TField>> propertyOrField, BlobConverter<TField> blobConverter)
+            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, BlobConverter<TField> blobConverter)
             {
                 GetOrAdd(propertyOrField).SetBlobConverter(blobConverter);
                 return this;
             }
 
-            public Builder<TRecord> Custom<TField>(Expression<Func<TRecord, TField>> propertyOrField, NullConverter<TField> nullConverter)
+            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, NullConverter<TField> nullConverter)
             {
                 GetOrAdd(propertyOrField).SetNullConverter(nullConverter);
                 return this;
             }
 
-            public Builder<TRecord> Ignore<TField>(Expression<Func<TRecord, TField>> propertyOrField)
+            public Builder Ignore<TField>(Expression<Func<TRecord, TField>> propertyOrField)
             {
                 if (GetAssignableMember(propertyOrField, out MemberInfo member))
                 {
@@ -151,5 +138,11 @@ namespace Sqlite.Fast
                 return false;
             }
         }
+    }
+
+    public static class Converter
+    {
+        public static Converter<TRecord>.Builder Builder<TRecord>(bool withDefaultConversions = true)
+            => new Converter<TRecord>.Builder(withDefaultConversions);
     }
 }

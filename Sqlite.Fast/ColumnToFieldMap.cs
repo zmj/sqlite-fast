@@ -29,9 +29,11 @@ namespace Sqlite.Fast
         private readonly BlobConverter<TField> _convertBlob;
         private readonly NullConverter<TField> _convertNull;
 
+        private readonly string _fieldName;
         private readonly FieldAssigner<TRecord, TField> _assign;
 
         public ColumnToFieldMap(
+            string fieldName,
             IntegerConverter<TField> convertInteger,
             FloatConverter<TField> convertFloat,
             TextConverter<TField> convertText,
@@ -39,12 +41,12 @@ namespace Sqlite.Fast
             NullConverter<TField> convertNull,
             FieldAssigner<TRecord, TField> assign)
         {
+            _fieldName = fieldName;
             _convertInteger = convertInteger;
             _convertFloat = convertFloat;
             _convertText = convertText;
             _convertBlob = convertBlob;
             _convertNull = convertNull;
-
             _assign = assign;
         }
 
@@ -52,7 +54,7 @@ namespace Sqlite.Fast
         {
             if (_convertInteger == null)
             {
-                throw ConversionMissingException(DataType.Integer);
+                ThrowConversionMissing(DataType.Integer);
             }
             _assign(ref rec, _convertInteger(data));
         }
@@ -61,7 +63,7 @@ namespace Sqlite.Fast
         {
             if (_convertFloat == null)
             {
-                throw ConversionMissingException(DataType.Float);
+                ThrowConversionMissing(DataType.Float);
             }
             _assign(ref rec, _convertFloat(data));
         }
@@ -70,7 +72,7 @@ namespace Sqlite.Fast
         {
             if (_convertText == null)
             {
-                throw ConversionMissingException(DataType.Text);
+                ThrowConversionMissing(DataType.Text);
             }
             _assign(ref rec, _convertText(data));
         }
@@ -79,7 +81,7 @@ namespace Sqlite.Fast
         {
             if (_convertBlob == null)
             {
-                throw ConversionMissingException(DataType.Blob);
+                ThrowConversionMissing(DataType.Blob);
             }
             _assign(ref rec, _convertBlob(data));
         }
@@ -88,16 +90,14 @@ namespace Sqlite.Fast
         {
             if (_convertNull == null)
             {
-                throw ConversionMissingException(DataType.Null);
+                ThrowConversionMissing(DataType.Null);
             }
             _assign(ref rec, _convertNull());
         }
-
-        private static string FriendlyFieldType => $"{typeof(TRecord).Name}.{typeof(TField).Name}";
-
-        private static Exception ConversionMissingException(DataType dataType)
+        
+        private void ThrowConversionMissing(DataType dataType)
         {
-            return new ArgumentException($"Member of type {FriendlyFieldType} has no defined conversion for SQLite {dataType}");
+            throw new AssignmentException(_fieldName, typeof(TField), typeof(TRecord), dataType);
         }
     }
 
@@ -128,8 +128,7 @@ namespace Sqlite.Fast
         internal interface IBuilder<TRecord>
         {
             MemberInfo Member { get; }
-            void SetDefaultConverters();
-            IColumnToFieldMap<TRecord> Compile();
+            IColumnToFieldMap<TRecord> Compile(bool withDefaults);
             Builder<TRecord, TField> AsConcrete<TField>();
         }
 
@@ -148,9 +147,18 @@ namespace Sqlite.Fast
                 Member = member;
             }
 
-            public IColumnToFieldMap<TRecord> Compile()
+            public IColumnToFieldMap<TRecord> Compile(bool withDefaults)
             {
+                if (withDefaults)
+                {
+                    _integerConverter = _integerConverter ?? DefaultConverters.GetIntegerConverter<TField>();
+                    _floatConverter = _floatConverter ?? DefaultConverters.GetFloatConverter<TField>();
+                    _textConverter = _textConverter ?? DefaultConverters.GetTextConverter<TField>();
+                    _blobConverter = _blobConverter ?? DefaultConverters.GetBlobConverter<TField>();
+                    _nullConverter = _nullConverter ?? DefaultConverters.GetNullConverter<TField>();
+                }
                 return new ColumnToFieldMap<TRecord, TField>(
+                    Member.Name,
                     _integerConverter,
                     _floatConverter,
                     _textConverter,
@@ -180,17 +188,7 @@ namespace Sqlite.Fast
                 var lambda = Expression.Lambda<FieldAssigner<TRecord, TField>>(assignment, record, value);
                 return lambda.Compile();
             }
-
-            public void SetDefaultConverters()
-            {
-                var memberType = GetMemberType(Member);
-                _integerConverter = DefaultConverters.GetIntegerConverter<TField>();
-                _floatConverter = DefaultConverters.GetFloatConverter<TField>();
-                _textConverter = DefaultConverters.GetTextConverter<TField>();
-                _blobConverter = DefaultConverters.GetBlobConverter<TField>();
-                _nullConverter = DefaultConverters.GetNullConverter<TField>();
-            }
-
+            
             public void SetIntegerConverter(IntegerConverter<TField> integerConverter)
             {
                 _integerConverter = integerConverter;

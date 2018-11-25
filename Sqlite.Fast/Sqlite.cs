@@ -193,11 +193,6 @@ namespace Sqlite.Fast
         Done = 101,
     }
 
-    public static class ResultExtensions
-    {
-        public static bool IsError(this Result r) => r != Result.Ok && r != Result.Row && r != Result.Done;
-    }
-
     internal enum DataType
     {
         Integer = 1,

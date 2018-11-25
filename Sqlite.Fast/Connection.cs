@@ -9,13 +9,8 @@ namespace Sqlite.Fast
         private readonly IntPtr _connnection;
 
         private bool _disposed = false;
-
-        private Connection(IntPtr connnnection)
-        {
-            _connnection = connnnection;
-        }
-
-        public static Connection Open(string dbFilePath)
+        
+        public Connection(string dbFilePath)
         {
             Result r = Sqlite.Open(dbFilePath, out IntPtr conn);
             if (r != Result.Ok)
@@ -23,19 +18,24 @@ namespace Sqlite.Fast
                 Sqlite.CloseV2(conn);
                 throw new SqliteException(r, "Failed to open database connection");
             }
-            return new Connection(conn);
+            _connnection = conn;
         }
 
-        public Statement NewStatement(string sql)
+        public Statement CompileStatement(string sql)
         {
             CheckDisposed();
             Result r = Sqlite.PrepareV2(_connnection, sql, sqlByteCount: -1, out IntPtr stmt, out _);
             if (r != Result.Ok)
             {
-                throw new SqliteException(r, "Failed to prepare sql statement");
+                throw new SqliteException(r, "Failed to compile sql statement");
             }
             int colCount = Sqlite.ColumCount(stmt);
             return new Statement(stmt, colCount);
+        }
+
+        public Statement<TRecord> CompileStatement<TRecord>(string sql, Converter<TRecord> converter)
+        {
+            return new Statement<TRecord>(CompileStatement(sql), converter);
         }
 
         private void CheckDisposed()

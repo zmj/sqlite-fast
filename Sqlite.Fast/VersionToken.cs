@@ -18,7 +18,7 @@ namespace Sqlite.Fast
         public bool IsStale => _version != _source.Version;
     }
 
-    internal class VersionTokenSource
+    internal sealed class VersionTokenSource
     {
         public int Version;
 
