@@ -20,28 +20,8 @@ namespace Sqlite.Fast
         {
             foreach (Column col in _row.Columns)
             {
-                IColumnToFieldMap<TRecord> colMap = _converter.ColumnMaps[col.Index]; // length checked in Statement
-                DataType dataType = col.GetDataType();
-                switch (dataType)
-                {
-                    case DataType.Integer:
-                        colMap.AssignInteger(ref record, col.GetIntegerData());
-                        break;
-                    case DataType.Float:
-                        colMap.AssignFloat(ref record, col.GetFloatData());
-                        break;
-                    case DataType.Text:
-                        colMap.AssignText(ref record, col.GetTextData());
-                        break;
-                    case DataType.Blob:
-                        colMap.AssignBlob(ref record, col.GetBlobData());
-                        break;
-                    case DataType.Null:
-                        colMap.AssignNull(ref record);
-                        break;
-                    default:
-                        throw new Exception($"Unknown SQLite data type {dataType}");
-                }
+                IValueAssigner<TRecord> assigner = _converter.ValueAssigners[col.Index]; // length checked in Statement
+                assigner.AssignValue(ref record, col);
             }
         }
     }

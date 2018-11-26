@@ -9,7 +9,7 @@ namespace Sqlite.Fast.Tests
         public T Value;
 
         private static readonly Converter<R<T>> Converter
-            = Fast.Converter.Builder<R<T>>().Compile();
+            = new Converter<R<T>>.Builder().Compile();
 
         public Converter<R<T>> C => Converter;
     }

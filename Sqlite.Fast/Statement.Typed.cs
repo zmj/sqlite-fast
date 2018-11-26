@@ -90,9 +90,9 @@ namespace Sqlite.Fast
 
         private void ValidateConverter<TCallerRecord>(Converter<TCallerRecord> converter)
         {
-            if (converter.ColumnMaps.Length != _statement.ColumnCount)
+            if (converter.ValueAssigners.Length != _statement.ColumnCount)
             {
-                throw new ArgumentException($"Converter expects {converter.ColumnMaps.Length} columns; statement returns {_statement.ColumnCount} columns");
+                throw new ArgumentException($"Converter expects {converter.ValueAssigners.Length} columns; statement returns {_statement.ColumnCount} columns");
             }
         }
 

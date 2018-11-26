@@ -6,39 +6,23 @@ namespace Sqlite.Fast
 {
     internal readonly struct Column
     {
+        public readonly int Index;
+        public readonly DataType DataType;
         private readonly IntPtr _statement;
-        private readonly VersionToken _version;
 
-        public Column(IntPtr statement, int index, VersionToken version)
+        public Column(IntPtr statement, int index)
         {
             _statement = statement;
             Index = index;
-            _version = version;
+            DataType = Sqlite.ColumnType(statement, index);
         }
 
-        public int Index { get; }
+        public long AsInteger() => Sqlite.ColumnInteger(_statement, Index);
 
-        public DataType GetDataType()
-        {
-            CheckVersion();
-            return Sqlite.ColumnType(_statement, Index);
-        }
+        public double AsFloat() => Sqlite.ColumnFloat(_statement, Index);
 
-        public long GetIntegerData()
+        public Span<char> AsText()
         {
-            CheckVersion();
-            return Sqlite.ColumnInteger(_statement, Index);
-        }
-
-        public double GetFloatData()
-        {
-            CheckVersion();
-            return Sqlite.ColumnFloat(_statement, Index);
-        }
-
-        public Span<char> GetTextData()
-        {
-            CheckVersion();
             IntPtr data = Sqlite.ColumnText16(_statement, Index);
             int length = Sqlite.ColumnBytes16(_statement, Index) >> 1;
             unsafe
@@ -47,22 +31,13 @@ namespace Sqlite.Fast
             }
         }
 
-        public Span<byte> GetBlobData()
+        public Span<byte> AsBlob()
         {
-            CheckVersion();
             IntPtr data = Sqlite.ColumnBlob(_statement, Index);
             int length = Sqlite.ColumnBytes(_statement, Index);
             unsafe
             {
                 return new Span<byte>(data.ToPointer(), length);
-            }
-        }
-
-        private void CheckVersion()
-        {
-            if (_version.IsStale)
-            {
-                throw new InvalidOperationException("Result used after source statement reset");
             }
         }
     }
@@ -71,30 +46,26 @@ namespace Sqlite.Fast
     {
         private readonly IntPtr _statement;
         private readonly int _columnCount;
-        private readonly VersionToken _version;
 
-        public Columns(IntPtr statement, int columnCount, VersionToken version)
+        public Columns(IntPtr statement, int columnCount)
         {
             _statement = statement;
             _columnCount = columnCount;
-            _version = version;
         }
 
-        public Enumerator GetEnumerator() => new Enumerator(_statement, _columnCount, _version);
+        public Enumerator GetEnumerator() => new Enumerator(_statement, _columnCount);
 
         internal struct Enumerator
         {
             private readonly IntPtr _statement;
             private readonly int _columnCount;
-            private readonly VersionToken _version;
 
             private int _columnIndex;
 
-            public Enumerator(IntPtr statement, int columnCount, VersionToken version)
+            public Enumerator(IntPtr statement, int columnCount)
             {
                 _statement = statement;
                 _columnCount = columnCount;
-                _version = version;
                 _columnIndex = -1;
                 Current = default;
             }
@@ -104,12 +75,12 @@ namespace Sqlite.Fast
             public bool MoveNext()
             {
                 _columnIndex++;
-                if(_columnIndex >= _columnCount)
+                if (_columnIndex >= _columnCount)
                 {
                     Current = default;
                     return false;
                 }
-                Current = new Column(_statement, _columnIndex, _version);
+                Current = new Column(_statement, _columnIndex);
                 return true;
             }
         }

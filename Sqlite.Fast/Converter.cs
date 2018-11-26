@@ -9,19 +9,19 @@ namespace Sqlite.Fast
 {
     public sealed class Converter<TRecord>
     {
-        internal readonly IColumnToFieldMap<TRecord>[] ColumnMaps;
+        internal readonly IValueAssigner<TRecord>[] ValueAssigners;
 
-        internal Converter(IEnumerable<IColumnToFieldMap<TRecord>> columnMaps)
+        internal Converter(IEnumerable<IValueAssigner<TRecord>> valueAssigners)
         {
-            ColumnMaps = columnMaps.ToArray();
+            ValueAssigners = valueAssigners.ToArray();
         }
 
         public sealed class Builder
         {
-            private readonly List<ColumnToFieldMap.IBuilder<TRecord>> _columnMapBuilders = new List<ColumnToFieldMap.IBuilder<TRecord>>();
+            private readonly List<ValueAssigner.IBuilder<TRecord>> _assignerBuilders = new List<ValueAssigner.IBuilder<TRecord>>();
             private readonly bool _withDefaults;
 
-            internal Builder(bool withDefaultConversions = true)
+            public Builder(bool withDefaultConversions = true)
             {
                 if (typeof(TRecord).GetTypeInfo().StructLayoutAttribute.Value
                     != System.Runtime.InteropServices.LayoutKind.Sequential)
@@ -32,30 +32,30 @@ namespace Sqlite.Fast
 
                 var members = typeof(TRecord).GetTypeInfo()
                     .GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                    .OrderBy(m => m.MetadataToken);
+                    .OrderBy(m => m.MetadataToken); // why does this work?
                 foreach (var member in members)
                 {
                     if (!CanAssignMember(member))
                     {
                         continue;
                     }
-                    ColumnToFieldMap.IBuilder<TRecord> columnMap = ColumnToFieldMap.Create<TRecord>(member);
-                    _columnMapBuilders.Add(columnMap);
+                    ValueAssigner.IBuilder<TRecord> builder = ValueAssigner.Build<TRecord>(member);
+                    _assignerBuilders.Add(builder);
                 }
             }
 
-            private ColumnToFieldMap.IBuilder<TRecord> GetOrAdd(MemberInfo member)
+            private ValueAssigner.IBuilder<TRecord> GetOrAdd(MemberInfo member)
             {
-                var columnMap = _columnMapBuilders.Find(cm => cm.Member == member);
-                if (columnMap == null)
+                var builder = _assignerBuilders.Find(cm => cm.Member == member);
+                if (builder == null)
                 {
-                    columnMap = ColumnToFieldMap.Create<TRecord>(member);
-                    _columnMapBuilders.Add(columnMap);
+                    builder = ValueAssigner.Build<TRecord>(member);
+                    _assignerBuilders.Add(builder);
                 }
-                return columnMap;
+                return builder;
             }
 
-            private ColumnToFieldMap.Builder<TRecord, TField> GetOrAdd<TField>(Expression<Func<TRecord, TField>> propertyOrField)
+            private ValueAssigner.Builder<TRecord, TField> GetOrAdd<TField>(Expression<Func<TRecord, TField>> propertyOrField)
             {
                 if (GetAssignableMember(propertyOrField, out MemberInfo member))
                 {
@@ -66,42 +66,42 @@ namespace Sqlite.Fast
 
             public Converter<TRecord> Compile()
             {
-                var columnMaps = new List<IColumnToFieldMap<TRecord>>(capacity: _columnMapBuilders.Count);
-                foreach (var colBuilder in _columnMapBuilders)
+                var assigners = new List<IValueAssigner<TRecord>>(capacity: _assignerBuilders.Count);
+                foreach (var builder in _assignerBuilders)
                 {
-                    IColumnToFieldMap<TRecord> colMap = colBuilder.Compile(_withDefaults);
-                    columnMaps.Add(colMap);
+                    IValueAssigner<TRecord> assigner = builder.Compile(_withDefaults);
+                    assigners.Add(assigner);
                 }
-                return new Converter<TRecord>(columnMaps);
+                return new Converter<TRecord>(assigners);
             }
 
             public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, IntegerConverter<TField> integerConverter)
             {
-                GetOrAdd(propertyOrField).SetIntegerConverter(integerConverter);
+                GetOrAdd(propertyOrField).IntegerConverter = integerConverter;
                 return this;
             }
 
             public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, FloatConverter<TField> floatConverter)
             {
-                GetOrAdd(propertyOrField).SetFloatConverter(floatConverter);
+                GetOrAdd(propertyOrField).FloatConverter = floatConverter;
                 return this;
             }
 
             public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, TextConverter<TField> textConverter)
             {
-                GetOrAdd(propertyOrField).SetTextConverter(textConverter);
+                GetOrAdd(propertyOrField).TextConverter = textConverter;
                 return this;
             }
 
             public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, BlobConverter<TField> blobConverter)
             {
-                GetOrAdd(propertyOrField).SetBlobConverter(blobConverter);
+                GetOrAdd(propertyOrField).BlobConverter = blobConverter;
                 return this;
             }
 
             public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, NullConverter<TField> nullConverter)
             {
-                GetOrAdd(propertyOrField).SetNullConverter(nullConverter);
+                GetOrAdd(propertyOrField).NullConverter = nullConverter;
                 return this;
             }
 
@@ -109,7 +109,7 @@ namespace Sqlite.Fast
             {
                 if (GetAssignableMember(propertyOrField, out MemberInfo member))
                 {
-                    _columnMapBuilders.RemoveAll(columnMap => columnMap.Member == member);
+                    _assignerBuilders.RemoveAll(builder => builder.Member == member);
                 }
                 return this;
             }

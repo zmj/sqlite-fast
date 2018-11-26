@@ -8,9 +8,9 @@ namespace Sqlite.Fast
     {
         public readonly Columns Columns;
 
-        public Row(IntPtr statement, int columnCount, VersionToken version)
+        public Row(IntPtr statement, int columnCount)
         {
-            Columns = new Columns(statement, columnCount, version);
+            Columns = new Columns(statement, columnCount);
         }
     }
 
@@ -51,7 +51,7 @@ namespace Sqlite.Fast
                 Result r = Sqlite.Step(_statement);
                 if (r == Result.Row)
                 {
-                    Current = new Row(_statement, _columnCount, _version);
+                    Current = new Row(_statement, _columnCount);
                     return true;
                 }
                 else if (r == Result.Done)
