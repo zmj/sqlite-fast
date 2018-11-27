@@ -4,7 +4,7 @@ namespace Sqlite.Fast
 {
     internal interface IValueAssigner<TRecord>
     {
-        void AssignValue(ref TRecord record, Column value);
+        void Assign(ref TRecord record, Column value);
     }
 
     internal sealed class ValueAssigner<TRecord, TField> : IValueAssigner<TRecord>
@@ -15,6 +15,7 @@ namespace Sqlite.Fast
         private readonly IntegerConverter<TField> _convertInteger;
         private readonly FloatConverter<TField> _convertFloat;
         private readonly TextConverter<TField> _convertText;
+        private readonly Utf8TextConverter<TField> _convertTextUtf8;
         private readonly BlobConverter<TField> _convertBlob;
         private readonly NullConverter<TField> _convertNull;
 
@@ -24,6 +25,7 @@ namespace Sqlite.Fast
             IntegerConverter<TField> convertInteger,
             FloatConverter<TField> convertFloat,
             TextConverter<TField> convertText,
+            Utf8TextConverter<TField> convertTextUtf8,
             BlobConverter<TField> convertBlob,
             NullConverter<TField> convertNull)
         {
@@ -32,82 +34,103 @@ namespace Sqlite.Fast
             _convertInteger = convertInteger;
             _convertFloat = convertFloat;
             _convertText = convertText;
+            _convertTextUtf8 = convertTextUtf8;
             _convertBlob = convertBlob;
             _convertNull = convertNull;
         }
 
-        public void AssignValue(ref TRecord record, Column value)
+        public void Assign(ref TRecord record, Column col)
         {
-            switch (value.DataType)
+            bool converted;
+            TField value = default;
+            try 
             {
-                case DataType.Integer:
-                    AssignInteger(ref record, value.AsInteger());
-                    break;
-                case DataType.Float:
-                    AssignFloat(ref record, value.AsFloat());
-                    break;
-                case DataType.Text:
-                    AssignText(ref record, value.AsText());
-                    break;
-                case DataType.Blob:
-                    AssignBlob(ref record, value.AsBlob());
-                    break;
-                case DataType.Null:
-                    AssignNull(ref record);
-                    break;
-                default:
-                    throw new ArgumentException($"Unexpected SQLite data type {value.DataType}");
+                switch (col.DataType)
+                {
+                    case DataType.Integer:
+                        converted = ConvertInteger(col, ref value);
+                        break;
+                    case DataType.Float:
+                        converted = ConvertFloat(col, ref value);
+                        break;
+                    case DataType.Text:
+                        converted = ConvertText(col, ref value);
+                        break;
+                    case DataType.Blob:
+                        converted = ConvertBlob(col, ref value);
+                        break;
+                    case DataType.Null:
+                        converted = ConvertNull(ref value);
+                        break;
+                    default:
+                        converted = false;
+                        break;
+                }
             }
+            catch (Exception ex)
+            {
+                throw new AssignmentException(_fieldName, typeof(TField), typeof(TRecord), col.DataType, ex);
+            }
+            if (!converted) 
+            {
+                throw new AssignmentException(_fieldName, typeof(TField), typeof(TRecord), col.DataType);
+            }
+            _assign(ref record, value);
         }
 
-        private void AssignInteger(ref TRecord rec, long value)
+        private bool ConvertInteger(Column col, ref TField value)
         {
-            if (_convertInteger == null)
+            if (_convertInteger != null)
             {
-                ThrowConversionMissing(DataType.Integer);
+                value = _convertInteger(col.AsInteger());
+                return true;
             }
-            _assign(ref rec, _convertInteger(value));
+            return false;
         }
 
-        private void AssignFloat(ref TRecord rec, double value)
+        private bool ConvertFloat(Column col, ref TField value)
         {
-            if (_convertFloat == null)
+            if (_convertFloat != null)
             {
-                ThrowConversionMissing(DataType.Float);
+                value = _convertFloat(col.AsFloat());
+                return true;
             }
-            _assign(ref rec, _convertFloat(value));
+            return false;
         }
 
-        private void AssignText(ref TRecord rec, ReadOnlySpan<char> value)
+        private bool ConvertText(Column col, ref TField value)
         {
-            if (_convertText == null)
+            if (_convertText != null)
             {
-                ThrowConversionMissing(DataType.Text);
+                value = _convertText(col.AsText());
+                return true;
             }
-            _assign(ref rec, _convertText(value));
+            else if (_convertTextUtf8 != null)
+            {
+                value = _convertTextUtf8(col.AsBlob());
+                return true;
+            }
+            return false;
         }
 
-        private void AssignBlob(ref TRecord rec, ReadOnlySpan<byte> value)
+        private bool ConvertBlob(Column col, ref TField value)
         {
-            if (_convertBlob == null)
+            if (_convertBlob != null)
             {
-                ThrowConversionMissing(DataType.Blob);
+                value = _convertBlob(col.AsBlob());
+                return true;
             }
-            _assign(ref rec, _convertBlob(value));
+            return false;
         }
 
-        private void AssignNull(ref TRecord rec)
+        private bool ConvertNull(ref TField value)
         {
-            if (_convertNull == null)
+            if (_convertNull != null)
             {
-                ThrowConversionMissing(DataType.Null);
+                value = _convertNull();
+                return true;
             }
-            _assign(ref rec, _convertNull());
-        }
-        
-        private void ThrowConversionMissing(DataType dataType)
-        {
-            throw new AssignmentException(_fieldName, typeof(TField), typeof(TRecord), dataType);
+            return false;
         }
     }
 }

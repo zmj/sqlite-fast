@@ -24,6 +24,11 @@ namespace Sqlite.Fast
             return (TextConverter<T>)GetTextConverter(typeof(T));
         }
 
+        public static Utf8TextConverter<T> GetUtf8TextConverter<T>() 
+        {
+            return (Utf8TextConverter<T>)GetUtf8TextConverter(typeof(T));
+        }
+
         public static BlobConverter<T> GetBlobConverter<T>()
         {
             return (BlobConverter<T>)GetBlobConverter(typeof(T));
@@ -128,39 +133,30 @@ namespace Sqlite.Fast
         }
 
         private static TextConverter<string> TextToString;
-        private static TextConverter<Guid> TextToGuid;
-        private static TextConverter<Guid?> TextToGuidNull;
 
         private static Delegate GetTextConverter(Type type)
         {
             if (type == typeof(string)) return TextToString ?? (TextToString = (ReadOnlySpan<char> text) => text.ToString());
+            return null;
+        }
+
+        private static Utf8TextConverter<Guid> TextToGuid;
+        private static Utf8TextConverter<Guid?> TextToGuidNull;
+
+        private static Delegate GetUtf8TextConverter(Type type) 
+        {
             if (type == typeof(Guid)) return TextToGuid ?? (TextToGuid = TextToGuidMethod);
             if (type == typeof(Guid?)) return TextToGuidNull ?? (TextToGuidNull = value => (Guid?)TextToGuidMethod(value));
             return null;
         }
 
-        private static Guid TextToGuidMethod(ReadOnlySpan<char> text)
+        private static Guid TextToGuidMethod(ReadOnlySpan<byte> text)
         {
-            if (text.Length > 64)
-            {
-                throw new ArgumentOutOfRangeException($"Guid too long '{text.ToString()}'");
-            }
-            Span<byte> utf8Bytes = stackalloc byte[128];
-            ToUtf8(text, utf8Bytes);
-            if (Utf8Parser.TryParse(utf8Bytes, out Guid value, out _))
+            if (Utf8Parser.TryParse(text, out Guid value, out _))
             {
                 return value;
             }
             throw new ArgumentException($"Unable to parse guid '{text.ToString()}'");
-        }
-
-        private static unsafe void ToUtf8(ReadOnlySpan<char> text, Span<byte> utf8Bytes)
-        {
-            fixed (char* src = &MemoryMarshal.GetReference(text))
-            fixed (byte* dst = &MemoryMarshal.GetReference(utf8Bytes))
-            {
-                Encoding.UTF8.GetBytes(src, charCount: text.Length, dst, byteCount: utf8Bytes.Length);
-            }
         }
 
         private static Delegate GetBlobConverter(Type type) => null;

@@ -21,7 +21,7 @@ namespace Sqlite.Fast
             foreach (Column col in _row.Columns)
             {
                 IValueAssigner<TRecord> assigner = _converter.ValueAssigners[col.Index]; // length checked in Statement
-                assigner.AssignValue(ref record, col);
+                assigner.Assign(ref record, col);
             }
         }
     }

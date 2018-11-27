@@ -9,6 +9,7 @@ namespace Sqlite.Fast
     public delegate T IntegerConverter<T>(long value);
     public delegate T FloatConverter<T>(double value);
     public delegate T TextConverter<T>(ReadOnlySpan<char> value);
+    internal delegate T Utf8TextConverter<T>(ReadOnlySpan<byte> value); // waiting for official type
     public delegate T BlobConverter<T>(ReadOnlySpan<byte> value);
     public delegate T NullConverter<T>();
 
@@ -52,6 +53,7 @@ namespace Sqlite.Fast
             public IntegerConverter<TField> IntegerConverter;
             public FloatConverter<TField> FloatConverter;
             public TextConverter<TField> TextConverter;
+            public Utf8TextConverter<TField> Utf8TextConverter;
             public BlobConverter<TField> BlobConverter;
             public NullConverter<TField> NullConverter;
 
@@ -67,6 +69,7 @@ namespace Sqlite.Fast
                     IntegerConverter = IntegerConverter ?? DefaultConverters.GetIntegerConverter<TField>();
                     FloatConverter = FloatConverter ?? DefaultConverters.GetFloatConverter<TField>();
                     TextConverter = TextConverter ?? DefaultConverters.GetTextConverter<TField>();
+                    Utf8TextConverter = Utf8TextConverter ?? DefaultConverters.GetUtf8TextConverter<TField>();
                     BlobConverter = BlobConverter ?? DefaultConverters.GetBlobConverter<TField>();
                     NullConverter = NullConverter ?? DefaultConverters.GetNullConverter<TField>();
                 }
@@ -76,6 +79,7 @@ namespace Sqlite.Fast
                     IntegerConverter,
                     FloatConverter,
                     TextConverter,
+                    Utf8TextConverter,
                     BlobConverter,
                     NullConverter);
             }
