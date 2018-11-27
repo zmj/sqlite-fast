@@ -6,7 +6,7 @@ namespace Sqlite.Fast.Tests
     public class DefaultConverterTests
     {
         [Fact]
-        public void Bool_True()
+        public void Bool_Integer_True()
         {
             R<bool> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
@@ -20,7 +20,7 @@ namespace Sqlite.Fast.Tests
         }
 
         [Fact]
-        public void Bool_False()
+        public void Bool_Integer_False()
         {
             R<bool> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
@@ -34,7 +34,7 @@ namespace Sqlite.Fast.Tests
         }
 
         [Fact]
-        public void BoolNull_True()
+        public void BoolNull_Integer_True()
         {
             R<bool?> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
@@ -49,7 +49,7 @@ namespace Sqlite.Fast.Tests
 
 
         [Fact]
-        public void BoolNull_False()
+        public void BoolNull_Integer_False()
         {
             R<bool?> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
@@ -77,7 +77,7 @@ namespace Sqlite.Fast.Tests
         }
 
         [Fact]
-        public void DateTimeOffset_Value()
+        public void DateTimeOffset_Integer_Value()
         {
             R<DateTimeOffset> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
@@ -92,7 +92,7 @@ namespace Sqlite.Fast.Tests
         }
 
         [Fact]
-        public void DateTimeOffsetNull_Value()
+        public void DateTimeOffsetNull_Integer_Value()
         {
             R<DateTimeOffset?> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
@@ -178,6 +178,97 @@ namespace Sqlite.Fast.Tests
                 insert.Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Null(r.Value);
+            }
+        }
+
+        [Fact]
+        public void TimeSpan_Integer_Value()
+        {
+            R<TimeSpan> r = default;
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)"))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                TimeSpan t = TimeSpan.FromMinutes(42);
+                insert.Bind(0, t.Ticks).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(t, r.Value);
+            }
+        }
+
+        [Fact]
+        public void Timespan_Text_Value()
+        {
+            R<TimeSpan> r = default;
+            using (var tbl = new TestTable("create table t (x text)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)"))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                TimeSpan t = TimeSpan.FromMinutes(42);
+                insert.Bind(0, t.ToString()).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(t, r.Value);
+            }
+        }
+        
+        [Fact]
+        public void TimeSpanNull_Integer_Value()
+        {
+            R<TimeSpan?> r = default;
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)"))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                TimeSpan t = TimeSpan.FromMinutes(42);
+                insert.Bind(0, t.Ticks).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(t, r.Value);
+            }
+        }
+
+        [Fact]
+        public void TimeSpanNull_Text_Value()
+        {
+            R<TimeSpan?> r = default;
+            using (var tbl = new TestTable("create table t (x text)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)"))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                TimeSpan t = TimeSpan.FromMinutes(42);
+                insert.Bind(0, t.ToString()).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(t, r.Value);
+            }
+        }
+
+        [Fact]
+        public void TimeSpanNull_Null()
+        {
+            R<TimeSpan?> r = default;
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)"))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                insert.Bind(0, (string)null).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Null(r.Value);
+            }
+        }
+
+        [Theory]
+        [InlineData("hello")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void String(string value)
+        {
+            R<string> r = default;
+            using (var tbl = new TestTable("create table t (x text)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)"))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                insert.Bind(0, value).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(value, r.Value);
             }
         }
     }
