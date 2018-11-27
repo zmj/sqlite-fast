@@ -15,39 +15,21 @@ namespace Sqlite.Fast
             _converter = converter;
         }
 
-        public Statement<TRecord> Bind(int parameterIndex, long parameterValue)
+        public Statement<TRecord> Bind(long value)
         {
-            _statement.Bind(parameterIndex, parameterValue);
+            _statement.Bind(value);
             return this;
         }
 
-        public Statement<TRecord> Bind(int parameterIndex, ulong parameterValue)
+        public Statement<TRecord> Bind(string value)
         {
-            _statement.Bind(parameterIndex, parameterValue);
+            _statement.Bind(value);
             return this;
         }
 
-        public Statement<TRecord> Bind(int parameterIndex, int parameterValue)
+        public Statement<TRecord> Bind(ReadOnlySpan<char> value)
         {
-            _statement.Bind(parameterIndex, parameterValue);
-            return this;
-        }
-
-        public Statement<TRecord> Bind(int parameterIndex, uint parameterValue)
-        {
-            _statement.Bind(parameterIndex, parameterValue);
-            return this;
-        }
-
-        public Statement<TRecord> Bind(int parameterIndex, string parameterValue)
-        {
-            _statement.Bind(parameterIndex, parameterValue);
-            return this;
-        }
-
-        public Statement<TRecord> Bind(int parameterIndex, ReadOnlySpan<char> parameterValue)
-        {
-            _statement.Bind(parameterIndex, parameterValue);
+            _statement.Bind(value);
             return this;
         }
 

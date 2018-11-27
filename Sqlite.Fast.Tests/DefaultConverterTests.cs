@@ -85,7 +85,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 var dt = DateTimeOffset.Now;
-                insert.Bind(0, dt.UtcTicks).Execute();
+                insert.Bind(dt.UtcTicks).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(dt, r.Value);
             }
@@ -100,7 +100,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 var dt = DateTimeOffset.Now;
-                insert.Bind(0, dt.UtcTicks).Execute();
+                insert.Bind(dt.UtcTicks).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(dt, r.Value);
             }
@@ -133,7 +133,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 Guid g = Guid.NewGuid();
-                insert.Bind(0, g.ToString(format)).Execute();
+                insert.Bind(g.ToString(format)).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(g, r.Value);
             }
@@ -147,7 +147,7 @@ namespace Sqlite.Fast.Tests
             using (var insert = tbl.Stmt("insert into t values (@x)"))
             using (var select = tbl.Stmt("select x from t", r.C))
             {
-                insert.Bind(0, "not a guid").Execute();
+                insert.Bind("not a guid").Execute();
                 Assert.Throws<AssignmentException>(() => select.Execute(ref r));
             }
         }
@@ -161,7 +161,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 Guid g = Guid.NewGuid();
-                insert.Bind(0, g.ToString()).Execute();
+                insert.Bind(g.ToString()).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(g, r.Value);
             }
@@ -190,7 +190,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 TimeSpan t = TimeSpan.FromMinutes(42);
-                insert.Bind(0, t.Ticks).Execute();
+                insert.Bind(t.Ticks).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(t, r.Value);
             }
@@ -205,7 +205,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 TimeSpan t = TimeSpan.FromMinutes(42);
-                insert.Bind(0, t.ToString()).Execute();
+                insert.Bind(t.ToString()).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(t, r.Value);
             }
@@ -220,7 +220,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 TimeSpan t = TimeSpan.FromMinutes(42);
-                insert.Bind(0, t.Ticks).Execute();
+                insert.Bind(t.Ticks).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(t, r.Value);
             }
@@ -235,7 +235,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 TimeSpan t = TimeSpan.FromMinutes(42);
-                insert.Bind(0, t.ToString()).Execute();
+                insert.Bind(t.ToString()).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(t, r.Value);
             }
@@ -249,7 +249,7 @@ namespace Sqlite.Fast.Tests
             using (var insert = tbl.Stmt("insert into t values (@x)"))
             using (var select = tbl.Stmt("select x from t", r.C))
             {
-                insert.Bind(0, (string)null).Execute();
+                insert.Bind((string)null).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Null(r.Value);
             }
@@ -266,7 +266,7 @@ namespace Sqlite.Fast.Tests
             using (var insert = tbl.Stmt("insert into t values (@x)"))
             using (var select = tbl.Stmt("select x from t", r.C))
             {
-                insert.Bind(0, value).Execute();
+                insert.Bind(value).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(value, r.Value);
             }

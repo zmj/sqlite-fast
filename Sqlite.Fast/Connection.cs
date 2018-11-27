@@ -29,8 +29,7 @@ namespace Sqlite.Fast
             {
                 throw new SqliteException(r, "Failed to compile sql statement");
             }
-            int colCount = Sqlite.ColumCount(stmt);
-            return new Statement(stmt, colCount);
+            return new Statement(stmt);
         }
 
         public Statement<TRecord> CompileStatement<TRecord>(string sql, Converter<TRecord> converter)

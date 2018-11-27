@@ -6,16 +6,19 @@ namespace Sqlite.Fast
     public sealed class Statement : IDisposable
     {
         private readonly IntPtr _statement;
-        public readonly int ColumnCount;
+        internal readonly int ColumnCount;
+        private readonly int _bindCount;
         private readonly VersionTokenSource _versionSource = new VersionTokenSource();
 
         private bool _needsReset = false;
+        private int _bindIndex = 1;
         private bool _disposed = false;
 
-        internal Statement(IntPtr statement, int columnCount)
+        internal Statement(IntPtr statement)
         {
             _statement = statement;
-            ColumnCount = columnCount;
+            ColumnCount = Sqlite.ColumCount(statement);
+            _bindCount = Sqlite.BindParameterCount(statement);
         }
 
         public void Execute()
@@ -43,44 +46,41 @@ namespace Sqlite.Fast
             }
             _needsReset = false;
             _versionSource.Version++;
+            _bindIndex = 1;
         }
                 
-        private Statement BindInteger(int parameterIndex, long parameterValue)
+        public Statement Bind(long value)
         {
             CheckDisposed();
             ResetIfNecessary();
-            Result r = Sqlite.BindInteger(_statement, parameterIndex + 1, parameterValue);
+            if (_bindIndex > _bindCount) _bindIndex = 1;
+            Result r = Sqlite.BindInteger(_statement, _bindIndex, value);
             if (r != Result.Ok)
             {
-                throw new SqliteException(r, $"Failed to bind {parameterValue} to parameter {parameterIndex}");
+                throw new SqliteException(r, $"Failed to bind {value} to parameter {_bindIndex}");
             }
+            _bindIndex++;
             return this;
         }
 
-        public Statement Bind(int parameterIndex, long parameterValue) => BindInteger(parameterIndex, parameterValue);
-        public Statement Bind(int parameterIndex, ulong parameterValue) => BindInteger(parameterIndex, (long)parameterValue);
-        public Statement Bind(int parameterIndex, int parameterValue) => BindInteger(parameterIndex, parameterValue);
-        public Statement Bind(int parameterIndex, uint parameterValue) => BindInteger(parameterIndex, parameterValue);
-
-        public Statement Bind(int parameterIndex, string parameterValue)
-            => BindText(parameterIndex, parameterValue.AsSpan());
-        public Statement Bind(int parameterIndex, ReadOnlySpan<char> parameterValue)
-            => BindText(parameterIndex, parameterValue);
-
-        private Statement BindText(int parameterIndex, ReadOnlySpan<char> parameterValue)
+        public Statement Bind(string value) => Bind(value.AsSpan());
+        
+        public Statement Bind(ReadOnlySpan<char> value)
         {
             CheckDisposed();
             ResetIfNecessary();
+            if (_bindIndex > _bindCount) _bindIndex = 1;
             Result r = Sqlite.BindText16(
                 _statement, 
-                parameterIndex + 1,
-                in MemoryMarshal.GetReference(parameterValue), 
-                parameterValue.Length << 1, 
+                _bindIndex,
+                in MemoryMarshal.GetReference(value), 
+                value.Length << 1, 
                 new IntPtr(-1));
             if (r != Result.Ok)
             {
-                throw new SqliteException(r, $"Failed to bind '{parameterValue.ToString()}' to parameter {parameterIndex}");
+                throw new SqliteException(r, $"Failed to bind '{value.ToString()}' to parameter {_bindIndex}");
             }
+            _bindIndex++;
             return this;
         }
 
