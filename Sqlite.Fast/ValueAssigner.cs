@@ -14,7 +14,7 @@ namespace Sqlite.Fast
 
         private readonly IntegerConverter<TField> _convertInteger;
         private readonly FloatConverter<TField> _convertFloat;
-        private readonly TextConverter<TField> _convertText;
+        private readonly TextConverter<TField> _convertTextUtf16;
         private readonly Utf8TextConverter<TField> _convertTextUtf8;
         private readonly BlobConverter<TField> _convertBlob;
         private readonly NullConverter<TField> _convertNull;
@@ -24,7 +24,7 @@ namespace Sqlite.Fast
             FieldAssigner<TRecord, TField> assign,
             IntegerConverter<TField> convertInteger,
             FloatConverter<TField> convertFloat,
-            TextConverter<TField> convertText,
+            TextConverter<TField> convertTextUtf16,
             Utf8TextConverter<TField> convertTextUtf8,
             BlobConverter<TField> convertBlob,
             NullConverter<TField> convertNull)
@@ -33,7 +33,7 @@ namespace Sqlite.Fast
             _assign = assign;
             _convertInteger = convertInteger;
             _convertFloat = convertFloat;
-            _convertText = convertText;
+            _convertTextUtf16 = convertTextUtf16;
             _convertTextUtf8 = convertTextUtf8;
             _convertBlob = convertBlob;
             _convertNull = convertNull;
@@ -100,14 +100,15 @@ namespace Sqlite.Fast
 
         private bool ConvertText(Column col, ref TField value)
         {
-            if (_convertText != null)
+            if (_convertTextUtf8 != null)
             {
-                value = _convertText(col.AsText());
+                // assume the database encoding is utf8
+                value = _convertTextUtf8(col.AsUtf8Text());
                 return true;
             }
-            else if (_convertTextUtf8 != null)
+            else if (_convertTextUtf16 != null)
             {
-                value = _convertTextUtf8(col.AsBlob());
+                value = _convertTextUtf16(col.AsUtf16Text());
                 return true;
             }
             return false;

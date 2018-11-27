@@ -89,7 +89,7 @@ namespace Sqlite.Fast
 
             public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, TextConverter<TField> textConverter)
             {
-                GetOrAdd(propertyOrField).TextConverter = textConverter;
+                GetOrAdd(propertyOrField).Utf16TextConverter = textConverter;
                 return this;
             }
 

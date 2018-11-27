@@ -19,9 +19,9 @@ namespace Sqlite.Fast
             return (FloatConverter<T>)GetFloatConverter(typeof(T));
         }
 
-        public static TextConverter<T> GetTextConverter<T>()
+        public static TextConverter<T> GetUtf16TextConverter<T>()
         {
-            return (TextConverter<T>)GetTextConverter(typeof(T));
+            return (TextConverter<T>)GetUtf16TextConverter(typeof(T));
         }
 
         public static Utf8TextConverter<T> GetUtf8TextConverter<T>() 
@@ -134,7 +134,7 @@ namespace Sqlite.Fast
 
         private static TextConverter<string> TextToString;
 
-        private static Delegate GetTextConverter(Type type)
+        private static Delegate GetUtf16TextConverter(Type type)
         {
             if (type == typeof(string)) return TextToString ?? (TextToString = (ReadOnlySpan<char> text) => text.ToString());
             return null;
@@ -152,11 +152,27 @@ namespace Sqlite.Fast
 
         private static Guid TextToGuidMethod(ReadOnlySpan<byte> text)
         {
-            if (Utf8Parser.TryParse(text, out Guid value, out _))
+            char format = default;
+            if (text.Length > 8)
+            {
+                if (text[8] == '-') format = 'D';
+                else if (text[0] == '{') format = 'B';
+                else if (text[0] == '(') format = 'P';
+                else format = 'N';
+            }
+            if (Utf8Parser.TryParse(text, out Guid value, out _, format))
             {
                 return value;
             }
-            throw new ArgumentException($"Unable to parse guid '{text.ToString()}'");
+            throw new ArgumentException($"Unable to parse guid '{Utf8ToString(text)}'");
+        }
+
+        private static unsafe string Utf8ToString(ReadOnlySpan<byte> text)
+        {
+            fixed (byte* b = text)
+            {
+                return Encoding.UTF8.GetString(b, text.Length);
+            }
         }
 
         private static Delegate GetBlobConverter(Type type) => null;

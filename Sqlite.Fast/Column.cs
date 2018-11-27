@@ -21,7 +21,17 @@ namespace Sqlite.Fast
 
         public double AsFloat() => Sqlite.ColumnFloat(_statement, Index);
 
-        public Span<char> AsText()
+        public ReadOnlySpan<byte> AsUtf8Text()
+        {
+            IntPtr data = Sqlite.ColumnText(_statement, Index);
+            int length = Sqlite.ColumnBytes(_statement, Index);
+            unsafe
+            {
+                return new ReadOnlySpan<byte>(data.ToPointer(), length);
+            }
+        }
+
+        public ReadOnlySpan<char> AsUtf16Text()
         {
             IntPtr data = Sqlite.ColumnText16(_statement, Index);
             int length = Sqlite.ColumnBytes16(_statement, Index) >> 1;
@@ -31,7 +41,7 @@ namespace Sqlite.Fast
             }
         }
 
-        public Span<byte> AsBlob()
+        public ReadOnlySpan<byte> AsBlob()
         {
             IntPtr data = Sqlite.ColumnBlob(_statement, Index);
             int length = Sqlite.ColumnBytes(_statement, Index);
