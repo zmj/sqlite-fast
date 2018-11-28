@@ -26,7 +26,7 @@ namespace Sqlite.Fast.Tests
         }
 
         public Statement Stmt(string sql) => _conn.CompileStatement(sql);
-        public Statement<T> Stmt<T>(string sql, Converter<T> converter) => _conn.CompileStatement(sql, converter);
+        public Statement<T> Stmt<T>(string sql, RecordConverter<T> converter) => _conn.CompileStatement(sql, converter);
 
         public void Dispose() => _conn.Dispose();
     }

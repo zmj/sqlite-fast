@@ -8,9 +8,9 @@ namespace Sqlite.Fast
     public readonly struct Row<TRecord>
     {
         private readonly Row _row;
-        private readonly Converter<TRecord> _converter;
+        private readonly RecordConverter<TRecord> _converter;
 
-        internal Row(Row row, Converter<TRecord> converter)
+        internal Row(Row row, RecordConverter<TRecord> converter)
         {
             _row = row;
             _converter = converter;
@@ -29,9 +29,9 @@ namespace Sqlite.Fast
     public readonly struct Rows<TRecord> : IEnumerable<Row<TRecord>>
     {
         private readonly Rows _rows;
-        private readonly Converter<TRecord> _converter;
+        private readonly RecordConverter<TRecord> _converter;
 
-        internal Rows(Rows rows, Converter<TRecord> converter)
+        internal Rows(Rows rows, RecordConverter<TRecord> converter)
         {
             _rows = rows;
             _converter = converter;
@@ -43,11 +43,11 @@ namespace Sqlite.Fast
 
         public struct Enumerator : IEnumerator<Row<TRecord>>
         {
-            private readonly Converter<TRecord> _converter;
+            private readonly RecordConverter<TRecord> _converter;
 
             private Rows.Enumerator _rowEnumerator;
 
-            internal Enumerator(Rows.Enumerator rowEnumerator, Converter<TRecord> converter)
+            internal Enumerator(Rows.Enumerator rowEnumerator, RecordConverter<TRecord> converter)
             {
                 _rowEnumerator = rowEnumerator;
                 _converter = converter;

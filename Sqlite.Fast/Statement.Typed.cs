@@ -7,9 +7,9 @@ namespace Sqlite.Fast
     public sealed class Statement<TRecord> : IDisposable
     {
         private readonly Statement _statement;
-        private readonly Converter<TRecord> _converter;
+        private readonly RecordConverter<TRecord> _converter;
 
-        internal Statement(Statement statement, Converter<TRecord> converter)
+        internal Statement(Statement statement, RecordConverter<TRecord> converter)
         {
             _statement = statement;
             _converter = converter;
@@ -44,7 +44,7 @@ namespace Sqlite.Fast
             return true;
         }
 
-        public bool Execute<TCallerRecord>(Converter<TCallerRecord> converter, ref TCallerRecord record)
+        public bool Execute<TCallerRecord>(RecordConverter<TCallerRecord> converter, ref TCallerRecord record)
         {
             ValidateConverter(converter);
             var rows = ExecuteInternal(converter).GetEnumerator();
@@ -58,19 +58,19 @@ namespace Sqlite.Fast
 
         public Rows<TRecord> Execute() => ExecuteInternal(_converter);
 
-        public Rows<TCallerRecord> Execute<TCallerRecord>(Converter<TCallerRecord> converter)
+        public Rows<TCallerRecord> Execute<TCallerRecord>(RecordConverter<TCallerRecord> converter)
         {
             ValidateConverter(converter);
             return ExecuteInternal(converter);
         }
 
-        private Rows<TCallerRecord> ExecuteInternal<TCallerRecord>(Converter<TCallerRecord> converter)
+        private Rows<TCallerRecord> ExecuteInternal<TCallerRecord>(RecordConverter<TCallerRecord> converter)
         {
             Rows rows = _statement.ExecuteInternal();
             return new Rows<TCallerRecord>(rows, converter);
         }
 
-        private void ValidateConverter<TCallerRecord>(Converter<TCallerRecord> converter)
+        private void ValidateConverter<TCallerRecord>(RecordConverter<TCallerRecord> converter)
         {
             if (converter.ValueAssigners.Length != _statement.ColumnCount)
             {

@@ -7,11 +7,11 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public sealed class Converter<TRecord>
+    public sealed class RecordConverter<TRecord>
     {
         internal readonly IValueAssigner<TRecord>[] ValueAssigners;
 
-        internal Converter(IEnumerable<IValueAssigner<TRecord>> valueAssigners)
+        internal RecordConverter(IEnumerable<IValueAssigner<TRecord>> valueAssigners)
         {
             ValueAssigners = valueAssigners.ToArray();
         }
@@ -64,7 +64,7 @@ namespace Sqlite.Fast
                 throw new ArgumentException($"Expression is not get/set-able field or property of {typeof(TRecord).Name}");
             }
 
-            public Converter<TRecord> Compile()
+            public RecordConverter<TRecord> Compile()
             {
                 var assigners = new List<IValueAssigner<TRecord>>(capacity: _assignerBuilders.Count);
                 foreach (var builder in _assignerBuilders)
@@ -72,7 +72,7 @@ namespace Sqlite.Fast
                     IValueAssigner<TRecord> assigner = builder.Compile(_withDefaults);
                     assigners.Add(assigner);
                 }
-                return new Converter<TRecord>(assigners);
+                return new RecordConverter<TRecord>(assigners);
             }
 
             public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, IntegerConverter<TField> integerConverter)
@@ -140,9 +140,9 @@ namespace Sqlite.Fast
         }
     }
 
-    public static class Converter
+    public static class RecordConverter
     {
-        public static Converter<TRecord>.Builder Builder<TRecord>(bool withDefaultConversions = true)
-            => new Converter<TRecord>.Builder(withDefaultConversions);
+        public static RecordConverter<TRecord>.Builder Builder<TRecord>(bool withDefaultConversions = true)
+            => new RecordConverter<TRecord>.Builder(withDefaultConversions);
     }
 }

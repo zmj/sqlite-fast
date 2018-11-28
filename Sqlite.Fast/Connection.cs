@@ -32,7 +32,7 @@ namespace Sqlite.Fast
             return new Statement(stmt);
         }
 
-        public Statement<TRecord> CompileStatement<TRecord>(string sql, Converter<TRecord> converter)
+        public Statement<TRecord> CompileStatement<TRecord>(string sql, RecordConverter<TRecord> converter)
         {
             return new Statement<TRecord>(CompileStatement(sql), converter);
         }

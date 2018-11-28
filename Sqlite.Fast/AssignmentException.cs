@@ -16,7 +16,7 @@ namespace Sqlite.Fast
             Type memberType, 
             Type recordType, 
             DataType dataType)
-            : base($"No defined conversion from Sqlite.{dataType} to {memberType.Name} for {recordType.Name}.{memberName}. (Add custom conversions when building the {nameof(Converter)}.)")
+            : base($"No defined conversion from Sqlite.{dataType} to {memberType.Name} for {recordType.Name}.{memberName}. (Add custom conversions when building the {nameof(RecordConverter)}.)")
         {
             MemberName = memberName;
             MemberType = memberType;
