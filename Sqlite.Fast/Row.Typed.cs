@@ -5,56 +5,56 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public readonly struct Row<TRecord>
+    public readonly struct Row<TResult>
     {
         private readonly Row _row;
-        private readonly RecordConverter<TRecord> _converter;
+        private readonly ResultConverter<TResult> _converter;
 
-        internal Row(Row row, RecordConverter<TRecord> converter)
+        internal Row(Row row, ResultConverter<TResult> converter)
         {
             _row = row;
             _converter = converter;
         }
 
-        public void AssignTo(ref TRecord record)
+        public void AssignTo(ref TResult result)
         {
             foreach (Column col in _row.Columns)
             {
-                IValueAssigner<TRecord> assigner = _converter.ValueAssigners[col.Index]; // length checked in Statement
-                assigner.Assign(ref record, col);
+                IValueAssigner<TResult> assigner = _converter.ValueAssigners[col.Index]; // length checked in Statement
+                assigner.Assign(ref result, col);
             }
         }
     }
 
-    public readonly struct Rows<TRecord> : IEnumerable<Row<TRecord>>
+    public readonly struct Rows<TResult> : IEnumerable<Row<TResult>>
     {
         private readonly Rows _rows;
-        private readonly RecordConverter<TRecord> _converter;
+        private readonly ResultConverter<TResult> _converter;
 
-        internal Rows(Rows rows, RecordConverter<TRecord> converter)
+        internal Rows(Rows rows, ResultConverter<TResult> converter)
         {
             _rows = rows;
             _converter = converter;
         }
 
         public Enumerator GetEnumerator() => new Enumerator(_rows.GetEnumerator(), _converter);
-        IEnumerator<Row<TRecord>> IEnumerable<Row<TRecord>>.GetEnumerator() => GetEnumerator();
+        IEnumerator<Row<TResult>> IEnumerable<Row<TResult>>.GetEnumerator() => GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public struct Enumerator : IEnumerator<Row<TRecord>>
+        public struct Enumerator : IEnumerator<Row<TResult>>
         {
-            private readonly RecordConverter<TRecord> _converter;
+            private readonly ResultConverter<TResult> _converter;
 
             private Rows.Enumerator _rowEnumerator;
 
-            internal Enumerator(Rows.Enumerator rowEnumerator, RecordConverter<TRecord> converter)
+            internal Enumerator(Rows.Enumerator rowEnumerator, ResultConverter<TResult> converter)
             {
                 _rowEnumerator = rowEnumerator;
                 _converter = converter;
                 Current = default;
             }
 
-            public Row<TRecord> Current { get; private set; }
+            public Row<TResult> Current { get; private set; }
             object IEnumerator.Current => Current;
 
             public bool MoveNext()
@@ -64,7 +64,7 @@ namespace Sqlite.Fast
                     Current = default;
                     return false;
                 }
-                Current = new Row<TRecord>(_rowEnumerator.Current, _converter);
+                Current = new Row<TResult>(_rowEnumerator.Current, _converter);
                 return true;
             }
 

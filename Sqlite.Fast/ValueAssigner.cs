@@ -2,15 +2,15 @@
 
 namespace Sqlite.Fast
 {
-    internal interface IValueAssigner<TRecord>
+    internal interface IValueAssigner<TResult>
     {
-        void Assign(ref TRecord record, Column value);
+        void Assign(ref TResult result, Column value);
     }
 
-    internal sealed class ValueAssigner<TRecord, TField> : IValueAssigner<TRecord>
+    internal sealed class ValueAssigner<TResult, TField> : IValueAssigner<TResult>
     {
         private readonly string _fieldName;
-        private readonly FieldAssigner<TRecord, TField> _assign;
+        private readonly FieldAssigner<TResult, TField> _assign;
 
         private readonly IntegerConverter<TField> _convertInteger;
         private readonly FloatConverter<TField> _convertFloat;
@@ -21,7 +21,7 @@ namespace Sqlite.Fast
 
         public ValueAssigner(
             string fieldName,
-            FieldAssigner<TRecord, TField> assign,
+            FieldAssigner<TResult, TField> assign,
             IntegerConverter<TField> convertInteger,
             FloatConverter<TField> convertFloat,
             TextConverter<TField> convertTextUtf16,
@@ -39,7 +39,7 @@ namespace Sqlite.Fast
             _convertNull = convertNull;
         }
 
-        public void Assign(ref TRecord record, Column col)
+        public void Assign(ref TResult result, Column col)
         {
             bool converted;
             TField value = default;
@@ -69,13 +69,13 @@ namespace Sqlite.Fast
             }
             catch (Exception ex)
             {
-                throw AssignmentException.ConversionFailed(_fieldName, typeof(TField), typeof(TRecord), col.DataType, ex);
+                throw AssignmentException.ConversionFailed(_fieldName, typeof(TField), typeof(TResult), col.DataType, ex);
             }
             if (!converted) 
             {
-                throw AssignmentException.ConversionMissing(_fieldName, typeof(TField), typeof(TRecord), col.DataType);
+                throw AssignmentException.ConversionMissing(_fieldName, typeof(TField), typeof(TResult), col.DataType);
             }
-            _assign(ref record, value);
+            _assign(ref result, value);
         }
 
         private bool ConvertInteger(Column col, ref TField value)

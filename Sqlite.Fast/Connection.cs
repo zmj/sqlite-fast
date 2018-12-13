@@ -32,9 +32,9 @@ namespace Sqlite.Fast
             return new Statement(stmt);
         }
 
-        public Statement<TRecord> CompileStatement<TRecord>(string sql, RecordConverter<TRecord> converter)
+        public Statement<TResult> CompileStatement<TResult>(string sql, ResultConverter<TResult> converter)
         {
-            return new Statement<TRecord>(CompileStatement(sql), converter);
+            return new Statement<TResult>(CompileStatement(sql), converter);
         }
 
         private void CheckDisposed()

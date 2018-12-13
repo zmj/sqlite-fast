@@ -9,10 +9,10 @@ namespace Sqlite.Fast.Tests
     {
         public T Value;
 
-        private static readonly RecordConverter<R<T>> _converter
-            = new RecordConverter<R<T>>.Builder().Compile();
+        private static readonly ResultConverter<R<T>> _converter
+            = new ResultConverter<R<T>>.Builder().Compile();
 
-        public RecordConverter<R<T>> C => _converter;
+        public ResultConverter<R<T>> C => _converter;
     }
 
     internal struct R<T, U>
@@ -20,10 +20,10 @@ namespace Sqlite.Fast.Tests
         public T Value1;
         public U Value2;
 
-        private static readonly RecordConverter<R<T, U>> _converter
-            = RecordConverter.Builder<R<T, U>>().Compile();
+        private static readonly ResultConverter<R<T, U>> _converter
+            = ResultConverter.Builder<R<T, U>>().Compile();
 
-        public RecordConverter<R<T, U>> C => _converter;
+        public ResultConverter<R<T, U>> C => _converter;
     }
 #pragma warning restore CS0649
 }

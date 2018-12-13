@@ -13,17 +13,17 @@ namespace Sqlite.Fast
     public delegate T BlobConverter<T>(ReadOnlySpan<byte> value);
     public delegate T NullConverter<T>();
 
-    internal delegate void FieldAssigner<TRecord, TField>(ref TRecord rec, TField value);
+    internal delegate void FieldAssigner<TResult, TField>(ref TResult rec, TField value);
 
     internal static class ValueAssigner
     {
-        internal static IBuilder<TRecord> Build<TRecord>(MemberInfo member)
+        internal static IBuilder<TResult> Build<TResult>(MemberInfo member)
         {
             var constructor = typeof(Builder<,>)
-                .MakeGenericType(new[] { typeof(TRecord), GetMemberType(member) })
+                .MakeGenericType(new[] { typeof(TResult), GetMemberType(member) })
                 .GetTypeInfo()
                 .GetConstructor(new[] { typeof(MemberInfo) });
-            return (IBuilder<TRecord>)constructor.Invoke(new[] { member });
+            return (IBuilder<TResult>)constructor.Invoke(new[] { member });
         }
 
         internal static Type GetMemberType(MemberInfo member)
@@ -39,14 +39,14 @@ namespace Sqlite.Fast
             throw new NotSupportedException(member.MemberType.ToString());
         }
 
-        internal interface IBuilder<TRecord>
+        internal interface IBuilder<TResult>
         {
             MemberInfo Member { get; }
-            IValueAssigner<TRecord> Compile(bool withDefaults);
-            Builder<TRecord, TField> AsConcrete<TField>();
+            IValueAssigner<TResult> Compile(bool withDefaults);
+            Builder<TResult, TField> AsConcrete<TField>();
         }
 
-        internal sealed class Builder<TRecord, TField> : IBuilder<TRecord>
+        internal sealed class Builder<TResult, TField> : IBuilder<TResult>
         {
             public MemberInfo Member { get; }
 
@@ -62,7 +62,7 @@ namespace Sqlite.Fast
                 Member = member;
             }
 
-            public IValueAssigner<TRecord> Compile(bool withDefaults)
+            public IValueAssigner<TResult> Compile(bool withDefaults)
             {
                 if (withDefaults)
                 {
@@ -73,7 +73,7 @@ namespace Sqlite.Fast
                     BlobConverter = BlobConverter ?? DefaultConverters.GetBlobConverter<TField>();
                     NullConverter = NullConverter ?? DefaultConverters.GetNullConverter<TField>();
                 }
-                return new ValueAssigner<TRecord, TField>(
+                return new ValueAssigner<TResult, TField>(
                     Member.Name,
                     CompileAssigner(Member),
                     IntegerConverter,
@@ -84,17 +84,17 @@ namespace Sqlite.Fast
                     NullConverter);
             }
 
-            private static FieldAssigner<TRecord, TField> CompileAssigner(MemberInfo memberInfo)
+            private static FieldAssigner<TResult, TField> CompileAssigner(MemberInfo memberInfo)
             {
-                var record = Expression.Parameter(typeof(TRecord).MakeByRefType());
+                var result = Expression.Parameter(typeof(TResult).MakeByRefType());
                 Expression member;
                 if (memberInfo is FieldInfo fieldInfo)
                 {
-                    member = Expression.Field(record, fieldInfo);
+                    member = Expression.Field(result, fieldInfo);
                 }
                 else if (memberInfo is PropertyInfo propertyInfo)
                 {
-                    member = Expression.Property(record, propertyInfo);
+                    member = Expression.Property(result, propertyInfo);
                 }
                 else
                 {
@@ -102,13 +102,13 @@ namespace Sqlite.Fast
                 }
                 var value = Expression.Parameter(typeof(TField));
                 var assignment = Expression.Assign(member, value);
-                var lambda = Expression.Lambda<FieldAssigner<TRecord, TField>>(assignment, record, value);
+                var lambda = Expression.Lambda<FieldAssigner<TResult, TField>>(assignment, result, value);
                 return lambda.Compile();
             }
 
-            public Builder<TRecord, TCallerField> AsConcrete<TCallerField>()
+            public Builder<TResult, TCallerField> AsConcrete<TCallerField>()
             {
-                if (this is Builder<TRecord, TCallerField> builder)
+                if (this is Builder<TResult, TCallerField> builder)
                 {
                     return builder;
                 }

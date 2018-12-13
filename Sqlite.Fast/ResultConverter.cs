@@ -7,30 +7,30 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public sealed class RecordConverter<TRecord>
+    public sealed class ResultConverter<TResult>
     {
-        internal readonly IValueAssigner<TRecord>[] ValueAssigners;
+        internal readonly IValueAssigner<TResult>[] ValueAssigners;
 
-        internal RecordConverter(IEnumerable<IValueAssigner<TRecord>> valueAssigners)
+        internal ResultConverter(IEnumerable<IValueAssigner<TResult>> valueAssigners)
         {
             ValueAssigners = valueAssigners.ToArray();
         }
 
         public sealed class Builder
         {
-            private readonly List<ValueAssigner.IBuilder<TRecord>> _assignerBuilders = new List<ValueAssigner.IBuilder<TRecord>>();
+            private readonly List<ValueAssigner.IBuilder<TResult>> _assignerBuilders = new List<ValueAssigner.IBuilder<TResult>>();
             private readonly bool _withDefaults;
 
             public Builder(bool withDefaultConversions = true)
             {
-                if (typeof(TRecord).GetTypeInfo().StructLayoutAttribute.Value
+                if (typeof(TResult).GetTypeInfo().StructLayoutAttribute.Value
                     != System.Runtime.InteropServices.LayoutKind.Sequential)
                 {
-                    throw new ArgumentException($"Target type {typeof(TRecord).Name} must have sequential StructLayout");
+                    throw new ArgumentException($"Target type {typeof(TResult).Name} must have sequential StructLayout");
                 }
                 _withDefaults = withDefaultConversions;
 
-                var members = typeof(TRecord).GetTypeInfo()
+                var members = typeof(TResult).GetTypeInfo()
                     .GetMembers(BindingFlags.Public | BindingFlags.Instance)
                     .OrderBy(m => m.MetadataToken); // why does this work?
                 foreach (var member in members)
@@ -39,73 +39,73 @@ namespace Sqlite.Fast
                     {
                         continue;
                     }
-                    ValueAssigner.IBuilder<TRecord> builder = ValueAssigner.Build<TRecord>(member);
+                    ValueAssigner.IBuilder<TResult> builder = ValueAssigner.Build<TResult>(member);
                     _assignerBuilders.Add(builder);
                 }
             }
 
-            private ValueAssigner.IBuilder<TRecord> GetOrAdd(MemberInfo member)
+            private ValueAssigner.IBuilder<TResult> GetOrAdd(MemberInfo member)
             {
                 var builder = _assignerBuilders.Find(cm => cm.Member == member);
                 if (builder == null)
                 {
-                    builder = ValueAssigner.Build<TRecord>(member);
+                    builder = ValueAssigner.Build<TResult>(member);
                     _assignerBuilders.Add(builder);
                 }
                 return builder;
             }
 
-            private ValueAssigner.Builder<TRecord, TField> GetOrAdd<TField>(Expression<Func<TRecord, TField>> propertyOrField)
+            private ValueAssigner.Builder<TResult, TField> GetOrAdd<TField>(Expression<Func<TResult, TField>> propertyOrField)
             {
                 if (GetAssignableMember(propertyOrField, out MemberInfo member))
                 {
                     return GetOrAdd(member).AsConcrete<TField>();
                 }
-                throw new ArgumentException($"Expression is not get/set-able field or property of {typeof(TRecord).Name}");
+                throw new ArgumentException($"Expression is not get/set-able field or property of {typeof(TResult).Name}");
             }
 
-            public RecordConverter<TRecord> Compile()
+            public ResultConverter<TResult> Compile()
             {
-                var assigners = new List<IValueAssigner<TRecord>>(capacity: _assignerBuilders.Count);
+                var assigners = new List<IValueAssigner<TResult>>(capacity: _assignerBuilders.Count);
                 foreach (var builder in _assignerBuilders)
                 {
-                    IValueAssigner<TRecord> assigner = builder.Compile(_withDefaults);
+                    IValueAssigner<TResult> assigner = builder.Compile(_withDefaults);
                     assigners.Add(assigner);
                 }
-                return new RecordConverter<TRecord>(assigners);
+                return new ResultConverter<TResult>(assigners);
             }
 
-            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, IntegerConverter<TField> integerConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, IntegerConverter<TField> integerConverter)
             {
                 GetOrAdd(propertyOrField).IntegerConverter = integerConverter;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, FloatConverter<TField> floatConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FloatConverter<TField> floatConverter)
             {
                 GetOrAdd(propertyOrField).FloatConverter = floatConverter;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, TextConverter<TField> textConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, TextConverter<TField> textConverter)
             {
                 GetOrAdd(propertyOrField).Utf16TextConverter = textConverter;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, BlobConverter<TField> blobConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, BlobConverter<TField> blobConverter)
             {
                 GetOrAdd(propertyOrField).BlobConverter = blobConverter;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TRecord, TField>> propertyOrField, NullConverter<TField> nullConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, NullConverter<TField> nullConverter)
             {
                 GetOrAdd(propertyOrField).NullConverter = nullConverter;
                 return this;
             }
 
-            public Builder Ignore<TField>(Expression<Func<TRecord, TField>> propertyOrField)
+            public Builder Ignore<TField>(Expression<Func<TResult, TField>> propertyOrField)
             {
                 if (GetAssignableMember(propertyOrField, out MemberInfo member))
                 {
@@ -114,7 +114,7 @@ namespace Sqlite.Fast
                 return this;
             }
 
-            private static bool GetAssignableMember<TField>(Expression<Func<TRecord, TField>> propertyOrField, out MemberInfo member)
+            private static bool GetAssignableMember<TField>(Expression<Func<TResult, TField>> propertyOrField, out MemberInfo member)
             {
                 if (propertyOrField.Body is MemberExpression memberExpression && CanAssignMember(memberExpression.Member))
                 {
@@ -140,9 +140,9 @@ namespace Sqlite.Fast
         }
     }
 
-    public static class RecordConverter
+    public static class ResultConverter
     {
-        public static RecordConverter<TRecord>.Builder Builder<TRecord>(bool withDefaultConversions = true)
-            => new RecordConverter<TRecord>.Builder(withDefaultConversions);
+        public static ResultConverter<TResult>.Builder Builder<TResult>(bool withDefaultConversions = true)
+            => new ResultConverter<TResult>.Builder(withDefaultConversions);
     }
 }
