@@ -6,14 +6,14 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public delegate T IntegerConverter<T>(long value);
-    public delegate T FloatConverter<T>(double value);
-    public delegate T TextConverter<T>(ReadOnlySpan<char> value);
-    internal delegate T Utf8TextConverter<T>(ReadOnlySpan<byte> value); // internal until official type
-    public delegate T BlobConverter<T>(ReadOnlySpan<byte> value);
-    public delegate T NullConverter<T>();
+    public delegate T FromInteger<T>(long value);
+    public delegate T FromFloat<T>(double value);
+    public delegate T FromText<T>(ReadOnlySpan<char> value);
+    internal delegate T FromUtf8Text<T>(ReadOnlySpan<byte> value); // internal until official type
+    public delegate T FromBlob<T>(ReadOnlySpan<byte> value);
+    public delegate T FromNull<T>();
 
-    internal delegate void FieldAssigner<TResult, TField>(ref TResult rec, TField value);
+    internal delegate void FieldSetter<TResult, TField>(ref TResult rec, TField value);
 
     internal static class ValueAssigner
     {
@@ -50,12 +50,12 @@ namespace Sqlite.Fast
         {
             public MemberInfo Member { get; }
 
-            public IntegerConverter<TField> IntegerConverter;
-            public FloatConverter<TField> FloatConverter;
-            public TextConverter<TField> Utf16TextConverter;
-            public Utf8TextConverter<TField> Utf8TextConverter;
-            public BlobConverter<TField> BlobConverter;
-            public NullConverter<TField> NullConverter;
+            public FromInteger<TField> FromInteger;
+            public FromFloat<TField> FromFloat;
+            public FromText<TField> FromUtf16Text;
+            public FromUtf8Text<TField> FromUtf8Text;
+            public FromBlob<TField> FromBlob;
+            public FromNull<TField> FromNull;
 
             public Builder(MemberInfo member)
             {
@@ -66,25 +66,25 @@ namespace Sqlite.Fast
             {
                 if (withDefaults)
                 {
-                    IntegerConverter = IntegerConverter ?? DefaultConverters.GetIntegerConverter<TField>();
-                    FloatConverter = FloatConverter ?? DefaultConverters.GetFloatConverter<TField>();
-                    Utf16TextConverter = Utf16TextConverter ?? DefaultConverters.GetUtf16TextConverter<TField>();
-                    Utf8TextConverter = Utf8TextConverter ?? DefaultConverters.GetUtf8TextConverter<TField>();
-                    BlobConverter = BlobConverter ?? DefaultConverters.GetBlobConverter<TField>();
-                    NullConverter = NullConverter ?? DefaultConverters.GetNullConverter<TField>();
+                    FromInteger = FromInteger ?? DefaultConverters.GetIntegerConverter<TField>();
+                    FromFloat = FromFloat ?? DefaultConverters.GetFloatConverter<TField>();
+                    FromUtf16Text = FromUtf16Text ?? DefaultConverters.GetUtf16TextConverter<TField>();
+                    FromUtf8Text = FromUtf8Text ?? DefaultConverters.GetUtf8TextConverter<TField>();
+                    FromBlob = FromBlob ?? DefaultConverters.GetBlobConverter<TField>();
+                    FromNull = FromNull ?? DefaultConverters.GetNullConverter<TField>();
                 }
                 return new ValueAssigner<TResult, TField>(
                     Member.Name,
-                    CompileAssigner(Member),
-                    IntegerConverter,
-                    FloatConverter,
-                    Utf16TextConverter,
-                    Utf8TextConverter,
-                    BlobConverter,
-                    NullConverter);
+                    CompileSetter(Member),
+                    FromInteger,
+                    FromFloat,
+                    FromUtf16Text,
+                    FromUtf8Text,
+                    FromBlob,
+                    FromNull);
             }
 
-            private static FieldAssigner<TResult, TField> CompileAssigner(MemberInfo memberInfo)
+            private static FieldSetter<TResult, TField> CompileSetter(MemberInfo memberInfo)
             {
                 var result = Expression.Parameter(typeof(TResult).MakeByRefType());
                 Expression member;
@@ -102,7 +102,7 @@ namespace Sqlite.Fast
                 }
                 var value = Expression.Parameter(typeof(TField));
                 var assignment = Expression.Assign(member, value);
-                var lambda = Expression.Lambda<FieldAssigner<TResult, TField>>(assignment, result, value);
+                var lambda = Expression.Lambda<FieldSetter<TResult, TField>>(assignment, result, value);
                 return lambda.Compile();
             }
 

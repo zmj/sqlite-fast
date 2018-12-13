@@ -75,33 +75,33 @@ namespace Sqlite.Fast
                 return new ResultConverter<TResult>(assigners);
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, IntegerConverter<TField> integerConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromInteger<TField> integerConverter)
             {
-                GetOrAdd(propertyOrField).IntegerConverter = integerConverter;
+                GetOrAdd(propertyOrField).FromInteger = integerConverter;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FloatConverter<TField> floatConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromFloat<TField> floatConverter)
             {
-                GetOrAdd(propertyOrField).FloatConverter = floatConverter;
+                GetOrAdd(propertyOrField).FromFloat = floatConverter;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, TextConverter<TField> textConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromText<TField> textConverter)
             {
-                GetOrAdd(propertyOrField).Utf16TextConverter = textConverter;
+                GetOrAdd(propertyOrField).FromUtf16Text = textConverter;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, BlobConverter<TField> blobConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromBlob<TField> blobConverter)
             {
-                GetOrAdd(propertyOrField).BlobConverter = blobConverter;
+                GetOrAdd(propertyOrField).FromBlob = blobConverter;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, NullConverter<TField> nullConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromNull<TField> nullConverter)
             {
-                GetOrAdd(propertyOrField).NullConverter = nullConverter;
+                GetOrAdd(propertyOrField).FromNull = nullConverter;
                 return this;
             }
 

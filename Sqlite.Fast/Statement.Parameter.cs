@@ -31,9 +31,10 @@ namespace Sqlite.Fast
             ParameterConverter<TCallerParams> converter, 
             in TCallerParams parameters)
         {
-            // parameters are 1-indexed
+            _statement.BeginBinding();
             for (int i=0; i < converter.ValueBinders.Length; i++)
             {
+                // parameters are 1-indexed
                 converter.ValueBinders[i].Bind(in parameters, _statement, i + 1);
             }
             return this;

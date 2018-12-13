@@ -5,74 +5,40 @@ namespace Sqlite.Fast.Tests
 {
     public class DefaultConverterTests
     {
-        [Fact]
-        public void Bool_Integer_True()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Bool_Integer(bool value)
         {
+            P<bool> p = default;
             R<bool> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values (1)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
             using (var select = tbl.Stmt("select x from t", r.C))
             {
-                insert.Execute();
+                p.Value = value;
+                insert.Bind(p).Execute();
                 Assert.True(select.Execute(ref r));
-                Assert.True(r.Value);
+                Assert.Equal(value, r.Value);
             }
         }
 
-        [Fact]
-        public void Bool_Integer_False()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [InlineData(null)]
+        public void BoolNull_Integer(bool? value)
         {
-            R<bool> r = default;
-            using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values (0)"))
-            using (var select = tbl.Stmt("select x from t", r.C))
-            {
-                insert.Execute();
-                Assert.True(select.Execute(ref r));
-                Assert.False(r.Value);
-            }
-        }
-
-        [Fact]
-        public void BoolNull_Integer_True()
-        {
+            P<bool?> p = default;
             R<bool?> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values (1)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
             using (var select = tbl.Stmt("select x from t", r.C))
             {
-                insert.Execute();
+                p.Value = value;
+                insert.Bind(p).Execute();
                 Assert.True(select.Execute(ref r));
-                Assert.True(r.Value);
-            }
-        }
-
-
-        [Fact]
-        public void BoolNull_Integer_False()
-        {
-            R<bool?> r = default;
-            using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values (0)"))
-            using (var select = tbl.Stmt("select x from t", r.C))
-            {
-                insert.Execute();
-                Assert.True(select.Execute(ref r));
-                Assert.False(r.Value);
-            }
-        }
-        
-        [Fact]
-        public void BoolNull_Null()
-        {
-            R<bool?> r = default;
-            using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values (null)"))
-            using (var select = tbl.Stmt("select x from t", r.C))
-            {
-                insert.Execute();
-                Assert.True(select.Execute(ref r));
-                Assert.Null(r.Value);
+                Assert.Equal(value, r.Value);
             }
         }
 

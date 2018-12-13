@@ -10,27 +10,27 @@ namespace Sqlite.Fast
     internal sealed class ValueAssigner<TResult, TField> : IValueAssigner<TResult>
     {
         private readonly string _fieldName;
-        private readonly FieldAssigner<TResult, TField> _assign;
+        private readonly FieldSetter<TResult, TField> _setter;
 
-        private readonly IntegerConverter<TField> _convertInteger;
-        private readonly FloatConverter<TField> _convertFloat;
-        private readonly TextConverter<TField> _convertTextUtf16;
-        private readonly Utf8TextConverter<TField> _convertTextUtf8;
-        private readonly BlobConverter<TField> _convertBlob;
-        private readonly NullConverter<TField> _convertNull;
+        private readonly FromInteger<TField> _convertInteger;
+        private readonly FromFloat<TField> _convertFloat;
+        private readonly FromText<TField> _convertTextUtf16;
+        private readonly FromUtf8Text<TField> _convertTextUtf8;
+        private readonly FromBlob<TField> _convertBlob;
+        private readonly FromNull<TField> _convertNull;
 
         public ValueAssigner(
             string fieldName,
-            FieldAssigner<TResult, TField> assign,
-            IntegerConverter<TField> convertInteger,
-            FloatConverter<TField> convertFloat,
-            TextConverter<TField> convertTextUtf16,
-            Utf8TextConverter<TField> convertTextUtf8,
-            BlobConverter<TField> convertBlob,
-            NullConverter<TField> convertNull)
+            FieldSetter<TResult, TField> setter,
+            FromInteger<TField> convertInteger,
+            FromFloat<TField> convertFloat,
+            FromText<TField> convertTextUtf16,
+            FromUtf8Text<TField> convertTextUtf8,
+            FromBlob<TField> convertBlob,
+            FromNull<TField> convertNull)
         {
             _fieldName = fieldName;
-            _assign = assign;
+            _setter = setter;
             _convertInteger = convertInteger;
             _convertFloat = convertFloat;
             _convertTextUtf16 = convertTextUtf16;
@@ -75,7 +75,7 @@ namespace Sqlite.Fast
             {
                 throw AssignmentException.ConversionMissing(_fieldName, typeof(TField), typeof(TResult), col.DataType);
             }
-            _assign(ref result, value);
+            _setter(ref result, value);
         }
 
         private bool ConvertInteger(Column col, ref TField value)

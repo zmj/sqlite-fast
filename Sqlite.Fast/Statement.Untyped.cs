@@ -47,10 +47,14 @@ namespace Sqlite.Fast
             _versionSource.Version++;
         }
 
-        internal void BindInteger(int index, long value)
+        internal void BeginBinding()
         {
             CheckDisposed();
             ResetIfNecessary();
+        }
+
+        internal void BindInteger(int index, long value)
+        {
             Sqlite.Result r = Sqlite.BindInteger(_statement, index, value);
             if (r != Sqlite.Result.Ok)
             {
@@ -58,41 +62,60 @@ namespace Sqlite.Fast
             }
         }
 
-        internal void BindFloat(double value)
+        internal void BindFloat(int index, double value)
         {
-            CheckDisposed();
-            ResetIfNecessary();
-
+            Sqlite.Result r = Sqlite.BindFloat(_statement, index, value);
+            if (r != Sqlite.Result.Ok)
+            {
+                throw new SqliteException(r, $"Failed to bind {value} to parameter {index}");
+            }
         }
 
-        internal void BindText(int index, ReadOnlySpan<char> value)
+        internal void BindUtf16Text(int index, ReadOnlySpan<char> value)
         {
-            CheckDisposed();
-            ResetIfNecessary();
             Sqlite.Result r = Sqlite.BindText16(
                 _statement,
                 index,
                 in MemoryMarshal.GetReference(value),
                 value.Length << 1,
-                new IntPtr(-1));
+                Sqlite.Destructor.Transient);
             if (r != Sqlite.Result.Ok)
             {
                 throw new SqliteException(r, $"Failed to bind '{value.ToString()}' to parameter {index}");
             }
         }
 
+        internal void BindUtf8Text(int index, ReadOnlySpan<byte> value)
+        {
+            Sqlite.Result r = Sqlite.BindText(
+                _statement,
+                index,
+                in MemoryMarshal.GetReference(value),
+                value.Length,
+                Sqlite.Destructor.Transient);
+        }
+
         internal void BindBlob(int index, ReadOnlySpan<byte> value)
         {
-            CheckDisposed();
-            ResetIfNecessary();
-
+            Sqlite.Result r = Sqlite.BindBlob(
+                _statement,
+                index,
+                in MemoryMarshal.GetReference(value),
+                value.Length,
+                Sqlite.Destructor.Transient);
+            if (r != Sqlite.Result.Ok)
+            {
+                throw new SqliteException(r, $"Failed to bind binary blob to parameter {index}");
+            }
         }
 
         internal void BindNull(int index)
         {
-            CheckDisposed();
-            ResetIfNecessary();
-
+            Sqlite.Result r = Sqlite.BindNull(_statement, index);
+            if (r != Sqlite.Result.Ok)
+            {
+                throw new SqliteException(r, $"Failed to bind null to parameter {index}");
+            }
         }                
 
         private void CheckDisposed()

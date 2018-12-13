@@ -28,7 +28,7 @@ namespace Sqlite.Fast
         internal static extern Result BindFloat(IntPtr stmt, int paramIndex, double value);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_text", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.LPStr)] string value, int valueByteCount, IntPtr destructor);
+        internal static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U1)] in byte value, int valueByteCount, IntPtr destructor);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_text16", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result BindText16(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U2)] in char value, int valueByteCount, IntPtr destructor);
@@ -210,6 +210,12 @@ namespace Sqlite.Fast
             Text = 3,
             Blob = 4,
             Null = 5,
+        }
+        
+        internal static class Destructor
+        {
+            public static readonly IntPtr Static = new IntPtr(0);
+            public static readonly IntPtr Transient = new IntPtr(-1);
         }
     }
 }

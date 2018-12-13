@@ -9,52 +9,52 @@ namespace Sqlite.Fast
 {
     internal static class DefaultConverters
     {
-        public static IntegerConverter<T> GetIntegerConverter<T>()
-            => (IntegerConverter<T>)Integer.GetConverter(typeof(T));
+        public static FromInteger<T> GetIntegerConverter<T>()
+            => (FromInteger<T>)Integer.GetConverter(typeof(T));
 
-        public static FloatConverter<T> GetFloatConverter<T>()
-            => (FloatConverter<T>)Float.GetConverter(typeof(T));
+        public static FromFloat<T> GetFloatConverter<T>()
+            => (FromFloat<T>)Float.GetConverter(typeof(T));
 
-        public static TextConverter<T> GetUtf16TextConverter<T>()
-            => (TextConverter<T>)Utf16Text.GetConverter(typeof(T));
+        public static FromText<T> GetUtf16TextConverter<T>()
+            => (FromText<T>)Utf16Text.GetConverter(typeof(T));
 
-        public static Utf8TextConverter<T> GetUtf8TextConverter<T>()
-            => (Utf8TextConverter<T>)Utf8Text.GetConverter(typeof(T));
+        public static FromUtf8Text<T> GetUtf8TextConverter<T>()
+            => (FromUtf8Text<T>)Utf8Text.GetConverter(typeof(T));
 
-        public static BlobConverter<T> GetBlobConverter<T>()
-            => (BlobConverter<T>)Blob.GetConverter(typeof(T));
+        public static FromBlob<T> GetBlobConverter<T>()
+            => (FromBlob<T>)Blob.GetConverter(typeof(T));
 
-        public static NullConverter<T> GetNullConverter<T>()
-            => (NullConverter<T>)Null.GetConverter(typeof(T));
+        public static FromNull<T> GetNullConverter<T>()
+            => (FromNull<T>)Null.GetConverter(typeof(T));
 
         private static class Integer
         {
-            private static IntegerConverter<long> _toLong;
-            private static IntegerConverter<long?> _toLongNull;
-            private static IntegerConverter<ulong> _toUlong;
-            private static IntegerConverter<ulong> _toUlongNull;
-            private static IntegerConverter<int> _toInt;
-            private static IntegerConverter<int?> _toIntNull;
-            private static IntegerConverter<uint> _toUint;
-            private static IntegerConverter<uint?> _toUintNull;
-            private static IntegerConverter<short> _toShort;
-            private static IntegerConverter<short?> _toShortNull;
-            private static IntegerConverter<ushort> _toUshort;
-            private static IntegerConverter<ushort?> _toUshortNull;
-            private static IntegerConverter<char> _toChar;
-            private static IntegerConverter<char?> _toCharNull;
-            private static IntegerConverter<byte> _toByte;
-            private static IntegerConverter<byte?> _toByteNull;
-            private static IntegerConverter<sbyte> _toSbyte;
-            private static IntegerConverter<sbyte?> _toSbyteNull;
-            private static IntegerConverter<decimal> _toDecimal;
-            private static IntegerConverter<decimal?> _toDecimalNull;
-            private static IntegerConverter<bool> _toBool;
-            private static IntegerConverter<bool?> _toBoolNull;
-            private static IntegerConverter<DateTimeOffset> _toDateTimeOffset;
-            private static IntegerConverter<DateTimeOffset?> _toDateTimeOffsetNull;
-            private static IntegerConverter<TimeSpan> _toTimeSpan;
-            private static IntegerConverter<TimeSpan?> _toTimeSpanNull;
+            private static FromInteger<long> _toLong;
+            private static FromInteger<long?> _toLongNull;
+            private static FromInteger<ulong> _toUlong;
+            private static FromInteger<ulong> _toUlongNull;
+            private static FromInteger<int> _toInt;
+            private static FromInteger<int?> _toIntNull;
+            private static FromInteger<uint> _toUint;
+            private static FromInteger<uint?> _toUintNull;
+            private static FromInteger<short> _toShort;
+            private static FromInteger<short?> _toShortNull;
+            private static FromInteger<ushort> _toUshort;
+            private static FromInteger<ushort?> _toUshortNull;
+            private static FromInteger<char> _toChar;
+            private static FromInteger<char?> _toCharNull;
+            private static FromInteger<byte> _toByte;
+            private static FromInteger<byte?> _toByteNull;
+            private static FromInteger<sbyte> _toSbyte;
+            private static FromInteger<sbyte?> _toSbyteNull;
+            private static FromInteger<decimal> _toDecimal;
+            private static FromInteger<decimal?> _toDecimalNull;
+            private static FromInteger<bool> _toBool;
+            private static FromInteger<bool?> _toBoolNull;
+            private static FromInteger<DateTimeOffset> _toDateTimeOffset;
+            private static FromInteger<DateTimeOffset?> _toDateTimeOffsetNull;
+            private static FromInteger<TimeSpan> _toTimeSpan;
+            private static FromInteger<TimeSpan?> _toTimeSpanNull;
 
             public static Delegate GetConverter(Type type)
             {
@@ -102,7 +102,7 @@ namespace Sqlite.Fast
             {
                 var value = Expression.Parameter(typeof(long));
                 return Expression.Lambda(
-                    typeof(IntegerConverter<>).MakeGenericType(new[] { type }),
+                    typeof(FromInteger<>).MakeGenericType(new[] { type }),
                     Expression.Convert(value, type),
                     value)
                     .Compile();
@@ -111,12 +111,12 @@ namespace Sqlite.Fast
 
         private static class Float
         {
-            private static FloatConverter<double> _toDouble;
-            private static FloatConverter<double?> _toDoubleNull;
-            private static FloatConverter<float> _toFloat;
-            private static FloatConverter<float?> _toFloatNull;
-            private static FloatConverter<decimal> _toDecimal;
-            private static FloatConverter<decimal?> _toDecimalNull;
+            private static FromFloat<double> _toDouble;
+            private static FromFloat<double?> _toDoubleNull;
+            private static FromFloat<float> _toFloat;
+            private static FromFloat<float?> _toFloatNull;
+            private static FromFloat<decimal> _toDecimal;
+            private static FromFloat<decimal?> _toDecimalNull;
             
             public static Delegate GetConverter(Type type)
             {
@@ -132,7 +132,7 @@ namespace Sqlite.Fast
 
         private static class Utf16Text
         {
-            private static TextConverter<string> _toString;
+            private static FromText<string> _toString;
 
             public static Delegate GetConverter(Type type)
             {
@@ -143,10 +143,10 @@ namespace Sqlite.Fast
 
         private static class Utf8Text
         {
-            private static Utf8TextConverter<Guid> _toGuid;
-            private static Utf8TextConverter<Guid?> _toGuidNull;
-            private static Utf8TextConverter<TimeSpan> _toTimeSpan;
-            private static Utf8TextConverter<TimeSpan?> _toTimeSpanNull;
+            private static FromUtf8Text<Guid> _toGuid;
+            private static FromUtf8Text<Guid?> _toGuidNull;
+            private static FromUtf8Text<TimeSpan> _toTimeSpan;
+            private static FromUtf8Text<TimeSpan?> _toTimeSpanNull;
 
             public static Delegate GetConverter(Type type)
             {
@@ -218,20 +218,20 @@ namespace Sqlite.Fast
 
         private static class Null
         {
-            private static NullConverter<string> _toString;
-            private static NullConverter<long?> _toLongNull;
-            private static NullConverter<ulong?> _toUlongNull;
-            private static NullConverter<int?> _toIntNull;
-            private static NullConverter<uint?> _toUintNull;
-            private static NullConverter<short?> _toShortNull;
-            private static NullConverter<ushort?> _toUshortNull;
-            private static NullConverter<char?> _toCharNull;
-            private static NullConverter<byte?> _toByteNull;
-            private static NullConverter<sbyte?> _toSbyteNull;
-            private static NullConverter<decimal?> _toDecimalNull;
-            private static NullConverter<bool?> _toBoolNull;
-            private static NullConverter<DateTimeOffset?> _toDateTimeOffsetNull;
-            private static NullConverter<TimeSpan?> _toTimeSpanNull;
+            private static FromNull<string> _toString;
+            private static FromNull<long?> _toLongNull;
+            private static FromNull<ulong?> _toUlongNull;
+            private static FromNull<int?> _toIntNull;
+            private static FromNull<uint?> _toUintNull;
+            private static FromNull<short?> _toShortNull;
+            private static FromNull<ushort?> _toUshortNull;
+            private static FromNull<char?> _toCharNull;
+            private static FromNull<byte?> _toByteNull;
+            private static FromNull<sbyte?> _toSbyteNull;
+            private static FromNull<decimal?> _toDecimalNull;
+            private static FromNull<bool?> _toBoolNull;
+            private static FromNull<DateTimeOffset?> _toDateTimeOffsetNull;
+            private static FromNull<TimeSpan?> _toTimeSpanNull;
 
             public static Delegate GetConverter(Type type)
             {
@@ -252,14 +252,14 @@ namespace Sqlite.Fast
                 if (type.GetTypeInfo().IsClass)
                 {
                     return Expression.Lambda(
-                        typeof(NullConverter<>).MakeGenericType(new[] { type }),
+                        typeof(FromNull<>).MakeGenericType(new[] { type }),
                         Expression.Convert(Expression.Constant(null), type))
                         .Compile();
                 }
                 if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
                     return Expression.Lambda(
-                        typeof(NullConverter<>).MakeGenericType(new[] { type }),
+                        typeof(FromNull<>).MakeGenericType(new[] { type }),
                         Expression.Convert(Expression.Constant(null), type))
                         .Compile();
                 }

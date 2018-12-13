@@ -5,6 +5,14 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+    public delegate long ToInteger<T>(T value);
+    public delegate double ToFloat<T>(T value);
+    public delegate ReadOnlySpan<char> ToText<T>(T value);
+    internal delegate ReadOnlySpan<byte> ToUtf8Text<T>(T value);
+    public delegate ReadOnlySpan<byte> ToBlob<T>(T value);
+
+    internal delegate TField FieldGetter<TParams, TField>(in TParams parameters);
+
     internal static class ValueBinder
     {
         internal interface IBuilder<TParams>
