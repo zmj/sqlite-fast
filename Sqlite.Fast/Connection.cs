@@ -32,9 +32,25 @@ namespace Sqlite.Fast
             return new Statement(stmt);
         }
 
-        public Statement<TResult> CompileStatement<TResult>(string sql, ResultConverter<TResult> converter)
+        public Statement<TParams> CompileStatement<TParams>(string sql, ParameterConverter<TParams> converter)
         {
-            return new Statement<TResult>(CompileStatement(sql), converter);
+            return new Statement<TParams>(CompileStatement(sql), converter);
+        }
+
+        public ResultStatement<TResult> CompileStatement<TResult>(string sql, ResultConverter<TResult> converter)
+        {
+            return new ResultStatement<TResult>(CompileStatement(sql), converter);
+        }
+
+        public Statement<TParams, TResult> CompileStatement<TParams, TResult>(
+            string sql,
+            ParameterConverter<TParams> parameterConverter,
+            ResultConverter<TResult> resultConverter)
+        {
+            Statement statement = CompileStatement(sql);
+            return new Statement<TParams, TResult>(
+                new Statement<TParams>(statement, parameterConverter),
+                new ResultStatement<TResult>(statement, resultConverter));
         }
 
         private void CheckDisposed()

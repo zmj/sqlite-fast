@@ -7,18 +7,17 @@ namespace Sqlite.Fast
     {
         private readonly IntPtr _statement;
         internal readonly int ColumnCount;
-        private readonly int _bindCount;
+        internal readonly int ParameterCount;
         private readonly VersionTokenSource _versionSource = new VersionTokenSource();
 
         private bool _needsReset = false;
-        private int _bindIndex = 1;
         private bool _disposed = false;
 
         internal Statement(IntPtr statement)
         {
             _statement = statement;
             ColumnCount = Sqlite.ColumCount(statement);
-            _bindCount = Sqlite.BindParameterCount(statement);
+            ParameterCount = Sqlite.BindParameterCount(statement);
         }
 
         public void Execute()
@@ -46,43 +45,55 @@ namespace Sqlite.Fast
             }
             _needsReset = false;
             _versionSource.Version++;
-            _bindIndex = 1;
-        }
-                
-        public Statement Bind(long value)
-        {
-            CheckDisposed();
-            ResetIfNecessary();
-            if (_bindIndex > _bindCount) _bindIndex = 1;
-            Sqlite.Result r = Sqlite.BindInteger(_statement, _bindIndex, value);
-            if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, $"Failed to bind {value} to parameter {_bindIndex}");
-            }
-            _bindIndex++;
-            return this;
         }
 
-        public Statement Bind(string value) => Bind(value.AsSpan());
-        
-        public Statement Bind(ReadOnlySpan<char> value)
+        internal void BindInteger(int index, long value)
         {
             CheckDisposed();
             ResetIfNecessary();
-            if (_bindIndex > _bindCount) _bindIndex = 1;
+            Sqlite.Result r = Sqlite.BindInteger(_statement, index, value);
+            if (r != Sqlite.Result.Ok)
+            {
+                throw new SqliteException(r, $"Failed to bind {value} to parameter {index}");
+            }
+        }
+
+        internal void BindFloat(double value)
+        {
+            CheckDisposed();
+            ResetIfNecessary();
+
+        }
+
+        internal void BindText(int index, ReadOnlySpan<char> value)
+        {
+            CheckDisposed();
+            ResetIfNecessary();
             Sqlite.Result r = Sqlite.BindText16(
-                _statement, 
-                _bindIndex,
-                in MemoryMarshal.GetReference(value), 
-                value.Length << 1, 
+                _statement,
+                index,
+                in MemoryMarshal.GetReference(value),
+                value.Length << 1,
                 new IntPtr(-1));
             if (r != Sqlite.Result.Ok)
             {
-                throw new SqliteException(r, $"Failed to bind '{value.ToString()}' to parameter {_bindIndex}");
+                throw new SqliteException(r, $"Failed to bind '{value.ToString()}' to parameter {index}");
             }
-            _bindIndex++;
-            return this;
         }
+
+        internal void BindBlob(int index, ReadOnlySpan<byte> value)
+        {
+            CheckDisposed();
+            ResetIfNecessary();
+
+        }
+
+        internal void BindNull(int index)
+        {
+            CheckDisposed();
+            ResetIfNecessary();
+
+        }                
 
         private void CheckDisposed()
         {
