@@ -22,6 +22,11 @@ namespace Sqlite.Fast
             {
                 _withDefaults = withDefaultConversions;
             }
+
+            public ParameterConverter<TParams> Compile()
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 

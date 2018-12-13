@@ -30,13 +30,16 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Rebind()
         {
+            P<int> p = default;
             R<int> r = default;
             using (var tbl = new TestTable("create table t (x int)")) 
-            using (var insert = tbl.Stmt("insert into t values(@x)"))
+            using (var insert = tbl.Stmt("insert into t values(@x)", p.C))
             using (var sum = tbl.Stmt("select sum(x) from t", r.C))
             {
-                insert.Bind(1).Execute();
-                insert.Bind(2).Execute();
+                p.Value = 1;
+                insert.Bind(p).Execute();
+                p.Value = 2;
+                insert.Bind(p).Execute();
                 sum.Execute(ref r);
                 Assert.Equal(3, r.Value);
             }
@@ -45,13 +48,16 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void SelectMany()
         {
+            P<int> p = default;
             R<int> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values(@x)"))
+            using (var insert = tbl.Stmt("insert into t values(@x)", p.C))
             using (var select = tbl.Stmt("select x from t", r.C))
             {
-                insert.Bind(1).Execute();
-                insert.Bind(2).Execute();
+                p.Value = 1;
+                insert.Bind(p).Execute();
+                p.Value = 2;
+                insert.Bind(p).Execute();
                 int sum = 0;
                 foreach (var row in select.Execute())
                 {
@@ -65,13 +71,16 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void SelectMany_Twice()
         {
+            P<int> p = default;
             R<int> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values(@x)"))
+            using (var insert = tbl.Stmt("insert into t values(@x)", p.C))
             using (var select = tbl.Stmt("select x from t", r.C))
             {
-                insert.Bind(1).Execute();
-                insert.Bind(2).Execute();
+                p.Value = 1;
+                insert.Bind(p).Execute();
+                p.Value = 2;
+                insert.Bind(p).Execute();
                 int sum = 0;
                 var rows = select.Execute();
                 foreach (var row in rows)
@@ -91,19 +100,24 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Enumerate_Rebind()
         {
+            P<int> p = default;
             R<int> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values(@x)"))
-            using (var select = tbl.Stmt("select x from t where x=@x", r.C))
+            using (var insert = tbl.Stmt("insert into t values(@x)", p.C))
+            using (var select = tbl.Stmt("select x from t where x=@x", p.C, r.C))
             {
-                insert.Bind(1).Execute();
-                insert.Bind(2).Execute();
-                var enumerator = select.Bind(1).Execute().GetEnumerator();
+                p.Value = 1;
+                insert.Bind(p).Execute();
+                p.Value = 2;
+                insert.Bind(p).Execute();
+                p.Value = 1;
+                var enumerator = select.Bind(p).Execute().GetEnumerator();
                 Assert.True(enumerator.MoveNext());
                 enumerator.Current.AssignTo(ref r);
                 Assert.Equal(1, r.Value);
 
-                select.Bind(2).Execute(ref r);
+                p.Value = 2;
+                select.Bind(p).Execute(ref r);
                 Assert.Equal(2, r.Value);
             }
         }
@@ -111,18 +125,23 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Rebind_Enumerate_Throws()
         {
+            P<int> p = default;
             R<int> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values(@x)"))
-            using (var select = tbl.Stmt("select x from t where x=@x", r.C))
+            using (var insert = tbl.Stmt("insert into t values(@x)", p.C))
+            using (var select = tbl.Stmt("select x from t where x=@x", p.C, r.C))
             {
-                insert.Bind(1).Execute();
-                insert.Bind(2).Execute();
-                var enumerator = select.Bind(1).Execute().GetEnumerator();
+                p.Value = 1;
+                insert.Bind(p).Execute();
+                p.Value = 2;
+                insert.Bind(p).Execute();
+                p.Value = 1;
+                var enumerator = select.Bind(p).Execute().GetEnumerator();
                 Assert.True(enumerator.MoveNext());
                 enumerator.Current.AssignTo(ref r);
                 Assert.Equal(1, r.Value);
-                select.Bind(2);
+                p.Value = 2;
+                select.Bind(p);
                 Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
             }
         }
@@ -130,13 +149,16 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Enumerate_Reexecute()
         {
+            P<int> p = default;
             R<int> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values(@x)"))
+            using (var insert = tbl.Stmt("insert into t values(@x)", p.C))
             using (var select = tbl.Stmt("select sum(x) from t", r.C))
             {
-                insert.Bind(1).Execute();
-                insert.Bind(2).Execute();
+                p.Value = 1;
+                insert.Bind(p).Execute();
+                p.Value = 2;
+                insert.Bind(p).Execute();
                 var enumerator = select.Execute().GetEnumerator();
                 Assert.True(enumerator.MoveNext());
                 enumerator.Current.AssignTo(ref r);
@@ -150,13 +172,16 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Reexecute_Enumerate_Throws()
         {
+            P<int> p = default;
             R<int> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values(@x)"))
+            using (var insert = tbl.Stmt("insert into t values(@x)", p.C))
             using (var select = tbl.Stmt("select sum(x) from t", r.C))
             {
-                insert.Bind(1).Execute();
-                insert.Bind(2).Execute();
+                p.Value = 1;
+                insert.Bind(p).Execute();
+                p.Value = 2;
+                insert.Bind(p).Execute();
                 var enumerator = select.Execute().GetEnumerator();
                 Assert.True(enumerator.MoveNext());
                 enumerator.Current.AssignTo(ref r);
@@ -169,12 +194,15 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Execute_Bind_Multiple()
         {
+            P<int, string> p = default;
             R<int, string> r = default;
             using (var tbl = new TestTable("create table t (x int, y text)"))
-            using (var insert = tbl.Stmt("insert into t values (@x, @y)"))
+            using (var insert = tbl.Stmt("insert into t values (@x, @y)", p.C))
             using (var select = tbl.Stmt("select x, y from t", r.C))
             {
-                insert.Bind(1).Bind("one").Execute();
+                p.Value1 = 1;
+                p.Value2 = "one";
+                insert.Bind(p).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(1, r.Value1);
                 Assert.Equal("one", r.Value2);
@@ -184,40 +212,24 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Execute_Bind_Rebind()
         {
+            P<int, string> p = default;
             R<int, string> r = default;
             using (var tbl = new TestTable("create table t (x int, y text)"))
-            using (var insert = tbl.Stmt("insert into t values (@x, @y)"))
+            using (var insert = tbl.Stmt("insert into t values (@x, @y)", p.C))
             using (var select = tbl.Stmt("select x, y from t", r.C))
             {
-                insert.Bind(1).Bind("1").Execute();
-                insert.Bind(2).Bind("2").Execute();
+                p.Value1 = 1;
+                p.Value2 = "1";
+                insert.Bind(p).Execute();
+                p.Value1 = 2;
+                p.Value2 = "2";
+                insert.Bind(p).Execute();
                 int sum = 0;
                 foreach (var row in select.Execute())
                 {
                     row.AssignTo(ref r);
                     sum += r.Value1;
                     Assert.Equal(r.Value1.ToString(), r.Value2);
-                }
-                Assert.Equal(3, sum);
-            }
-        }
-
-        [Fact]
-        public void Execute_Bind_PartialBind()
-        {
-            R<int, string> r = default;
-            using (var tbl = new TestTable("create table t (x int, y text)"))
-            using (var insert = tbl.Stmt("insert into t values (@x, @y)"))
-            using (var select = tbl.Stmt("select x, y from t", r.C))
-            {
-                insert.Bind(1).Bind("1").Execute();
-                insert.Bind(2).Execute();
-                int sum = 0;
-                foreach (var row in select.Execute())
-                {
-                    row.AssignTo(ref r);
-                    sum += r.Value1;
-                    Assert.Equal("1", r.Value2);
                 }
                 Assert.Equal(3, sum);
             }
