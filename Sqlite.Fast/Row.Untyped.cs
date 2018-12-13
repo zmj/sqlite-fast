@@ -48,13 +48,13 @@ namespace Sqlite.Fast
             public bool MoveNext()
             {
                 CheckVersion();
-                Result r = Sqlite.Step(_statement);
-                if (r == Result.Row)
+                Sqlite.Result r = Sqlite.Step(_statement);
+                if (r == Sqlite.Result.Row)
                 {
                     Current = new Row(_statement, _columnCount);
                     return true;
                 }
-                else if (r == Result.Done)
+                else if (r == Sqlite.Result.Done)
                 {
                     Current = default;
                     return false;

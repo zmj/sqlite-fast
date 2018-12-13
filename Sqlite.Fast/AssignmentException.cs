@@ -11,12 +11,13 @@ namespace Sqlite.Fast
         public Type RecordType { get; }
         public string DataType { get; }
 
-        internal AssignmentException(
+        private AssignmentException(
             string memberName, 
             Type memberType, 
             Type recordType, 
-            DataType dataType)
-            : base($"No defined conversion from Sqlite.{dataType} to {memberType.Name} for {recordType.Name}.{memberName}. (Add custom conversions when building the {nameof(RecordConverter)}.)")
+            Sqlite.DataType dataType,
+            string message)
+            : base(message)
         {
             MemberName = memberName;
             MemberType = memberType;
@@ -24,18 +25,49 @@ namespace Sqlite.Fast
             DataType = dataType.ToString();
         }
 
-        internal AssignmentException(
+        private AssignmentException(
             string memberName,
             Type memberType,
             Type recordType,
-            DataType dataType,
+            Sqlite.DataType dataType,
+            string message,
             Exception innerException)
-            : base($"Conversion failed from Sqlite.{dataType} to {memberType.Name} for {recordType.Name}.{memberName}.", innerException)
+            : base(message, innerException)
         {
             MemberName = memberName;
             MemberType = memberType;
             RecordType = recordType;
             DataType = dataType.ToString();
+        }
+
+        internal static AssignmentException ConversionMissing(
+            string memberName,
+            Type memberType,
+            Type recordType,
+            Sqlite.DataType dataType)
+        {
+            return new AssignmentException(
+                memberName,
+                memberType,
+                recordType,
+                dataType,
+                $"No defined conversion from Sqlite.{dataType} to {memberType.Name} for {recordType.Name}.{memberName}. (Add custom conversions when building the {nameof(RecordConverter)}.)");
+        }
+
+        internal static AssignmentException ConversionFailed(
+            string memberName,
+            Type memberType,
+            Type recordType,
+            Sqlite.DataType dataType,
+            Exception innerException)
+        {
+            return new AssignmentException(
+                memberName,
+                memberType,
+                recordType,
+                dataType,
+                $"Conversion failed from Sqlite.{dataType} to {memberType.Name} for {recordType.Name}.{memberName}.",
+                innerException);
         }
     }
 }

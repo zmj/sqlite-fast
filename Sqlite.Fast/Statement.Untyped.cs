@@ -39,8 +39,8 @@ namespace Sqlite.Fast
         private void ResetIfNecessary()
         {
             if (!_needsReset) return;
-            Result r = Sqlite.Reset(_statement);
-            if (r != Result.Ok)
+            Sqlite.Result r = Sqlite.Reset(_statement);
+            if (r != Sqlite.Result.Ok)
             {
                 throw new SqliteException(r, "Failed to reset statement");
             }
@@ -54,8 +54,8 @@ namespace Sqlite.Fast
             CheckDisposed();
             ResetIfNecessary();
             if (_bindIndex > _bindCount) _bindIndex = 1;
-            Result r = Sqlite.BindInteger(_statement, _bindIndex, value);
-            if (r != Result.Ok)
+            Sqlite.Result r = Sqlite.BindInteger(_statement, _bindIndex, value);
+            if (r != Sqlite.Result.Ok)
             {
                 throw new SqliteException(r, $"Failed to bind {value} to parameter {_bindIndex}");
             }
@@ -70,13 +70,13 @@ namespace Sqlite.Fast
             CheckDisposed();
             ResetIfNecessary();
             if (_bindIndex > _bindCount) _bindIndex = 1;
-            Result r = Sqlite.BindText16(
+            Sqlite.Result r = Sqlite.BindText16(
                 _statement, 
                 _bindIndex,
                 in MemoryMarshal.GetReference(value), 
                 value.Length << 1, 
                 new IntPtr(-1));
-            if (r != Result.Ok)
+            if (r != Sqlite.Result.Ok)
             {
                 throw new SqliteException(r, $"Failed to bind '{value.ToString()}' to parameter {_bindIndex}");
             }
@@ -101,14 +101,14 @@ namespace Sqlite.Fast
             {
                 return;
             }
-            Result r = Sqlite.Finalize(_statement);
+            Sqlite.Result r = Sqlite.Finalize(_statement);
             _disposed = true;
             if (!disposing)
             {
                 return;
             }
             GC.SuppressFinalize(this);
-            if (r != Result.Ok)
+            if (r != Sqlite.Result.Ok)
             {
                 throw new SqliteException(r, "Failed to finalize prepared sql statement");
             }

@@ -47,19 +47,19 @@ namespace Sqlite.Fast
             {
                 switch (col.DataType)
                 {
-                    case DataType.Integer:
+                    case Sqlite.DataType.Integer:
                         converted = ConvertInteger(col, ref value);
                         break;
-                    case DataType.Float:
+                    case Sqlite.DataType.Float:
                         converted = ConvertFloat(col, ref value);
                         break;
-                    case DataType.Text:
+                    case Sqlite.DataType.Text:
                         converted = ConvertText(col, ref value);
                         break;
-                    case DataType.Blob:
+                    case Sqlite.DataType.Blob:
                         converted = ConvertBlob(col, ref value);
                         break;
-                    case DataType.Null:
+                    case Sqlite.DataType.Null:
                         converted = ConvertNull(ref value);
                         break;
                     default:
@@ -69,11 +69,11 @@ namespace Sqlite.Fast
             }
             catch (Exception ex)
             {
-                throw new AssignmentException(_fieldName, typeof(TField), typeof(TRecord), col.DataType, ex);
+                throw AssignmentException.ConversionFailed(_fieldName, typeof(TField), typeof(TRecord), col.DataType, ex);
             }
             if (!converted) 
             {
-                throw new AssignmentException(_fieldName, typeof(TField), typeof(TRecord), col.DataType);
+                throw AssignmentException.ConversionMissing(_fieldName, typeof(TField), typeof(TRecord), col.DataType);
             }
             _assign(ref record, value);
         }

@@ -7,7 +7,7 @@ namespace Sqlite.Fast
     internal readonly struct Column
     {
         public readonly int Index;
-        public readonly DataType DataType;
+        public readonly Sqlite.DataType DataType;
         private readonly IntPtr _statement;
 
         public Column(IntPtr statement, int index)

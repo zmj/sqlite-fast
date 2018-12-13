@@ -12,8 +12,8 @@ namespace Sqlite.Fast
         
         public Connection(string dbFilePath)
         {
-            Result r = Sqlite.Open(dbFilePath, out IntPtr conn);
-            if (r != Result.Ok)
+            Sqlite.Result r = Sqlite.Open(dbFilePath, out IntPtr conn);
+            if (r != Sqlite.Result.Ok)
             {
                 Sqlite.CloseV2(conn);
                 throw new SqliteException(r, "Failed to open database connection");
@@ -24,8 +24,8 @@ namespace Sqlite.Fast
         public Statement CompileStatement(string sql)
         {
             CheckDisposed();
-            Result r = Sqlite.PrepareV2(_connnection, sql, sqlByteCount: -1, out IntPtr stmt, out _);
-            if (r != Result.Ok)
+            Sqlite.Result r = Sqlite.PrepareV2(_connnection, sql, sqlByteCount: -1, out IntPtr stmt, out _);
+            if (r != Sqlite.Result.Ok)
             {
                 throw new SqliteException(r, "Failed to compile sql statement");
             }
@@ -54,14 +54,14 @@ namespace Sqlite.Fast
             {
                 return;
             }
-            Result r = Sqlite.CloseV2(_connnection);
+            Sqlite.Result r = Sqlite.CloseV2(_connnection);
             _disposed = true;
             if (!disposing)
             {
                 return;
             }
             GC.SuppressFinalize(this);
-            if (r != Result.Ok)
+            if (r != Sqlite.Result.Ok)
             {
                 throw new SqliteException(r, "Failed to close database connection");
             }
