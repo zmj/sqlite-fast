@@ -14,20 +14,23 @@ namespace Sqlite.Fast
     {
         private readonly string _fieldName;
         private readonly FieldGetter<TParams, TField> _getter;
-        private readonly Converter[] _converters;
+        private readonly ValueBinder.Converter<TField>[] _converters;
 
-        public ValueBinder(string fieldName, FieldGetter<TParams, TField> getter, IEnumerable<Converter> converters)
+        public ValueBinder(
+            string fieldName,
+            FieldGetter<TParams, TField> getter,
+            IEnumerable<ValueBinder.Converter<TField>> converters)
         {
             _fieldName = fieldName;
             _getter = getter;
-            if (converters is Converter[] array) _converters = array;
+            if (converters is ValueBinder.Converter<TField>[] array) _converters = array;
             else _converters = converters.ToArray();
         }
 
         public void Bind(in TParams parameters, Statement statement, int index)
         {
             TField value = _getter(in parameters);
-            Converter converter = GetConverter(value);
+            ValueBinder.Converter<TField> converter = GetConverter(value);
             switch (converter.DataType)
             {
                 case Sqlite.DataType.Integer:
@@ -51,11 +54,11 @@ namespace Sqlite.Fast
             }
         }
 
-        private Converter GetConverter(TField value)
+        private ValueBinder.Converter<TField> GetConverter(TField value)
         {
-            foreach (Converter converter in _converters)
+            foreach (var converter in _converters)
             {
-                if (converter.CanConvert == null || converter.CanConvert(value))
+                if (converter.CanConvert(value))
                 {
                     return converter;
                 }
@@ -63,7 +66,7 @@ namespace Sqlite.Fast
             throw BindingException.ConversionMissing(_fieldName, typeof(TParams), value);
         }
 
-        private void BindInteger(Statement statement, int index, TField value, Converter converter)
+        private void BindInteger(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
             long bindValue;
             try
@@ -77,7 +80,7 @@ namespace Sqlite.Fast
             statement.BindInteger(index, bindValue);
         }
 
-        private void BindFloat(Statement statement, int index, TField value, Converter converter)
+        private void BindFloat(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
             double bindValue;
             try
@@ -91,7 +94,7 @@ namespace Sqlite.Fast
             statement.BindFloat(index, bindValue);
         }
 
-        private void BindUtf8Text(Statement statement, int index, TField value, Converter converter)
+        private void BindUtf8Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
             ReadOnlySpan<byte> bindValue;
             try
@@ -105,7 +108,7 @@ namespace Sqlite.Fast
             statement.BindUtf8Text(index, bindValue);
         }
 
-        private void BindUtf16Text(Statement statement, int index, TField value, Converter converter)
+        private void BindUtf16Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
             ReadOnlySpan<char> bindValue;
             try
@@ -119,7 +122,7 @@ namespace Sqlite.Fast
             statement.BindUtf16Text(index, bindValue);
         }
 
-        private void BindBlob(Statement statement, int index, TField value, Converter converter)
+        private void BindBlob(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
             ReadOnlySpan<byte> bindValue;
             try
@@ -131,18 +134,6 @@ namespace Sqlite.Fast
                 throw BindingException.ConversionFailed(_fieldName, typeof(TParams), value, ex);
             }
             statement.BindBlob(index, bindValue);
-        }
-
-        internal readonly struct Converter
-        {
-            public readonly Sqlite.DataType DataType;
-            public readonly bool Utf8Text;
-            public readonly Func<TField, bool> CanConvert;
-            public readonly ToInteger<TField> ToInteger;
-            public readonly ToFloat<TField> ToFloat;
-            public readonly ToText<TField> ToUtf16Text;
-            public readonly ToUtf8Text<TField> ToUtf8Text;
-            public readonly ToBlob<TField> ToBlob;
         }
     }
 }

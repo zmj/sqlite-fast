@@ -35,7 +35,7 @@ namespace Sqlite.Fast
                     .OrderBy(m => m.MetadataToken); // why does this work?
                 foreach (var member in members)
                 {
-                    if (!CanAssignMember(member))
+                    if (!CanSetValue(member))
                     {
                         continue;
                     }
@@ -57,22 +57,16 @@ namespace Sqlite.Fast
 
             private ValueAssigner.Builder<TResult, TField> GetOrAdd<TField>(Expression<Func<TResult, TField>> propertyOrField)
             {
-                if (GetAssignableMember(propertyOrField, out MemberInfo member))
+                if (GetSettableMember(propertyOrField, out MemberInfo member))
                 {
                     return GetOrAdd(member).AsConcrete<TField>();
                 }
-                throw new ArgumentException($"Expression is not get/set-able field or property of {typeof(TResult).Name}");
+                throw new ArgumentException($"Expression is not settable field or property of {typeof(TResult).Name}");
             }
 
             public ResultConverter<TResult> Compile()
             {
-                var assigners = new List<IValueAssigner<TResult>>(capacity: _assignerBuilders.Count);
-                foreach (var builder in _assignerBuilders)
-                {
-                    IValueAssigner<TResult> assigner = builder.Compile(_withDefaults);
-                    assigners.Add(assigner);
-                }
-                return new ResultConverter<TResult>(assigners);
+                return new ResultConverter<TResult>(_assignerBuilders.Select(b => b.Compile(_withDefaults)));
             }
 
             public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromInteger<TField> integerConverter)
@@ -107,16 +101,16 @@ namespace Sqlite.Fast
 
             public Builder Ignore<TField>(Expression<Func<TResult, TField>> propertyOrField)
             {
-                if (GetAssignableMember(propertyOrField, out MemberInfo member))
+                if (GetSettableMember(propertyOrField, out MemberInfo member))
                 {
                     _assignerBuilders.RemoveAll(builder => builder.Member == member);
                 }
                 return this;
             }
 
-            private static bool GetAssignableMember<TField>(Expression<Func<TResult, TField>> propertyOrField, out MemberInfo member)
+            private static bool GetSettableMember<TField>(Expression<Func<TResult, TField>> propertyOrField, out MemberInfo member)
             {
-                if (propertyOrField.Body is MemberExpression memberExpression && CanAssignMember(memberExpression.Member))
+                if (propertyOrField.Body is MemberExpression memberExpression && CanSetValue(memberExpression.Member))
                 {
                     member = memberExpression.Member;
                     return true;
@@ -125,7 +119,7 @@ namespace Sqlite.Fast
                 return false;
             }
 
-            private static bool CanAssignMember(MemberInfo member)
+            private static bool CanSetValue(MemberInfo member)
             {
                 if (member is PropertyInfo property)
                 {

@@ -10,7 +10,7 @@ namespace Sqlite.Fast.Tests
         public T Value;
 
         private static readonly ParameterConverter<P<T>> _converter
-            = new ParameterConverter<P<T>>.Builder().Compile();
+            = new ParameterConverter<P<T>>.Builder().Ignore(p => p.C).Compile();
 
         public ParameterConverter<P<T>> C => _converter;
     }
@@ -21,7 +21,7 @@ namespace Sqlite.Fast.Tests
         public U Value2;
 
         private static readonly ParameterConverter<P<T, U>> _converter
-            = ParameterConverter.Builder<P<T, U>>().Compile();
+            = ParameterConverter.Builder<P<T, U>>().Ignore(p => p.C).Compile();
 
         public ParameterConverter<P<T, U>> C => _converter;
     }

@@ -38,7 +38,7 @@ namespace Sqlite.Fast
             }
             throw new NotSupportedException(member.MemberType.ToString());
         }
-
+        
         internal interface IBuilder<TResult>
         {
             MemberInfo Member { get; }
@@ -98,7 +98,7 @@ namespace Sqlite.Fast
                 }
                 else
                 {
-                    throw new Exception($"Cannot assign to {memberInfo.MemberType}");
+                    throw new ArgumentException($"Cannot set value of {memberInfo.DeclaringType.Name}.{memberInfo.Name}");
                 }
                 var value = Expression.Parameter(typeof(TField));
                 var assignment = Expression.Assign(member, value);

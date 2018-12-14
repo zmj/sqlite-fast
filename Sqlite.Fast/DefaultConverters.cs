@@ -9,23 +9,23 @@ namespace Sqlite.Fast
 {
     internal static class DefaultConverters
     {
-        public static FromInteger<T> GetIntegerConverter<T>()
-            => (FromInteger<T>)Integer.GetConverter(typeof(T));
+        public static FromInteger<T> GetIntegerConverter<T>() =>
+            (FromInteger<T>)Integer.GetConverter(typeof(T));
 
-        public static FromFloat<T> GetFloatConverter<T>()
-            => (FromFloat<T>)Float.GetConverter(typeof(T));
+        public static FromFloat<T> GetFloatConverter<T>() =>
+            (FromFloat<T>)Float.GetConverter(typeof(T));
 
-        public static FromText<T> GetUtf16TextConverter<T>()
-            => (FromText<T>)Utf16Text.GetConverter(typeof(T));
+        public static FromText<T> GetUtf16TextConverter<T>() =>
+            (FromText<T>)Utf16Text.GetConverter(typeof(T));
 
-        public static FromUtf8Text<T> GetUtf8TextConverter<T>()
-            => (FromUtf8Text<T>)Utf8Text.GetConverter(typeof(T));
+        public static FromUtf8Text<T> GetUtf8TextConverter<T>() =>
+            (FromUtf8Text<T>)Utf8Text.GetConverter(typeof(T));
 
-        public static FromBlob<T> GetBlobConverter<T>()
-            => (FromBlob<T>)Blob.GetConverter(typeof(T));
+        public static FromBlob<T> GetBlobConverter<T>() =>
+            (FromBlob<T>)Blob.GetConverter(typeof(T));
 
-        public static FromNull<T> GetNullConverter<T>()
-            => (FromNull<T>)Null.GetConverter(typeof(T));
+        public static FromNull<T> GetNullConverter<T>() =>
+            (FromNull<T>)Null.GetConverter(typeof(T));
 
         private static class Integer
         {

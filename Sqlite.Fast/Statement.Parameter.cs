@@ -16,8 +16,8 @@ namespace Sqlite.Fast
             ValidateConverter(converter);
         }
 
-        public Statement<TParams> Bind(in TParams parameters)
-            => BindInternal(_converter, in parameters);
+        public Statement<TParams> Bind(in TParams parameters) =>
+            BindInternal(_converter, in parameters);
 
         public Statement<TParams> Bind<TCallerParams>(
             ParameterConverter<TCallerParams> converter, 
