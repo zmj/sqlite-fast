@@ -260,5 +260,109 @@ namespace Sqlite.Fast.Tests
                 Assert.Equal(value, r.Value);
             }
         }
+
+        [Theory]
+        [InlineData("hello")]
+        [InlineData("")]
+        [InlineData(null)]
+        public void MemoryChar(string value)
+        {
+            P<ReadOnlyMemory<char>> p = default;
+            R<ReadOnlyMemory<char>> r = default;
+            using (var tbl = new TestTable("create table t (x text)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                p.Value = value.AsMemory();
+                insert.Bind(p).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(value.AsMemory().ToString(), r.Value.ToString());
+            }
+        }
+
+        private enum E { Value = 1 }
+        
+        [Fact]
+        public void Enum()
+        {
+            P<E> p = default;
+            R<E> r = default;
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                p.Value = E.Value;
+                insert.Bind(p).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(E.Value, r.Value);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(null)]
+        public void EnumNull(int? intValue)
+        {
+            P<E?> p = default;
+            R<E?> r = default;
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                E? value = (E?)intValue;
+                p.Value = value;
+                insert.Bind(p).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(value, r.Value);
+            }
+        }
+
+        private class Class { }
+
+        [Fact]
+        public void Class_Null()
+        {
+            R<Class> r = default;
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt("insert into t values (null)"))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                insert.Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Null(r.Value);
+            }
+        }
+
+        private struct Struct { }
+
+        [Fact]
+        public void Struct_Null()
+        {
+            R<Struct?> r = default;
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt("insert into t values (null)"))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                insert.Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Null(r.Value);
+            }
+        }
+
+        [Fact]
+        public void ValueTuple()
+        {
+            using (var tbl = new TestTable("create table t (x int, y text)"))
+            using (var insert = tbl.Stmt("insert into t values (@x, @y)", ParameterConverter.Builder<(int, string)>().Compile()))
+            using (var select = tbl.Stmt("select x,y from t", ResultConverter.Builder<(int, string)>().Compile()))
+            {
+                var value = (1, "one");
+                insert.Bind(value).Execute();
+                (int, string) r = default;
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(value, r);
+            }
+        }
     }
 }

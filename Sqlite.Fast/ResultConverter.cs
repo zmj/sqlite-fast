@@ -23,25 +23,12 @@ namespace Sqlite.Fast
 
             public Builder(bool withDefaultConversions = true)
             {
-                if (typeof(TResult).GetTypeInfo().StructLayoutAttribute.Value
-                    != System.Runtime.InteropServices.LayoutKind.Sequential)
-                {
-                    throw new ArgumentException($"Target type {typeof(TResult).Name} must have sequential StructLayout");
-                }
                 _withDefaults = withDefaultConversions;
-
-                var members = typeof(TResult).GetTypeInfo()
-                    .GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                    .OrderBy(m => m.MetadataToken); // why does this work?
-                foreach (var member in members)
-                {
-                    if (!CanSetValue(member))
-                    {
-                        continue;
-                    }
-                    ValueAssigner.IBuilder<TResult> builder = ValueAssigner.Build<TResult>(member);
-                    _assignerBuilders.Add(builder);
-                }
+                _assignerBuilders = typeof(TResult)
+                    .GetOrderedMembers()
+                    .Where(CanSetValue)
+                    .Select(m => ValueAssigner.Build<TResult>(m))
+                    .ToList();
             }
 
             private ValueAssigner.IBuilder<TResult> GetOrAdd(MemberInfo member)
@@ -69,33 +56,33 @@ namespace Sqlite.Fast
                 return new ResultConverter<TResult>(_assignerBuilders.Select(b => b.Compile(_withDefaults)));
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromInteger<TField> integerConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromInteger<TField> fromInteger)
             {
-                GetOrAdd(propertyOrField).FromInteger = integerConverter;
+                GetOrAdd(propertyOrField).FromInteger = fromInteger;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromFloat<TField> floatConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromFloat<TField> fromFloat)
             {
-                GetOrAdd(propertyOrField).FromFloat = floatConverter;
+                GetOrAdd(propertyOrField).FromFloat = fromFloat;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromText<TField> textConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromText<TField> fromText)
             {
-                GetOrAdd(propertyOrField).FromUtf16Text = textConverter;
+                GetOrAdd(propertyOrField).FromUtf16Text = fromText;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromBlob<TField> blobConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromBlob<TField> fromBlob)
             {
-                GetOrAdd(propertyOrField).FromBlob = blobConverter;
+                GetOrAdd(propertyOrField).FromBlob = fromBlob;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromNull<TField> nullConverter)
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromNull<TField> fromNull)
             {
-                GetOrAdd(propertyOrField).FromNull = nullConverter;
+                GetOrAdd(propertyOrField).FromNull = fromNull;
                 return this;
             }
 

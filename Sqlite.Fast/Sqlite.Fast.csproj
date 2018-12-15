@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
-    <Version>1.1.1-alpha</Version>
+    <Version>1.1.2-alpha</Version>
     <Authors>zmj</Authors>
     <Description>A high-performance SQLite wrapper. Details and examples: https://github.com/zmj/sqlite-fast</Description>
     <PackageProjectUrl>https://github.com/zmj/sqlite-fast</PackageProjectUrl>
@@ -24,6 +24,7 @@
     <PackageReference Include="SQLite" Version="3.13.0" />
     <PackageReference Include="System.Buffers" Version="4.5.0" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 
 </Project>

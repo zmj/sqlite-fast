@@ -67,11 +67,11 @@ namespace Sqlite.Fast
                 if (withDefaults)
                 {
                     FromInteger = FromInteger ?? DefaultConverters.GetIntegerConverter<TField>();
-                    FromFloat = FromFloat ?? DefaultConverters.GetFloatConverter<TField>();
-                    FromUtf16Text = FromUtf16Text ?? DefaultConverters.GetUtf16TextConverter<TField>();
-                    FromUtf8Text = FromUtf8Text ?? DefaultConverters.GetUtf8TextConverter<TField>();
-                    FromBlob = FromBlob ?? DefaultConverters.GetBlobConverter<TField>();
-                    FromNull = FromNull ?? DefaultConverters.GetNullConverter<TField>();
+                    FromFloat = FromFloat ?? DefaultConverters.FromFloat<TField>();
+                    FromUtf16Text = FromUtf16Text ?? DefaultConverters.FromUtf16Text<TField>();
+                    FromUtf8Text = FromUtf8Text ?? DefaultConverters.FromUtf8Text<TField>();
+                    FromBlob = FromBlob ?? DefaultConverters.FromBlob<TField>();
+                    FromNull = FromNull ?? DefaultConverters.FromNull<TField>();
                 }
                 return new ValueAssigner<TResult, TField>(
                     Member.Name,

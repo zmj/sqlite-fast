@@ -11,6 +11,7 @@ namespace Sqlite.Fast
     public delegate ReadOnlySpan<char> ToText<T>(T value);
     internal delegate ReadOnlySpan<byte> ToUtf8Text<T>(T value);
     public delegate ReadOnlySpan<byte> ToBlob<T>(T value);
+    public delegate void ToNull<T>(T value);
 
     internal delegate TField FieldGetter<TParams, TField>(in TParams parameters);
 
@@ -57,7 +58,7 @@ namespace Sqlite.Fast
                 IEnumerable<Converter<TField>> converters;
                 if (withDefaults)
                 {
-                    Converter<TField>[] defaultConverters = Array.Empty<Converter<TField>>(); // todo
+                    Converter<TField>[] defaultConverters = DefaultConverters.To<TField>();
                     if (Converters.Count > 0)
                     {
                         Converters.AddRange(defaultConverters);

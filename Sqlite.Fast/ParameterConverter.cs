@@ -23,15 +23,9 @@ namespace Sqlite.Fast
 
             public Builder(bool withDefaultConversions = true)
             {
-                if (typeof(TParams).GetTypeInfo().StructLayoutAttribute.Value
-                    != System.Runtime.InteropServices.LayoutKind.Sequential)
-                {
-                    throw new ArgumentException($"Parameter type {typeof(TParams).Name} must have sequential StructLayout");
-                }
                 _withDefaults = withDefaultConversions;
-                _binderBuilders = typeof(TParams).GetTypeInfo()
-                    .GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                    .OrderBy(m => m.MetadataToken)
+                _binderBuilders = typeof(TParams)
+                    .GetOrderedMembers()
                     .Where(CanGetValue)
                     .Select(m => ValueBinder.Build<TParams>(m))
                     .ToList();
@@ -60,6 +54,91 @@ namespace Sqlite.Fast
             public ParameterConverter<TParams> Compile()
             {
                 return new ParameterConverter<TParams>(_binderBuilders.Select(b => b.Compile(_withDefaults)));
+            }
+            
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField,
+                ToInteger<TField> toInteger)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Integer(toInteger));
+                return this;
+            }
+
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField,
+                Func<TField, bool> canConvert,
+                ToInteger<TField> toInteger)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Integer(canConvert, toInteger));
+                return this;
+            }
+
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField,
+                ToFloat<TField> toFloat)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Float(toFloat));
+                return this;
+            }
+
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField, 
+                Func<TField, bool> canConvert, 
+                ToFloat<TField> toFloat)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Float(canConvert, toFloat));
+                return this;
+            }
+
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField,
+                ToText<TField> toText)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Utf16Text(toText));
+                return this;
+            }
+
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField,
+                Func<TField, bool> canConvert,
+                ToText<TField> toText)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Utf16Text(canConvert, toText));
+                return this;
+            }
+
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField,
+                ToBlob<TField> toBlob)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Blob(toBlob));
+                return this;
+            }
+
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField,
+                Func<TField, bool> canConvert,
+                ToBlob<TField> toBlob)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Blob(canConvert, toBlob));
+                return this;
+            }
+
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField,
+                ToNull<TField> toNull)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Null<TField>());
+                return this;
+            }
+
+            public Builder With<TField>(
+                Expression<Func<TParams, TField>> propertyOrField,
+                Func<TField, bool> canConvert,
+                ToNull<TField> toNull)
+            {
+                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Null(canConvert));
+                return this;
             }
 
             public Builder Ignore<TField>(Expression<Func<TParams, TField>> propertyOrField)
