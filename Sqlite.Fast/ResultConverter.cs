@@ -9,13 +9,40 @@ namespace Sqlite.Fast
 {
     public sealed class ResultConverter<TResult>
     {
-        internal readonly IValueAssigner<TResult>[] ValueAssigners;
+        private readonly IValueAssigner<TResult>[] _assigners;
+        private readonly ValueAssigner<TResult, TResult> _scalarAssigner;
+        internal readonly int FieldCount;
 
         internal ResultConverter(IEnumerable<IValueAssigner<TResult>> valueAssigners)
         {
-            ValueAssigners = valueAssigners.ToArray();
+            _assigners = valueAssigners.ToArray();
+            FieldCount = _assigners.Length;
         }
 
+        internal ResultConverter(ValueAssigner<TResult, TResult> scalarAssigner)
+        {
+            _scalarAssigner = scalarAssigner;
+            FieldCount = 1;
+        }
+
+        internal void AssignValues(ref TResult result, Columns columns)
+        {
+            // counts verified equal before execution
+            if (_scalarAssigner != null)
+            {
+                var enumerator = columns.GetEnumerator();
+                enumerator.MoveNext();
+                _scalarAssigner.Assign(ref result, enumerator.Current);
+            }
+            else
+            { 
+                foreach (Column col in columns)
+                {
+                    _assigners[col.Index].Assign(ref result, col);
+                }
+            }
+        }
+        
         public sealed class Builder
         {
             private readonly List<ValueAssigner.IBuilder<TResult>> _assignerBuilders = new List<ValueAssigner.IBuilder<TResult>>();
@@ -25,7 +52,8 @@ namespace Sqlite.Fast
             {
                 _withDefaults = withDefaultConversions;
                 _assignerBuilders = typeof(TResult)
-                    .GetOrderedMembers()
+                    .PublicInstanceFields()
+                    .OrderByDeclaration()
                     .Where(CanSetValue)
                     .Select(m => ValueAssigner.Build<TResult>(m))
                     .ToList();
@@ -119,11 +147,41 @@ namespace Sqlite.Fast
                 return false;
             }
         }
+
+        public sealed class ScalarBuilder
+        {
+            private readonly ValueAssigner.Builder<TResult, TResult> _builder;
+            private readonly bool _withDefaults;
+
+            public ScalarBuilder(bool withDefaultConversions = true)
+            {
+                _withDefaults = withDefaultConversions;
+                _builder = ValueAssigner.Build<TResult>();
+            }
+
+            public ResultConverter<TResult> Compile() =>
+                new ResultConverter<TResult>(_builder.Compile(_withDefaults));
+        }
     }
 
     public static class ResultConverter
     {
-        public static ResultConverter<TResult>.Builder Builder<TResult>(bool withDefaultConversions = true)
-            => new ResultConverter<TResult>.Builder(withDefaultConversions);
+        public static ResultConverter<TResult>.Builder Builder<TResult>(bool withDefaultConversions = true) =>
+            new ResultConverter<TResult>.Builder(withDefaultConversions);
+
+        public static ResultConverter<TResult>.ScalarBuilder ScalarBuilder<TResult>(bool withDefaultConversions = true) =>
+            new ResultConverter<TResult>.ScalarBuilder(withDefaultConversions);
+
+        internal static ResultConverter<TResult> Default<TResult>()
+        {
+            if (typeof(TResult).IsScalar())
+            {
+                return ScalarBuilder<TResult>().Compile();
+            }
+            else
+            {
+                return Builder<TResult>().Compile();
+            }
+        }
     }
 }

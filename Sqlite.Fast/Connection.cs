@@ -13,12 +13,12 @@ namespace Sqlite.Fast
         public Connection(string dbFilePath)
         {
             Sqlite.Result r = Sqlite.Open(dbFilePath, out IntPtr conn);
+            _connnection = conn;
             if (r != Sqlite.Result.Ok)
             {
-                Sqlite.CloseV2(conn);
+                Dispose();
                 throw new SqliteException(r, "Failed to open database connection");
             }
-            _connnection = conn;
         }
 
         public Statement CompileStatement(string sql)
@@ -32,14 +32,33 @@ namespace Sqlite.Fast
             return new Statement(stmt);
         }
 
+        public Statement<TParams> CompileStatement<TParams>(string sql)
+        {
+            var converter = ParameterConverter.Default<TParams>();
+            return CompileStatement(sql, converter);
+        }
+
         public Statement<TParams> CompileStatement<TParams>(string sql, ParameterConverter<TParams> converter)
         {
             return new Statement<TParams>(CompileStatement(sql), converter);
+        }
+        
+        public ResultStatement<TResult> CompileResultStatement<TResult>(string sql)
+        {
+            var converter = ResultConverter.Default<TResult>();
+            return CompileStatement(sql, converter);
         }
 
         public ResultStatement<TResult> CompileStatement<TResult>(string sql, ResultConverter<TResult> converter)
         {
             return new ResultStatement<TResult>(CompileStatement(sql), converter);
+        }
+
+        public Statement<TParams, TResult> CompileStatement<TParams, TResult>(string sql)
+        {
+            var parameterConverter = ParameterConverter.Default<TParams>();
+            var resultConverter = ResultConverter.Default<TResult>();
+            return CompileStatement(sql, parameterConverter, resultConverter);
         }
 
         public Statement<TParams, TResult> CompileStatement<TParams, TResult>(

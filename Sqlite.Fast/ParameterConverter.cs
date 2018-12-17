@@ -9,11 +9,36 @@ namespace Sqlite.Fast
 {
     public sealed class ParameterConverter<TParams>
     {
-        internal readonly IValueBinder<TParams>[] ValueBinders;
+        private readonly IValueBinder<TParams>[] _binders;
+        private readonly ValueBinder<TParams, TParams> _scalarBinder;
+        internal readonly int FieldCount;
 
         internal ParameterConverter(IEnumerable<IValueBinder<TParams>> valueBinders)
         {
-            ValueBinders = valueBinders.ToArray();
+            _binders = valueBinders.ToArray();
+            FieldCount = _binders.Length;
+        }
+
+        internal ParameterConverter(ValueBinder<TParams, TParams> scalarBinder)
+        {
+            _scalarBinder = scalarBinder;
+            FieldCount = 1;
+        }
+
+        internal void BindValues(in TParams parameters, Statement statement)
+        {
+            if (_scalarBinder != null)
+            {
+                _scalarBinder.Bind(in parameters, statement, index: 1);
+            }
+            else
+            {
+                for (int i = 0; i < _binders.Length; i++)
+                {
+                    // parameters are 1-indexed
+                    _binders[i].Bind(in parameters, statement, i + 1);
+                }
+            }
         }
 
         public sealed class Builder
@@ -25,7 +50,8 @@ namespace Sqlite.Fast
             {
                 _withDefaults = withDefaultConversions;
                 _binderBuilders = typeof(TParams)
-                    .GetOrderedMembers()
+                    .PublicInstanceFields()
+                    .OrderByDeclaration()
                     .Where(CanGetValue)
                     .Select(m => ValueBinder.Build<TParams>(m))
                     .ToList();
@@ -174,11 +200,41 @@ namespace Sqlite.Fast
                 return false;
             }
         }
+
+        public sealed class ScalarBuilder
+        {
+            private readonly ValueBinder.Builder<TParams, TParams> _builder;
+            private readonly bool _withDefaults;
+
+            public ScalarBuilder(bool withDefaultConversions = true)
+            {
+                _withDefaults = withDefaultConversions;
+                _builder = ValueBinder.Build<TParams>();
+            }
+
+            public ParameterConverter<TParams> Compile() =>
+                new ParameterConverter<TParams>(_builder.Compile(_withDefaults));
+        }
     }
 
     public static class ParameterConverter
     {
         public static ParameterConverter<TParams>.Builder Builder<TParams>(bool withDefaultConversions = true) =>
             new ParameterConverter<TParams>.Builder(withDefaultConversions);
+
+        public static ParameterConverter<TParams>.ScalarBuilder ScalarBuilder<TParams>(bool withDefaultConversions = true) =>
+            new ParameterConverter<TParams>.ScalarBuilder(withDefaultConversions);
+
+        internal static ParameterConverter<TParams> Default<TParams>()
+        {
+            if (typeof(TParams).IsScalar())
+            {
+                return ScalarBuilder<TParams>().Compile();
+            }
+            else
+            {
+                return Builder<TParams>().Compile();
+            }
+        }
     }
 }

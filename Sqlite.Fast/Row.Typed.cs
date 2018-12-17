@@ -16,14 +16,7 @@ namespace Sqlite.Fast
             _converter = converter;
         }
 
-        public void AssignTo(ref TResult result)
-        {
-            foreach (Column col in _row.Columns)
-            {
-                IValueAssigner<TResult> assigner = _converter.ValueAssigners[col.Index]; // length checked in Statement
-                assigner.Assign(ref result, col);
-            }
-        }
+        public void AssignTo(ref TResult result) => _converter.AssignValues(ref result, _row.Columns);
     }
 
     public readonly struct Rows<TResult> : IEnumerable<Row<TResult>>

@@ -11,9 +11,17 @@ namespace Sqlite.Fast
 
         internal ResultStatement(Statement statement, ResultConverter<TResult> converter)
         {
-            _statement = statement;
-            _converter = converter;
-            ValidateConverter(converter);
+            try
+            {
+                _statement = statement;
+                _converter = converter;
+                ValidateConverter(converter);
+            }
+            catch
+            {
+                Dispose();
+                throw;
+            }
         }
         
         public bool Execute(ref TResult result)
@@ -55,9 +63,9 @@ namespace Sqlite.Fast
 
         private void ValidateConverter<TCallerResult>(ResultConverter<TCallerResult> converter)
         {
-            if (converter.ValueAssigners.Length != _statement.ColumnCount)
+            if (converter.FieldCount != _statement.ColumnCount)
             {
-                throw new ArgumentException($"Converter expects {converter.ValueAssigners.Length} columns; statement returns {_statement.ColumnCount} columns");
+                throw new ArgumentException($"Converter expects {converter.FieldCount} columns; statement returns {_statement.ColumnCount} columns");
             }
         }
 

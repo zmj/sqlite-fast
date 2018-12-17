@@ -17,26 +17,20 @@ namespace Sqlite.Fast
 
     internal static class ValueBinder
     {
-        internal static IBuilder<TParams> Build<TParams>(MemberInfo member)
+        internal static IBuilder<TParams> Build<TParams>(MemberInfo member) =>
+            (IBuilder<TParams>)BuildInternal<TParams>(member);
+
+        internal static Builder<TParams, TParams> Build<TParams>() =>
+            (Builder<TParams, TParams>)BuildInternal<TParams>(member: null);
+
+        private static object BuildInternal<TParams>(MemberInfo member)
         {
-            var constructor = typeof(Builder<,>)
-                .MakeGenericType(new[] { typeof(TParams), GetMemberType(member) })
+            Type valueType = member != null ? member.ValueType() : typeof(TParams);
+            ConstructorInfo constructor = typeof(Builder<,>)
+                .MakeGenericType(new[] { typeof(TParams), valueType })
                 .GetTypeInfo()
                 .GetConstructor(new[] { typeof(MemberInfo) });
-            return (IBuilder<TParams>)constructor.Invoke(new[] { member });
-        }
-
-        internal static Type GetMemberType(MemberInfo member)
-        {
-            if (member is PropertyInfo property)
-            {
-                return property.PropertyType;
-            }
-            else if (member is FieldInfo field)
-            {
-                return field.FieldType;
-            }
-            throw new NotSupportedException(member.MemberType.ToString());
+            return constructor.Invoke(new[] { member });
         }
 
         internal interface IBuilder<TParams>
@@ -49,11 +43,13 @@ namespace Sqlite.Fast
         internal sealed class Builder<TParams, TField> : IBuilder<TParams>
         {
             public MemberInfo Member { get; }
-            public readonly List<Converter<TField>> Converters = new List<Converter<TField>>();
+            internal readonly List<Converter<TField>> Converters = new List<Converter<TField>>();
 
             public Builder(MemberInfo member) => Member = member;
 
-            public IValueBinder<TParams> Compile(bool withDefaults)
+            IValueBinder<TParams> IBuilder<TParams>.Compile(bool withDefaults) => Compile(withDefaults);
+
+            internal ValueBinder<TParams, TField> Compile(bool withDefaults)
             {
                 IEnumerable<Converter<TField>> converters;
                 if (withDefaults)
@@ -74,15 +70,23 @@ namespace Sqlite.Fast
                     converters = Converters;
                 }
                 return new ValueBinder<TParams, TField>(
-                    Member.Name,
+                    Member?.Name,
                     CompileGetter(Member),
                     converters);
             }
 
-            private static FieldGetter<TParams, TField> CompileGetter(MemberInfo memberInfo)
+            private static FieldGetter<TParams, TField> CompileGetter(MemberInfo member)
             {
                 var parameters = Expression.Parameter(typeof(TParams).MakeByRefType());
-                var value = Expression.MakeMemberAccess(parameters, memberInfo);
+                Expression value;
+                if (member == null)
+                {
+                    value = parameters;
+                }
+                else
+                {
+                    value = Expression.MakeMemberAccess(parameters, member);
+                }
                 var lambda = Expression.Lambda<FieldGetter<TParams, TField>>(value, parameters);
                 return lambda.Compile();
             }
@@ -99,13 +103,13 @@ namespace Sqlite.Fast
 
         internal readonly struct Converter<TField>
         {
-            public readonly Sqlite.DataType DataType;
-            public readonly bool Utf8Text;
-            public readonly ToInteger<TField> ToInteger;
-            public readonly ToFloat<TField> ToFloat;
-            public readonly ToText<TField> ToUtf16Text;
-            public readonly ToUtf8Text<TField> ToUtf8Text;
-            public readonly ToBlob<TField> ToBlob;
+            internal readonly Sqlite.DataType DataType;
+            internal readonly bool Utf8Text;
+            internal readonly ToInteger<TField> ToInteger;
+            internal readonly ToFloat<TField> ToFloat;
+            internal readonly ToText<TField> ToUtf16Text;
+            internal readonly ToUtf8Text<TField> ToUtf8Text;
+            internal readonly ToBlob<TField> ToBlob;
 
             private readonly Func<TField, bool> _canConvert;
 
@@ -129,13 +133,13 @@ namespace Sqlite.Fast
                 ToBlob = toBlob;
             }
 
-            public bool CanConvert(TField value) => _canConvert == null || _canConvert(value);
+            internal bool CanConvert(TField value) => _canConvert == null || _canConvert(value);
         }
 
         internal static class Converter
         { 
-            public static Converter<T> Integer<T>(ToInteger<T> toInteger) => Integer(canConvert: null, toInteger);
-            public static Converter<T> Integer<T>(Func<T, bool> canConvert, ToInteger<T> toInteger) =>
+            internal static Converter<T> Integer<T>(ToInteger<T> toInteger) => Integer(canConvert: null, toInteger);
+            internal static Converter<T> Integer<T>(Func<T, bool> canConvert, ToInteger<T> toInteger) =>
                 new Converter<T>(
                     Sqlite.DataType.Integer,
                     utf8Text: false,
@@ -146,8 +150,8 @@ namespace Sqlite.Fast
                     toUtf8Text: null,
                     toBlob: null);
 
-            public static Converter<T> Float<T>(ToFloat<T> toFloat) => Float(canConvert: null, toFloat);
-            public static Converter<T> Float<T>(Func<T, bool> canConvert, ToFloat<T> toFloat) =>
+            internal static Converter<T> Float<T>(ToFloat<T> toFloat) => Float(canConvert: null, toFloat);
+            internal static Converter<T> Float<T>(Func<T, bool> canConvert, ToFloat<T> toFloat) =>
                 new Converter<T>(
                     Sqlite.DataType.Float,
                     utf8Text: false,
@@ -158,8 +162,8 @@ namespace Sqlite.Fast
                     toUtf8Text: null,
                     toBlob: null);
 
-            public static Converter<T> Utf8Text<T>(ToUtf8Text<T> toUtf8Text) => Utf8Text(canConvert: null, toUtf8Text);
-            public static Converter<T> Utf8Text<T>(Func<T, bool> canConvert, ToUtf8Text<T> toUtf8Text) =>
+            internal static Converter<T> Utf8Text<T>(ToUtf8Text<T> toUtf8Text) => Utf8Text(canConvert: null, toUtf8Text);
+            internal static Converter<T> Utf8Text<T>(Func<T, bool> canConvert, ToUtf8Text<T> toUtf8Text) =>
                 new Converter<T>(
                     Sqlite.DataType.Text,
                     utf8Text: true,
@@ -170,8 +174,8 @@ namespace Sqlite.Fast
                     toUtf8Text,
                     toBlob: null);
 
-            public static Converter<T> Utf16Text<T>(ToText<T> toUtf16Text) => Utf16Text(canConvert: null, toUtf16Text);
-            public static Converter<T> Utf16Text<T>(Func<T, bool> canConvert, ToText<T> toUtf16Text) =>
+            internal static Converter<T> Utf16Text<T>(ToText<T> toUtf16Text) => Utf16Text(canConvert: null, toUtf16Text);
+            internal static Converter<T> Utf16Text<T>(Func<T, bool> canConvert, ToText<T> toUtf16Text) =>
                 new Converter<T>(
                     Sqlite.DataType.Text,
                     utf8Text: false,
@@ -182,8 +186,8 @@ namespace Sqlite.Fast
                     toUtf8Text: null,
                     toBlob: null);
 
-            public static Converter<T> Blob<T>(ToBlob<T> toBlob) => Blob(canConvert: null, toBlob);
-            public static Converter<T> Blob<T>(Func<T, bool> canConvert, ToBlob<T> toBlob) =>
+            internal static Converter<T> Blob<T>(ToBlob<T> toBlob) => Blob(canConvert: null, toBlob);
+            internal static Converter<T> Blob<T>(Func<T, bool> canConvert, ToBlob<T> toBlob) =>
                 new Converter<T>(
                     Sqlite.DataType.Blob,
                     utf8Text: false,
@@ -194,8 +198,8 @@ namespace Sqlite.Fast
                     toUtf8Text: null,
                     toBlob);
 
-            public static Converter<T> Null<T>() => Null<T>(canConvert: null);
-            public static Converter<T> Null<T>(Func<T, bool> canConvert) =>
+            internal static Converter<T> Null<T>() => Null<T>(canConvert: null);
+            internal static Converter<T> Null<T>(Func<T, bool> canConvert) =>
                 new Converter<T>(
                     Sqlite.DataType.Null,
                     utf8Text: false,

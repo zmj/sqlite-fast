@@ -13,32 +13,26 @@ namespace Sqlite.Fast
     public delegate T FromBlob<T>(ReadOnlySpan<byte> value);
     public delegate T FromNull<T>();
 
-    internal delegate void FieldSetter<TResult, TField>(ref TResult rec, TField value);
+    internal delegate void FieldSetter<TResult, TField>(ref TResult result, TField value);
 
     internal static class ValueAssigner
     {
-        internal static IBuilder<TResult> Build<TResult>(MemberInfo member)
+        internal static IBuilder<TResult> Build<TResult>(MemberInfo member) =>
+            (IBuilder<TResult>)BuildInternal<TResult>(member);
+
+        internal static Builder<TResult, TResult> Build<TResult>() =>
+            (Builder<TResult, TResult>)BuildInternal<TResult>(member: null);
+
+        private static object BuildInternal<TResult>(MemberInfo member)
         {
-            var constructor = typeof(Builder<,>)
-                .MakeGenericType(new[] { typeof(TResult), GetMemberType(member) })
+            Type valueType = member != null ? member.ValueType() : typeof(TResult);
+            ConstructorInfo constructor = typeof(Builder<,>)
+                .MakeGenericType(new[] { typeof(TResult), valueType })
                 .GetTypeInfo()
                 .GetConstructor(new[] { typeof(MemberInfo) });
-            return (IBuilder<TResult>)constructor.Invoke(new[] { member });
+            return constructor.Invoke(new[] { member });
         }
-
-        internal static Type GetMemberType(MemberInfo member)
-        {
-            if (member is PropertyInfo property)
-            {
-                return property.PropertyType;
-            }
-            else if (member is FieldInfo field)
-            {
-                return field.FieldType;
-            }
-            throw new NotSupportedException(member.MemberType.ToString());
-        }
-        
+   
         internal interface IBuilder<TResult>
         {
             MemberInfo Member { get; }
@@ -50,19 +44,18 @@ namespace Sqlite.Fast
         {
             public MemberInfo Member { get; }
 
-            public FromInteger<TField> FromInteger;
-            public FromFloat<TField> FromFloat;
-            public FromText<TField> FromUtf16Text;
-            public FromUtf8Text<TField> FromUtf8Text;
-            public FromBlob<TField> FromBlob;
-            public FromNull<TField> FromNull;
+            internal FromInteger<TField> FromInteger;
+            internal FromFloat<TField> FromFloat;
+            internal FromText<TField> FromUtf16Text;
+            internal FromUtf8Text<TField> FromUtf8Text;
+            internal FromBlob<TField> FromBlob;
+            internal FromNull<TField> FromNull;
 
-            public Builder(MemberInfo member)
-            {
-                Member = member;
-            }
+            public Builder(MemberInfo member) => Member = member;
 
-            public IValueAssigner<TResult> Compile(bool withDefaults)
+            IValueAssigner<TResult> IBuilder<TResult>.Compile(bool withDefaults) => Compile(withDefaults);
+
+            internal ValueAssigner<TResult, TField> Compile(bool withDefaults)
             {
                 if (withDefaults)
                 {
@@ -74,7 +67,7 @@ namespace Sqlite.Fast
                     FromNull = FromNull ?? DefaultConverters.FromNull<TField>();
                 }
                 return new ValueAssigner<TResult, TField>(
-                    Member.Name,
+                    Member?.Name,
                     CompileSetter(Member),
                     FromInteger,
                     FromFloat,
@@ -87,21 +80,25 @@ namespace Sqlite.Fast
             private static FieldSetter<TResult, TField> CompileSetter(MemberInfo memberInfo)
             {
                 var result = Expression.Parameter(typeof(TResult).MakeByRefType());
-                Expression member;
-                if (memberInfo is FieldInfo fieldInfo)
+                Expression target;
+                if (memberInfo == null)
                 {
-                    member = Expression.Field(result, fieldInfo);
+                    target = result;
+                }
+                else if (memberInfo is FieldInfo fieldInfo)
+                {
+                    target = Expression.Field(result, fieldInfo);
                 }
                 else if (memberInfo is PropertyInfo propertyInfo)
                 {
-                    member = Expression.Property(result, propertyInfo);
+                    target = Expression.Property(result, propertyInfo);
                 }
                 else
                 {
                     throw new ArgumentException($"Cannot set value of {memberInfo.DeclaringType.Name}.{memberInfo.Name}");
                 }
                 var value = Expression.Parameter(typeof(TField));
-                var assignment = Expression.Assign(member, value);
+                var assignment = Expression.Assign(target, value);
                 var lambda = Expression.Lambda<FieldSetter<TResult, TField>>(assignment, result, value);
                 return lambda.Compile();
             }

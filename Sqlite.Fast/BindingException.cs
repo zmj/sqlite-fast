@@ -49,7 +49,7 @@ namespace Sqlite.Fast
                 memberName,
                 typeof(T),
                 paramsType,
-                (object)value,
+                value,
                 $"No defined conversion from value {value} (type {typeof(T).Name}) for {paramsType.Name}.{memberName}");
         }
 
@@ -63,7 +63,7 @@ namespace Sqlite.Fast
                 memberName,
                 typeof(T),
                 paramsType,
-                (object)value,
+                value,
                 $"Conversion failed from value {value} (type {typeof(T).Name}) for {paramsType.Name}.{memberName}");
         }
     }

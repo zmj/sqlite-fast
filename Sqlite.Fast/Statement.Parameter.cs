@@ -11,9 +11,17 @@ namespace Sqlite.Fast
 
         internal Statement(Statement statement, ParameterConverter<TParams> converter)
         {
-            _statement = statement;
-            _converter = converter;
-            ValidateConverter(converter);
+            try
+            {
+                _statement = statement;
+                _converter = converter;
+                ValidateConverter(converter);
+            }
+            catch
+            {
+                Dispose();
+                throw;
+            }
         }
 
         public Statement<TParams> Bind(in TParams parameters) =>
@@ -32,19 +40,15 @@ namespace Sqlite.Fast
             in TCallerParams parameters)
         {
             _statement.BeginBinding();
-            for (int i=0; i < converter.ValueBinders.Length; i++)
-            {
-                // parameters are 1-indexed
-                converter.ValueBinders[i].Bind(in parameters, _statement, i + 1);
-            }
+            converter.BindValues(in parameters, _statement);
             return this;
         }
 
         private void ValidateConverter<TCallerParams>(ParameterConverter<TCallerParams> converter)
         {
-            if (converter.ValueBinders.Length != _statement.ParameterCount)
+            if (converter.FieldCount != _statement.ParameterCount)
             {
-                throw new ArgumentException($"Converter expects {converter.ValueBinders.Length} parameters; query has {_statement.ParameterCount} parameters");
+                throw new ArgumentException($"Converter expects {converter.FieldCount} parameters; query has {_statement.ParameterCount} parameters");
             }
         }
 

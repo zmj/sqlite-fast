@@ -8,23 +8,25 @@ namespace Sqlite.Fast
 {
     internal static class Reflection
     {
-        public static IEnumerable<MemberInfo> GetOrderedMembers(this Type type)
+        internal static MemberInfo[] PublicInstanceFields(this Type type)
         {
-            TypeInfo typeInfo = type.GetTypeInfo();
-            if (typeInfo.StructLayoutAttribute.Value
+            return type.GetTypeInfo().GetMembers(BindingFlags.Public | BindingFlags.Instance);
+        }
+
+        internal static IEnumerable<MemberInfo> OrderByDeclaration(this IEnumerable<MemberInfo> members)
+        {
+            if (members.Count() == 0) return members;
+            Type declaringType = members.First().DeclaringType;
+            if (declaringType.GetTypeInfo().StructLayoutAttribute.Value
                 == System.Runtime.InteropServices.LayoutKind.Sequential)
             {
-                return typeInfo
-                     .GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                     .OrderBy(m => m.MetadataToken);
+                return members.OrderBy(m => m.MetadataToken);
             }
-            else if (IsValueTuple(type))
+            else if (IsValueTuple(declaringType))
             {
-                return typeInfo
-                    .GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                    .OrderBy(m => m.Name);
+                return members.OrderBy(m => m.Name);
             }
-            throw new ArgumentException($"Result type {typeInfo.Name} must have sequential StructLayout");
+            throw new ArgumentException($"Result type {declaringType.Name} must have sequential StructLayout");
         }
 
         private static bool IsValueTuple(Type type)
@@ -41,6 +43,27 @@ namespace Sqlite.Fast
                 || genericType == typeof(ValueTuple<,,,,,>)
                 || genericType == typeof(ValueTuple<,,,,,,>)
                 || genericType == typeof(ValueTuple<,,,,,,,>);
+        }
+
+        internal static Type ValueType(this MemberInfo member)
+        {
+            if (member is PropertyInfo property)
+            {
+                return property.PropertyType;
+            }
+            else if (member is FieldInfo field)
+            {
+                return field.FieldType;
+            }
+            throw new NotSupportedException(member.MemberType.ToString());
+        }
+
+        internal static bool IsScalar(this Type type)
+        {
+            return type == typeof(string)
+                || type == typeof(Memory<char>)
+                || type == typeof(ReadOnlyMemory<char>)
+                || type.GetTypeInfo().IsPrimitive;
         }
     }
 }

@@ -90,7 +90,7 @@ namespace Sqlite.Fast.Tests
                 Assert.Null(r.Value);
             }
         }
-
+        
         [Theory]
         [InlineData("D")]
         [InlineData("B")]
@@ -349,19 +349,83 @@ namespace Sqlite.Fast.Tests
                 Assert.Null(r.Value);
             }
         }
-
-        [Fact]
-        public void ValueTuple()
+        
+        [Theory]
+        [InlineData(3.14159)]
+        [InlineData(2e-10)]
+        [InlineData(0)]
+        public void Double(double value)
         {
-            using (var tbl = new TestTable("create table t (x int, y text)"))
-            using (var insert = tbl.Stmt("insert into t values (@x, @y)", ParameterConverter.Builder<(int, string)>().Compile()))
-            using (var select = tbl.Stmt("select x,y from t", ResultConverter.Builder<(int, string)>().Compile()))
+            P<double> p = default;
+            R<double> r = default;
+            using (var tbl = new TestTable("create table t (x float)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
+            using (var select = tbl.Stmt("select x from t", r.C))
             {
-                var value = (1, "one");
-                insert.Bind(value).Execute();
-                (int, string) r = default;
+                p.Value = value;
+                insert.Bind(p).Execute();
                 Assert.True(select.Execute(ref r));
-                Assert.Equal(value, r);
+                Assert.Equal(value, r.Value);
+            }
+        }
+
+        [Theory]
+        [InlineData(3.14159)]
+        [InlineData(2e-10)]
+        [InlineData(0)]
+        [InlineData(null)]
+        public void Double_Null(double? value)
+        {
+            P<double?> p = default;
+            R<double?> r = default;
+            using (var tbl = new TestTable("create table t (x float)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                p.Value = value;
+                insert.Bind(p).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(value, r.Value);
+            }
+        }
+
+        [Theory]
+        [InlineData(3.14159f)]
+        [InlineData(2e-10f)]
+        [InlineData(0)]
+        public void Float(float value)
+        {
+            P<float> p = default;
+            R<float> r = default;
+            using (var tbl = new TestTable("create table t (x float)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                p.Value = value;
+                insert.Bind(p).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(value, r.Value);
+            }
+
+        }
+
+        [Theory]
+        [InlineData(3.14159f)]
+        [InlineData(2e-10f)]
+        [InlineData(0)]
+        [InlineData(null)]
+        public void Float_Null(float? value)
+        {
+            P<float?> p = default;
+            R<float?> r = default;
+            using (var tbl = new TestTable("create table t (x float)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
+            using (var select = tbl.Stmt("select x from t", r.C))
+            {
+                p.Value = value;
+                insert.Bind(p).Execute();
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(value, r.Value);
             }
         }
     }
