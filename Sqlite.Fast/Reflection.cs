@@ -8,15 +8,19 @@ namespace Sqlite.Fast
 {
     internal static class Reflection
     {
-        internal static MemberInfo[] PublicInstanceFields(this Type type)
+        internal static IEnumerable<MemberInfo> FieldsOrderedByDeclaration(this Type type)
+        {
+            return OrderByDeclaration(type, PublicInstanceFields(type));
+        }
+
+        private static MemberInfo[] PublicInstanceFields(Type type)
         {
             return type.GetTypeInfo().GetMembers(BindingFlags.Public | BindingFlags.Instance);
         }
 
-        internal static IEnumerable<MemberInfo> OrderByDeclaration(this IEnumerable<MemberInfo> members)
+        private static IEnumerable<MemberInfo> OrderByDeclaration(Type declaringType, IEnumerable<MemberInfo> members)
         {
             if (members.Count() == 0) return members;
-            Type declaringType = members.First().DeclaringType;
             if (declaringType.GetTypeInfo().StructLayoutAttribute.Value
                 == System.Runtime.InteropServices.LayoutKind.Sequential)
             {

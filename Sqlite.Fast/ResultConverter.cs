@@ -52,8 +52,7 @@ namespace Sqlite.Fast
             {
                 _withDefaults = withDefaultConversions;
                 _assignerBuilders = typeof(TResult)
-                    .PublicInstanceFields()
-                    .OrderByDeclaration()
+                    .FieldsOrderedByDeclaration()
                     .Where(CanSetValue)
                     .Select(m => ValueAssigner.Build<TResult>(m))
                     .ToList();

@@ -50,8 +50,7 @@ namespace Sqlite.Fast
             {
                 _withDefaults = withDefaultConversions;
                 _binderBuilders = typeof(TParams)
-                    .PublicInstanceFields()
-                    .OrderByDeclaration()
+                    .FieldsOrderedByDeclaration()
                     .Where(CanGetValue)
                     .Select(m => ValueBinder.Build<TParams>(m))
                     .ToList();
