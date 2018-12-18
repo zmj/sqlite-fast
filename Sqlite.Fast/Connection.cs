@@ -54,22 +54,22 @@ namespace Sqlite.Fast
             return new ResultStatement<TResult>(CompileStatement(sql), converter);
         }
 
-        public Statement<TParams, TResult> CompileStatement<TParams, TResult>(string sql)
+        public Statement<TResult, TParams> CompileStatement<TResult, TParams>(string sql)
         {
-            var parameterConverter = ParameterConverter.Default<TParams>();
             var resultConverter = ResultConverter.Default<TResult>();
-            return CompileStatement(sql, parameterConverter, resultConverter);
+            var parameterConverter = ParameterConverter.Default<TParams>();
+            return CompileStatement(sql, resultConverter, parameterConverter);
         }
 
-        public Statement<TParams, TResult> CompileStatement<TParams, TResult>(
+        public Statement<TResult, TParams> CompileStatement<TResult, TParams>(
             string sql,
-            ParameterConverter<TParams> parameterConverter,
-            ResultConverter<TResult> resultConverter)
+            ResultConverter<TResult> resultConverter,
+            ParameterConverter<TParams> parameterConverter)
         {
             Statement statement = CompileStatement(sql);
-            return new Statement<TParams, TResult>(
-                new Statement<TParams>(statement, parameterConverter),
-                new ResultStatement<TResult>(statement, resultConverter));
+            return new Statement<TResult, TParams>(
+                new ResultStatement<TResult>(statement, resultConverter),
+                new Statement<TParams>(statement, parameterConverter));
         }
 
         private void CheckDisposed()

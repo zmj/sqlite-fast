@@ -31,8 +31,8 @@ namespace Sqlite.Fast.Tests
         public ResultStatement<T> RStmt<T>(string sql) => _conn.CompileResultStatement<T>(sql);
         public ResultStatement<T> Stmt<T>(string sql, ResultConverter<T> converter) => _conn.CompileStatement(sql, converter);
         public Statement<T, U> Stmt<T, U>(string sql) => _conn.CompileStatement<T, U>(sql);
-        public Statement<T, U> Stmt<T, U>(string sql, ParameterConverter<T> pc, ResultConverter<U> rc)
-            => _conn.CompileStatement(sql, pc, rc);
+        public Statement<T, U> Stmt<T, U>(string sql, ResultConverter<T> rc, ParameterConverter<U> pc)
+            => _conn.CompileStatement(sql, rc, pc);
 
         public void Dispose() => _conn.Dispose();
     }

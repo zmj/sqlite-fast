@@ -104,7 +104,7 @@ namespace Sqlite.Fast.Tests
             R<int> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
             using (var insert = tbl.Stmt("insert into t values(@x)", p.C))
-            using (var select = tbl.Stmt("select x from t where x=@x", p.C, r.C))
+            using (var select = tbl.Stmt("select x from t where x=@x", r.C, p.C))
             {
                 p.Value = 1;
                 insert.Bind(p).Execute();
@@ -129,7 +129,7 @@ namespace Sqlite.Fast.Tests
             R<int> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
             using (var insert = tbl.Stmt("insert into t values(@x)", p.C))
-            using (var select = tbl.Stmt("select x from t where x=@x", p.C, r.C))
+            using (var select = tbl.Stmt("select x from t where x=@x", r.C, p.C))
             {
                 p.Value = 1;
                 insert.Bind(p).Execute();

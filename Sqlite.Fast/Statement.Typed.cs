@@ -4,24 +4,24 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public sealed class Statement<TParams, TResult> : IDisposable
+    public sealed class Statement<TResult, TParams> : IDisposable
     {
-        private readonly Statement<TParams> _parameterStatement;
         private readonly ResultStatement<TResult> _resultStatement;
+        private readonly Statement<TParams> _parameterStatement;
 
-        internal Statement(Statement<TParams> parameterStatement, ResultStatement<TResult> resultStatement)
+        internal Statement(ResultStatement<TResult> resultStatement, Statement<TParams> parameterStatement)
         {
-            _parameterStatement = parameterStatement;
             _resultStatement = resultStatement;
+            _parameterStatement = parameterStatement;
         }
 
-        public Statement<TParams, TResult> Bind(in TParams parameters)
+        public Statement<TResult, TParams> Bind(in TParams parameters)
         {
             _parameterStatement.Bind(in parameters);
             return this;
         }
 
-        public Statement<TParams, TResult> Bind<TCallerParams>(
+        public Statement<TResult, TParams> Bind<TCallerParams>(
             ParameterConverter<TCallerParams> converter,
             in TCallerParams parameters)
         {
