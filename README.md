@@ -18,31 +18,89 @@ SQLite-Fast does not include an ORM or query builder. There are no plans to add 
 
 Open a connection:
 
-TODO: connection open sample (real file path)
+```
+using (var connection = new Connection(Path.Combine(appdataPath, dbFilename)))
+{
+    // make database calls
+}
+```
 
-Reuse this connection instance for the duration of the database session, then dispose it. Connections are safe for concurrent use.
+Reuse a single connection instance for the duration of an application session, then dispose it. Connections are safe for concurrent use.
 
 Compile a SQL statement:
 
-TODO: statement compile example (two params for bind)
+Reuse compiled statements for the lifetime of the underlying database connection. Statements are not safe for concurrent use.
 
-Reuse this statement instance for the duration of the database session, then dispose it before disposing the associated connection. Statements are not safe for concurrent use.
+Example queries, assuming a User model and equivalent table:
 
-Compile a record map:
+```
+private struct User
+{
+    public uint Id;
+    public string FirstName;
+    public string LastName;
+    public DateTimeOffset Created;
+}
+```
 
-TODO: build record map example (default)
+To select a single user by id:
 
-Reuse this record map instance. It is immutable and threadsafe once compiled.
+```
+User SelectSingleUser(uint id) 
+{
+    const string sql = "select id, firstname, lastname, created from users where id=@id";
+    using (Connection conn = UserDb())
+    using (var select = conn.CompileStatement<User, uint>(sql))
+    {
+        User user = default;
+        if (!select.Bind(id).Execute(ref user)) throw new Exception("not found");
+        return user;
+    }
+}
+```
 
-Bind statement parameters:
+To insert a new user:
 
-TODO: statement bind example (chain ordered binds)
+```
+void InsertUser(User user)
+{
+    const string sql = "insert into users values (@id, @fname, @lname, @cdate)";
+    using (Connection conn = UserDb())
+    using (var insert = conn.CompileStatement<User>(sql))
+    {
+        insert.Bind(user).Execute();
+    }
+}
+```
 
-Set values for any parameters in the SQL statement. Parameter values persist until changed.
+To select multiple users:
 
-Execute the statement and enumerate results:
+```
+int SelectAllUsers(User[] users)
+{
+    int i = 0;
+    const string sql = "select id, firstname, lastname, created from users";
+    using (Connection conn = UserDb())
+    using (var select = conn.CompileResultStatement<User>(sql))
+    {
+        foreach (Row<User> row in select.Execute())
+            row.AssignTo(ref users[i++]);
+    }
+    return i;
+}
+```
 
-TODO: statement execute+enumerate example (ref into array)
+To customize the mapping to/from a C# type and a SQL query result or parameters, use the appropriate Converter builder, and pass the Converter to a CompileStatement call or Execute call.
+
+```
+ParameterConverter.Builder<User>()
+    // customize parameter mappings
+    .Compile();
+
+ResultConverter.Builder<User>()
+    // customize result mappings
+    .Compile();
+```
 
 ### Comparison to SQLite.Net
 

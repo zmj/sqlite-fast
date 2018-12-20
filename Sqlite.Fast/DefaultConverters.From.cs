@@ -2,6 +2,7 @@
 using System.Buffers.Text;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Sqlite.Fast
@@ -194,9 +195,10 @@ namespace Sqlite.Fast
 
             private static unsafe string Utf8ToString(ReadOnlySpan<byte> text)
             {
-                fixed (byte* b = text)
+                ref byte b = ref MemoryMarshal.GetReference(text);
+                fixed (byte* ptr = &b)
                 {
-                    return Encoding.UTF8.GetString(b, text.Length);
+                    return Encoding.UTF8.GetString(ptr, text.Length);
                 }
             }
         }

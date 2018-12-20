@@ -6,34 +6,34 @@ namespace Sqlite.Fast.Tests
 {
     internal class TestTable : IDisposable
     {
-        private readonly Connection _conn;
+        public readonly Connection Connection;
 
         public TestTable(string createTableSql)
         {
-            _conn = new Connection(":memory:");
+            Connection = new Connection(":memory:");
             try
             {
-                using (var createTable = _conn.CompileStatement(createTableSql)) 
+                using (var createTable = Connection.CompileStatement(createTableSql)) 
                 {
                     createTable.Execute();
                 }
             }
             catch
             {
-                _conn.Dispose();
+                Connection.Dispose();
                 throw;
             }
         }
 
-        public Statement Stmt(string sql) => _conn.CompileStatement(sql);
-        public Statement<T> Stmt<T>(string sql) => _conn.CompileStatement<T>(sql);
-        public Statement<T> Stmt<T>(string sql, ParameterConverter<T> converter) => _conn.CompileStatement(sql, converter);
-        public ResultStatement<T> RStmt<T>(string sql) => _conn.CompileResultStatement<T>(sql);
-        public ResultStatement<T> Stmt<T>(string sql, ResultConverter<T> converter) => _conn.CompileStatement(sql, converter);
-        public Statement<T, U> Stmt<T, U>(string sql) => _conn.CompileStatement<T, U>(sql);
+        public Statement Stmt(string sql) => Connection.CompileStatement(sql);
+        public Statement<T> Stmt<T>(string sql) => Connection.CompileStatement<T>(sql);
+        public Statement<T> Stmt<T>(string sql, ParameterConverter<T> converter) => Connection.CompileStatement(sql, converter);
+        public ResultStatement<T> RStmt<T>(string sql) => Connection.CompileResultStatement<T>(sql);
+        public ResultStatement<T> Stmt<T>(string sql, ResultConverter<T> converter) => Connection.CompileStatement(sql, converter);
+        public Statement<T, U> Stmt<T, U>(string sql) => Connection.CompileStatement<T, U>(sql);
         public Statement<T, U> Stmt<T, U>(string sql, ResultConverter<T> rc, ParameterConverter<U> pc)
-            => _conn.CompileStatement(sql, rc, pc);
+            => Connection.CompileStatement(sql, rc, pc);
 
-        public void Dispose() => _conn.Dispose();
+        public void Dispose() => Connection.Dispose();
     }
 }
