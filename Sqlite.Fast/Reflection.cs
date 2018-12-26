@@ -82,7 +82,7 @@ namespace Sqlite.Fast
                 || typeInfo.IsPrimitive
                 || typeInfo.IsEnum
                 || type == typeof(Guid)
-                || IsNullable(type, out Type innerType) && IsScalar(innerType);
+                || (IsNullable(type, out Type innerType) && IsScalar(innerType));
         }
     }
 }

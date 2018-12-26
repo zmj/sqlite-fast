@@ -15,6 +15,7 @@ namespace Sqlite.Fast
         private static ValueBinder.Converter<string>[] _fromString;
         private static ValueBinder.Converter<ReadOnlyMemory<char>>[] _fromStringROMemory;
         private static ValueBinder.Converter<Memory<char>>[] _fromStringMemory;
+
         private static ValueBinder.Converter<Guid>[] _fromGuid;
         private static ValueBinder.Converter<Guid?>[] _fromGuidNull;
 
@@ -56,6 +57,7 @@ namespace Sqlite.Fast
                     (_fromStringROMemory = new[] { ValueBinder.Converter.Utf16Text((ReadOnlyMemory<char> value) => value.Span) });
             if (type == typeof(Memory<char>)) return _fromStringMemory ??
                     (_fromStringMemory = new[] { ValueBinder.Converter.Utf16Text((Memory<char> value) => value.Span) });
+
             if (type == typeof(Guid)) return _fromGuid ??
                     (_fromGuid = new[]
                     {
