@@ -304,17 +304,15 @@ namespace Sqlite.Fast.Tests
         [InlineData(null)]
         public void EnumNull(int? intValue)
         {
-            P<E?> p = default;
-            R<E?> r = default;
             using (var tbl = new TestTable("create table t (x int)"))
-            using (var insert = tbl.Stmt("insert into t values (@x)", p.C))
-            using (var select = tbl.Stmt("select x from t", r.C))
+            using (var insert = tbl.Stmt<E?>("insert into t values (@x)"))
+            using (var select = tbl.RStmt<E?>("select x from t"))
             {
                 E? value = (E?)intValue;
-                p.Value = value;
-                insert.Bind(p).Execute();
+                insert.Bind(value).Execute();
+                E? r = default;
                 Assert.True(select.Execute(ref r));
-                Assert.Equal(value, r.Value);
+                Assert.Equal(value, r);
             }
         }
 
@@ -426,6 +424,50 @@ namespace Sqlite.Fast.Tests
                 insert.Bind(p).Execute();
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(value, r.Value);
+            }
+        }
+
+        [Fact]
+        public void Guid_Value()
+        {
+            using (var tbl = new TestTable("create table t (x text)"))
+            using (var insert = tbl.Stmt<Guid>("insert into t values (@x)"))
+            using (var select = tbl.RStmt<Guid>("select x from t"))
+            {
+                Guid g = Guid.NewGuid();
+                insert.Bind(g).Execute();
+                Guid r = default;
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(g, r);
+            }
+        }
+
+        [Fact]
+        public void GuidNull_Value()
+        {
+            using (var tbl = new TestTable("create table t (x text)"))
+            using (var insert = tbl.Stmt<Guid?>("insert into t values (@x)"))
+            using (var select = tbl.RStmt<Guid?>("select x from t"))
+            {
+                Guid g = Guid.NewGuid();
+                insert.Bind(g).Execute();
+                Guid? r = default;
+                Assert.True(select.Execute(ref r));
+                Assert.Equal(g, r);
+            }
+        }
+
+        [Fact]
+        public void GuidNull_Null()
+        {
+            using (var tbl = new TestTable("create table t (x text)"))
+            using (var insert = tbl.Stmt<Guid?>("insert into t values (@x)"))
+            using (var select = tbl.RStmt<Guid?>("select x from t"))
+            {
+                insert.Bind(null).Execute();
+                Guid? r = Guid.NewGuid();
+                Assert.True(select.Execute(ref r));
+                Assert.Null(r);
             }
         }
     }

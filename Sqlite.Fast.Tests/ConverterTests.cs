@@ -195,5 +195,23 @@ namespace Sqlite.Fast.Tests
                 Assert.Equal(1, r.Value2);
             }
         }
+
+        [Fact]
+        public void Custom_ScalarGuidToText()
+        {
+            var conv = ParameterConverter.ScalarBuilder<Guid>()
+                .With((g, b) => g.ToString().AsSpan().CopyTo(b), _ => 36)
+                .Compile();
+            using (var tbl = new TestTable("create table t (x text)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", conv))
+            using (var select = tbl.RStmt<Guid>("select x from t"))
+            {
+                Guid g = Guid.NewGuid();
+                insert.Bind(g).Execute();
+                Guid r = default;
+                select.Execute(ref r);
+                Assert.Equal(g, r);
+            }
+        }
     }
 }

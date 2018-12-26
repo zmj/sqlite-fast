@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -12,7 +13,10 @@ namespace Sqlite.Fast
             (ValueBinder.Converter<T>[])(To(typeof(T)) ?? Array.Empty<ValueBinder.Converter<T>>());
 
         private static ValueBinder.Converter<string>[] _fromString;
-        private static ValueBinder.Converter<ReadOnlyMemory<char>>[] _fromStringMemory;
+        private static ValueBinder.Converter<ReadOnlyMemory<char>>[] _fromStringROMemory;
+        private static ValueBinder.Converter<Memory<char>>[] _fromStringMemory;
+        private static ValueBinder.Converter<Guid>[] _fromGuid;
+        private static ValueBinder.Converter<Guid?>[] _fromGuidNull;
 
         private static ValueBinder.Converter<long>[] _fromLong;
         private static ValueBinder.Converter<long?>[] _fromLongNull;
@@ -48,8 +52,26 @@ namespace Sqlite.Fast
         {
             if (type == typeof(string)) return _fromString ??
                     (_fromString = new[] { ValueBinder.Converter.Utf16Text((string value) => value.AsSpan()) });
-            if (type == typeof(ReadOnlyMemory<char>)) return _fromStringMemory ??
-                    (_fromStringMemory = new[] { ValueBinder.Converter.Utf16Text((ReadOnlyMemory<char> value) => value.Span) });
+            if (type == typeof(ReadOnlyMemory<char>)) return _fromStringROMemory ??
+                    (_fromStringROMemory = new[] { ValueBinder.Converter.Utf16Text((ReadOnlyMemory<char> value) => value.Span) });
+            if (type == typeof(Memory<char>)) return _fromStringMemory ??
+                    (_fromStringMemory = new[] { ValueBinder.Converter.Utf16Text((Memory<char> value) => value.Span) });
+            if (type == typeof(Guid)) return _fromGuid ??
+                    (_fromGuid = new[]
+                    {
+                        ValueBinder.Converter.Utf8Text(
+                            (Guid value, Span<byte> dest) => { if (!Utf8Formatter.TryFormat(value, dest, out _)) throw new FormatException(); },
+                            _ => 36),
+                    });
+            if (type == typeof(Guid?)) return _fromGuidNull ??
+                    (_fromGuidNull = new[]
+                    {
+                        ValueBinder.Converter.Utf8Text(
+                            (Guid? value) => value.HasValue,
+                            (Guid? value, Span<byte> dest) => { if (!Utf8Formatter.TryFormat(value.Value, dest, out _)) throw new FormatException(); },
+                            _ => 36),
+                        ValueBinder.Converter.Null<Guid?>(),
+                    });
 
             if (type == typeof(long)) return _fromLong ??
                     (_fromLong = new[] { ValueBinder.Converter.Integer((long value) => value) });

@@ -40,11 +40,20 @@ namespace Sqlite.Fast
                     BindFloat(statement, index, value, converter);
                     break;
                 case Sqlite.DataType.Text:
-                    if (converter.Utf8Text) BindUtf8Text(statement, index, value, converter);
-                    else BindUtf16Text(statement, index, value, converter);
+                    if (converter.Utf8Text)
+                    {
+                        if (converter.AsUtf8Text != null) BindAsUtf8Text(statement, index, value, converter);
+                        else BindToUtf8Text(statement, index, value, converter);
+                    }
+                    else
+                    {
+                        if (converter.AsUtf16Text != null) BindAsUtf16Text(statement, index, value, converter);
+                        else BindToUtf16Text(statement, index, value, converter);
+                    }
                     break;
                 case Sqlite.DataType.Blob:
-                    BindBlob(statement, index, value, converter);
+                    if (converter.AsBlob != null) BindAsBlob(statement, index, value, converter);
+                    else BindToBlob(statement, index, value, converter);
                     break;
                 case Sqlite.DataType.Null:
                     statement.BindNull(index);
@@ -69,71 +78,77 @@ namespace Sqlite.Fast
         private void BindInteger(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
             long bindValue;
-            try
-            {
-                bindValue = converter.ToInteger(value);
-            }
-            catch (Exception ex)
-            {
-                throw BindingException.ConversionFailed(_fieldName, typeof(TParams), value, ex);
-            }
+            try { bindValue = converter.ToInteger(value); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
             statement.BindInteger(index, bindValue);
         }
 
         private void BindFloat(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
             double bindValue;
-            try
-            {
-                bindValue = converter.ToFloat(value);
-            }
-            catch (Exception ex)
-            {
-                throw BindingException.ConversionFailed(_fieldName, typeof(TParams), value, ex);
-            }
+            try { bindValue = converter.ToFloat(value); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
             statement.BindFloat(index, bindValue);
         }
 
-        private void BindUtf8Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindToUtf8Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
-            ReadOnlySpan<byte> bindValue;
-            try
-            {
-                bindValue = converter.ToUtf8Text(value);
-            }
-            catch (Exception ex)
-            {
-                throw BindingException.ConversionFailed(_fieldName, typeof(TParams), value, ex);
-            }
+            int length;
+            try { length = converter.Length(value); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
+            Span<byte> bindValue = length <= 128 ? stackalloc byte[length] : new byte[length];
+            try { converter.ToUtf8Text(value, bindValue); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
             statement.BindUtf8Text(index, bindValue);
         }
 
-        private void BindUtf16Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindAsUtf8Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
-            ReadOnlySpan<char> bindValue;
-            try
-            {
-                bindValue = converter.ToUtf16Text(value);
-            }
-            catch (Exception ex)
-            {
-                throw BindingException.ConversionFailed(_fieldName, typeof(TParams), value, ex);
-            }
+            ReadOnlySpan<byte> bindValue;
+            try { bindValue = converter.AsUtf8Text(value); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
+            statement.BindUtf8Text(index, bindValue);
+        }
+
+        private void BindToUtf16Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        {
+            int length;
+            try { length = converter.Length(value); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
+            Span<char> bindValue = length <= 64 ? stackalloc char[length] : new char[length];
+            try { converter.ToUtf16Text(value, bindValue); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
             statement.BindUtf16Text(index, bindValue);
         }
 
-        private void BindBlob(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindAsUtf16Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
         {
-            ReadOnlySpan<byte> bindValue;
-            try
-            {
-                bindValue = converter.ToBlob(value);
-            }
-            catch (Exception ex)
-            {
-                throw BindingException.ConversionFailed(_fieldName, typeof(TParams), value, ex);
-            }
+            ReadOnlySpan<char> bindValue;
+            try { bindValue = converter.AsUtf16Text(value); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
+            statement.BindUtf16Text(index, bindValue);
+        }
+
+        private void BindToBlob(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        {
+            int length;
+            try { length = converter.Length(value); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
+            Span<byte> bindValue = length <= 128 ? stackalloc byte[length] : new byte[length];
+            try { converter.ToBlob(value, bindValue); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
             statement.BindBlob(index, bindValue);
         }
+
+        private void BindAsBlob(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        {
+            ReadOnlySpan<byte> bindValue;
+            try { bindValue = converter.AsBlob(value); }
+            catch (Exception ex) { throw BindFailed(value, ex); }
+            statement.BindBlob(index, bindValue);
+        }
+
+        private BindingException BindFailed(TField value, Exception exception) =>
+            BindingException.ConversionFailed(_fieldName, typeof(TParams), value, exception);
     }
 }

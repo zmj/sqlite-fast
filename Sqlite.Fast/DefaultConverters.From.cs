@@ -267,16 +267,8 @@ namespace Sqlite.Fast
 
         private static bool IsNullable(Type type) => IsNullable(type, out _);
 
-        private static bool IsNullable(Type type, out Type innerType)
-        {
-            if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                innerType = type.GenericTypeArguments[0];
-                return true;
-            }
-            innerType = default;
-            return false;
-        }
+        private static bool IsNullable(Type type, out Type innerType) =>
+            type.IsNullable(out innerType);
 
         private static bool IsNullableEnum(Type type) =>
             IsNullable(type, out Type innerType) && IsEnum(innerType);
