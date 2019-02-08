@@ -10,13 +10,13 @@ namespace Sqlite.Fast
         private const string DllName = "sqlite3.dll";
 
         [DllImport(DllName, EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result Open([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr conn);
+        internal static extern Result Open(in byte filename, out IntPtr conn);
 
         [DllImport(DllName, EntryPoint = "sqlite3_close_v2", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result CloseV2(IntPtr conn);
 
         [DllImport(DllName, EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result PrepareV2(IntPtr conn, [MarshalAs(UnmanagedType.LPStr)] string sql, int sqlByteCount, out IntPtr stmt, out IntPtr endSql);
+        internal static extern Result PrepareV2(IntPtr conn, in byte sql, int sqlByteCount, out IntPtr stmt, out IntPtr endSql);
 
         [DllImport(DllName, EntryPoint = "sqlite3_finalize", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result Finalize(IntPtr stmt);

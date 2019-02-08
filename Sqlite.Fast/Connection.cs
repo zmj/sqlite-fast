@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Sqlite.Fast
@@ -12,7 +13,9 @@ namespace Sqlite.Fast
         
         public Connection(string dbFilePath)
         {
-            Sqlite.Result r = Sqlite.Open(dbFilePath, out IntPtr conn);
+            // Marshal screws up the utf16->utf8 reencode, so do it in managed
+            byte[] utf8Path = Encoding.UTF8.GetBytes(dbFilePath);
+            Sqlite.Result r = Sqlite.Open(MemoryMarshal.GetReference(utf8Path.AsSpan()), out IntPtr conn);
             _connnection = conn;
             if (r != Sqlite.Result.Ok)
             {
@@ -24,7 +27,13 @@ namespace Sqlite.Fast
         public Statement CompileStatement(string sql)
         {
             CheckDisposed();
-            Sqlite.Result r = Sqlite.PrepareV2(_connnection, sql, sqlByteCount: -1, out IntPtr stmt, out _);
+            byte[] utf8Sql = Encoding.UTF8.GetBytes(sql);
+            Sqlite.Result r = Sqlite.PrepareV2(
+                _connnection, 
+                sql: MemoryMarshal.GetReference(utf8Sql.AsSpan()), 
+                sqlByteCount: -1, 
+                out IntPtr stmt,
+                out _);
             if (r != Sqlite.Result.Ok)
             {
                 throw new SqliteException(r, "Failed to compile sql statement");
