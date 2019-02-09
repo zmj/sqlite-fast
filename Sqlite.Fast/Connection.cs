@@ -27,10 +27,9 @@ namespace Sqlite.Fast
         public Statement CompileStatement(string sql)
         {
             CheckDisposed();
-            byte[] utf8Sql = Encoding.UTF8.GetBytes(sql);
             Sqlite.Result r = Sqlite.PrepareV2(
                 _connnection, 
-                sql: MemoryMarshal.GetReference(utf8Sql.AsSpan()), 
+                sql: MemoryMarshal.GetReference(sql.AsSpan()), 
                 sqlByteCount: -1, 
                 out IntPtr stmt,
                 out _);
