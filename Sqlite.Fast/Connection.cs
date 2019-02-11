@@ -69,6 +69,16 @@ namespace Sqlite.Fast
             return CompileStatement(sql, resultConverter, parameterConverter);
         }
 
+        public Statement<TResult, TParams> CompileStatement<TResult, TParams>(string sql, ParameterConverter<TParams> converter)
+        {
+            return CompileStatement(sql, ResultConverter.Default<TResult>(), converter);
+        }
+
+        public Statement<TResult, TParams> CompileStatement<TResult, TParams>(string sql, ResultConverter<TResult> converter)
+        {
+            return CompileStatement(sql, converter, ParameterConverter.Default<TParams>());
+        }
+
         public Statement<TResult, TParams> CompileStatement<TResult, TParams>(
             string sql,
             ResultConverter<TResult> resultConverter,
@@ -78,6 +88,29 @@ namespace Sqlite.Fast
             return new Statement<TResult, TParams>(
                 new ResultStatement<TResult>(statement, resultConverter),
                 new Statement<TParams>(statement, parameterConverter));
+        }
+
+        /// <summary>
+        /// TryCheckpoint attempts to execute a WAL checkpoint in the specified mode.
+        /// Returns true if the checkpoint succeeds, false if the checkpoint is
+        /// unable to begin within the configured busy timeout.
+        /// Throws for non-busy errors.
+        /// </summary>
+        /// <param name="mode"></param>
+        /// <returns></returns>
+        public bool TryCheckpoint(Sqlite.CheckpointMode mode)
+        {
+            CheckDisposed();
+            Sqlite.Result r = Sqlite.WalCheckpointV2(_connnection, default, mode, out _, out _);
+            if (r == Sqlite.Result.Busy)
+            {
+                return false;
+            }
+            else if (r != Sqlite.Result.Ok)
+            {
+                throw new SqliteException(r, "Unexpected checkpoint failure");
+            }
+            return true;
         }
 
         private void CheckDisposed()

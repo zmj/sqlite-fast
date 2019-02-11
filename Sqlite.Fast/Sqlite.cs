@@ -15,6 +15,9 @@ namespace Sqlite.Fast
         [DllImport(DllName, EntryPoint = "sqlite3_close_v2", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result CloseV2(IntPtr conn);
 
+        [DllImport(DllName, EntryPoint = "sqlite3_wal_checkpoint_v2", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern Result WalCheckpointV2(IntPtr conn, [MarshalAs(UnmanagedType.U1)] in byte attachedDbName, CheckpointMode mode, out int walLogSize, out int checkpointedFrames);
+
         [DllImport(DllName, EntryPoint = "sqlite3_prepare16_v2", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result PrepareV2(IntPtr conn, [MarshalAs(UnmanagedType.U2)] in char sql, int sqlByteCount, out IntPtr stmt, out IntPtr endSql);
 
@@ -216,6 +219,26 @@ namespace Sqlite.Fast
         {
             public static readonly IntPtr Static = new IntPtr(0);
             public static readonly IntPtr Transient = new IntPtr(-1);
+        }
+
+        public enum CheckpointMode
+        {
+            /// <summary>
+            /// Do as much as possible without blocking
+            /// </summary>
+            Passive = 0,
+            /// <summary>
+            /// Wait for writers, then checkpoint
+            /// </summary>
+            Full = 1,
+            /// <summary>
+            /// Like FULL but wait for for readers
+            /// </summary>
+            Restart = 2,
+            /// <summary>
+            /// Like RESTART but also truncate WAL
+            /// </summary>
+            Truncate = 3,
         }
     }
 }
