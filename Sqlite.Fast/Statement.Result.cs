@@ -26,25 +26,39 @@ namespace Sqlite.Fast
         
         public bool Execute(ref TResult result)
         {
-            var rows = ExecuteInternal(_converter).GetEnumerator();
-            if (!rows.MoveNext())
+            Rows<TResult>.Enumerator rows = ExecuteInternal(_converter).GetEnumerator();
+            try
             {
-                return false;
+                if (!rows.MoveNext())
+                {
+                    return false;
+                }
+                rows.Current.AssignTo(ref result);
+                return true;
             }
-            rows.Current.AssignTo(ref result);
-            return true;
+            finally
+            {
+                rows.Dispose();
+            }
         }
 
         public bool Execute<TCallerResult>(ResultConverter<TCallerResult> converter, ref TCallerResult result)
         {
             ValidateConverter(converter);
-            var rows = ExecuteInternal(converter).GetEnumerator();
-            if (!rows.MoveNext())
+            Rows<TCallerResult>.Enumerator rows = ExecuteInternal(converter).GetEnumerator();
+            try
             {
-                return false;
+                if (!rows.MoveNext())
+                {
+                    return false;
+                }
+                rows.Current.AssignTo(ref result);
+                return true;
             }
-            rows.Current.AssignTo(ref result);
-            return true;
+            finally
+            {
+                rows.Dispose();
+            }
         }
 
         public Rows<TResult> Execute() => ExecuteInternal(_converter);

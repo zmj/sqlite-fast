@@ -8,116 +8,104 @@ namespace Sqlite.Fast
         private readonly IntPtr _statement;
         internal readonly int ColumnCount;
         internal readonly int ParameterCount;
-        private readonly VersionTokenSource _versionSource = new VersionTokenSource();
+        private readonly StatementResetter _resetter;
 
-        private bool _needsReset = false;
+        private StatementVersion? _lastExecuteVersion = null;
         private bool _disposed = false;
 
         internal Statement(IntPtr statement)
         {
             _statement = statement;
-            ColumnCount = Sqlite.ColumCount(statement);
+            ColumnCount = Sqlite.ColumnCount(statement);
             ParameterCount = Sqlite.BindParameterCount(statement);
+            _resetter = new StatementResetter(statement);
         }
 
         public void Execute()
         {
             CheckDisposed();
-            Rows rows = ExecuteInternal();
-            rows.GetEnumerator().MoveNext();
+            Rows.Enumerator rows = ExecuteInternal().GetEnumerator();
+            try
+            {
+                rows.MoveNext();
+            }
+            finally
+            {
+                rows.Dispose();
+            }
         }
 
         internal Rows ExecuteInternal()
         {
             CheckDisposed();
-            ResetIfNecessary();
-            _needsReset = true;
-            return new Rows(_statement, ColumnCount, _versionSource.Token);
-        }
-
-        private void ResetIfNecessary()
-        {
-            if (!_needsReset) return;
-            Sqlite.Result r = Sqlite.Reset(_statement);
-            if (r != Sqlite.Result.Ok)
+            if (_lastExecuteVersion.HasValue)
             {
-                throw new SqliteException(r, "Failed to reset statement");
+                _resetter.ResetIfNecessary(_lastExecuteVersion.Value);
             }
-            _needsReset = false;
-            _versionSource.Version++;
+            _lastExecuteVersion = _resetter.CurrentVersion;
+            return new Rows(_statement, ColumnCount, _resetter);
         }
-
+        
         internal void BeginBinding()
         {
             CheckDisposed();
-            ResetIfNecessary();
+            if (_lastExecuteVersion.HasValue)
+            {
+                _resetter.ResetIfNecessary(_lastExecuteVersion.Value);
+            }
         }
 
         internal void BindInteger(int index, long value)
         {
-            Sqlite.Result r = Sqlite.BindInteger(_statement, index, value);
-            if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, $"Failed to bind {value} to parameter {index}");
-            }
+            Sqlite.BindInteger(_statement, index, value)
+                .ThrowIfNotOK($"Failed to bind {value} to parameter {index}");
         }
 
         internal void BindFloat(int index, double value)
         {
-            Sqlite.Result r = Sqlite.BindFloat(_statement, index, value);
-            if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, $"Failed to bind {value} to parameter {index}");
-            }
+            Sqlite.BindFloat(_statement, index, value)
+                .ThrowIfNotOK($"Failed to bind {value} to parameter {index}");
         }
 
         internal void BindUtf16Text(int index, ReadOnlySpan<char> value)
         {
-            Sqlite.Result r = Sqlite.BindText16(
+            Sqlite.BindText16(
                 _statement,
                 index,
                 in MemoryMarshal.GetReference(value),
                 value.Length << 1,
-                Sqlite.Destructor.Transient);
-            if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, $"Failed to bind '{value.ToString()}' to parameter {index}");
-            }
+                Sqlite.Destructor.Transient)
+                .ThrowIfNotOK($"Failed to bind '{value.ToString()}' to parameter {index}");
         }
 
         internal void BindUtf8Text(int index, ReadOnlySpan<byte> value)
         {
-            Sqlite.Result r = Sqlite.BindText(
+            Sqlite.BindText(
                 _statement,
                 index,
                 in MemoryMarshal.GetReference(value),
                 value.Length,
-                Sqlite.Destructor.Transient);
+                Sqlite.Destructor.Transient)
+                .ThrowIfNotOK($"Failed to bind UTF-8 text to parameter {index}"); // todo: tostring value
         }
 
         internal void BindBlob(int index, ReadOnlySpan<byte> value)
         {
-            Sqlite.Result r = Sqlite.BindBlob(
+            Sqlite.BindBlob(
                 _statement,
                 index,
                 in MemoryMarshal.GetReference(value),
                 value.Length,
-                Sqlite.Destructor.Transient);
-            if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, $"Failed to bind binary blob to parameter {index}");
-            }
+                Sqlite.Destructor.Transient)
+                .ThrowIfNotOK($"Failed to bind binary blob to parameter {index}");
         }
 
         internal void BindNull(int index)
         {
-            Sqlite.Result r = Sqlite.BindNull(_statement, index);
-            if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, $"Failed to bind null to parameter {index}");
-            }
-        }                
-
+            Sqlite.BindNull(_statement, index)
+                .ThrowIfNotOK($"Failed to bind null to parameter {index}");
+        }               
+    
         private void CheckDisposed()
         {
             if (_disposed)
@@ -142,10 +130,7 @@ namespace Sqlite.Fast
                 return;
             }
             GC.SuppressFinalize(this);
-            if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, "Failed to finalize prepared sql statement");
-            }
+            r.ThrowIfNotOK("Failed to finalize prepared sql statement");
         }
     }
 }

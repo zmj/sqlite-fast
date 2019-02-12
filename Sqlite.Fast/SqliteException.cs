@@ -8,10 +8,25 @@ namespace Sqlite.Fast
     {
         public Sqlite.Result Error { get; }
 
-        public SqliteException(Sqlite.Result err, string msg)
-            : base($"{msg} (SQLite error code {err})")
+        internal SqliteException(Sqlite.Result error, string message)
+            : base($"{message} (SQLite error code {error})")
         {
-            Error = err;
+            Error = error;
+        }
+    }
+
+    internal static class SqliteExceptionExtensions
+    {
+        public static void ThrowIfNotOK(this Sqlite.Result result, string message)
+        {
+            if (result != Sqlite.Result.Ok)
+                throw new SqliteException(result, message);
+        }
+
+        public static void ThrowIfNot(this Sqlite.Result result, Sqlite.Result expected, string message)
+        {
+            if (result != expected)
+                throw new SqliteException(result, message);
         }
     }
 }

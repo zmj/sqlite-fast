@@ -17,26 +17,25 @@ namespace Sqlite.Fast
             byte[] utf8Path = Encoding.UTF8.GetBytes(dbFilePath);
             Sqlite.Result r = Sqlite.Open(MemoryMarshal.GetReference(utf8Path.AsSpan()), out IntPtr conn);
             _connnection = conn;
-            if (r != Sqlite.Result.Ok)
+
+            try { r.ThrowIfNotOK("Failed to open database connection"); }
+            catch
             {
                 Dispose();
-                throw new SqliteException(r, "Failed to open database connection");
+                throw;
             }
         }
 
         public Statement CompileStatement(string sql)
         {
             CheckDisposed();
-            Sqlite.Result r = Sqlite.PrepareV2(
+            Sqlite.PrepareV2(
                 _connnection, 
                 sql: MemoryMarshal.GetReference(sql.AsSpan()), 
                 sqlByteCount: -1, 
                 out IntPtr stmt,
-                out _);
-            if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, "Failed to compile sql statement");
-            }
+                out _)
+                .ThrowIfNotOK("Failed to compile sql statement");
             return new Statement(stmt);
         }
 
@@ -94,7 +93,7 @@ namespace Sqlite.Fast
         /// TryCheckpoint attempts to execute a WAL checkpoint in the specified mode.
         /// Returns true if the checkpoint succeeds, false if the checkpoint is
         /// unable to begin within the configured busy timeout.
-        /// Throws for non-busy errors.
+        /// Throws for non-contention errors.
         /// </summary>
         /// <param name="mode"></param>
         /// <returns></returns>
@@ -102,14 +101,11 @@ namespace Sqlite.Fast
         {
             CheckDisposed();
             Sqlite.Result r = Sqlite.WalCheckpointV2(_connnection, default, mode, out _, out _);
-            if (r == Sqlite.Result.Busy)
+            if (r == Sqlite.Result.Busy || r == Sqlite.Result.Locked)
             {
                 return false;
             }
-            else if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, "Unexpected checkpoint failure");
-            }
+            r.ThrowIfNotOK("Unexpected checkpoint failure");
             return true;
         }
 
@@ -137,10 +133,7 @@ namespace Sqlite.Fast
                 return;
             }
             GC.SuppressFinalize(this);
-            if (r != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(r, "Failed to close database connection");
-            }
+            r.ThrowIfNotOK("Failed to close database connection");
         }
     }
 }

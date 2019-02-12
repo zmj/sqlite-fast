@@ -18,28 +18,31 @@ namespace Sqlite.Fast
     {
         private readonly IntPtr _statement;
         private readonly int _columnCount;
-        private readonly VersionToken _version;
+        private readonly StatementResetter _resetter;
 
-        public Rows(IntPtr statement, int columnCount, VersionToken version)
+        public Rows(IntPtr statement, int columnCount, StatementResetter resetter)
         {
             _statement = statement;
             _columnCount = columnCount;
-            _version = version;
+            _resetter = resetter;
         }
 
-        public Enumerator GetEnumerator() => new Enumerator(_statement, _columnCount, _version);
+        public Enumerator GetEnumerator() => new Enumerator(_statement, _columnCount, _resetter);
 
         public struct Enumerator
         {
             private readonly IntPtr _statement;
             private readonly int _columnCount;
-            private readonly VersionToken _version;
+            private readonly StatementResetter _resetter;
 
-            public Enumerator(IntPtr statement, int columnCount, VersionToken version)
+            private StatementVersion? _enumerationVersion;
+
+            public Enumerator(IntPtr statement, int columnCount, StatementResetter resetter)
             {
                 _statement = statement;
                 _columnCount = columnCount;
-                _version = version;
+                _resetter = resetter;
+                _enumerationVersion = null;
                 Current = default;
             }
 
@@ -47,38 +50,31 @@ namespace Sqlite.Fast
 
             public bool MoveNext()
             {
-                CheckVersion();
+                if (_enumerationVersion.HasValue) _resetter.ThrowIfReset(expectedVersion: _enumerationVersion.Value);
+                else _enumerationVersion = _resetter.CurrentVersion;
+
                 Sqlite.Result r = Sqlite.Step(_statement);
-                if (r == Sqlite.Result.Row)
+                if (r == Sqlite.Result.Done)
                 {
-                    Current = new Row(_statement, _columnCount);
-                    return true;
-                }
-                else if (r == Sqlite.Result.Done)
-                {
-                    Current = default;
+                    Reset();
                     return false;
                 }
-                else
-                {
-                    throw new SqliteException(r, "Statement execution failed");
-                }
+                r.ThrowIfNot(Sqlite.Result.Row, "Statement execution failed");
+                Current = new Row(_statement, _columnCount);
+                return true;
             }
 
             public void Reset()
             {
-                CheckVersion();
+                if (_enumerationVersion.HasValue)
+                {
+                    _resetter.ResetIfNecessary(lastKnownVersion: _enumerationVersion.Value);
+                    _enumerationVersion = null;
+                }
                 Current = default;
-                Sqlite.Reset(_statement);
             }
 
-            private void CheckVersion()
-            {
-                if (_version.IsStale)
-                {
-                    throw new InvalidOperationException("Result enumerator used after source statement reset");
-                }
-            }
+            public void Dispose() => Reset();
         }
     }
 }

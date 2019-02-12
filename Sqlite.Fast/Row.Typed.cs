@@ -69,6 +69,7 @@ namespace Sqlite.Fast
 
             public void Dispose()
             {
+                _rowEnumerator.Dispose();
                 _rowEnumerator = default;
             }
         }

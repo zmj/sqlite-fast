@@ -52,7 +52,7 @@ namespace Sqlite.Fast
         internal static extern Result Reset(IntPtr stmt);
 
         [DllImport(DllName, EntryPoint = "sqlite3_column_count", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int ColumCount(IntPtr stmt);
+        internal static extern int ColumnCount(IntPtr stmt);
 
         [DllImport(DllName, EntryPoint = "sqlite3_column_type", CallingConvention = CallingConvention.Cdecl)]
         internal static extern DataType ColumnType(IntPtr stmt, int colIndex);
