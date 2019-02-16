@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+    /// <summary>
+    /// Sqlite contains native function and constant definitions.
+    /// </summary>
     public static class Sqlite
     {
         private const string DllName = "sqlite3.dll";
@@ -78,6 +81,9 @@ namespace Sqlite.Fast
         [DllImport(DllName, EntryPoint = "sqlite3_column_blob", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr ColumnBlob(IntPtr stmt, int colIndex);
 
+        /// <summary>
+        /// SQLite result code
+        /// </summary>
         public enum Result
         {
             /// <summary>
@@ -221,6 +227,9 @@ namespace Sqlite.Fast
             public static readonly IntPtr Transient = new IntPtr(-1);
         }
 
+        /// <summary>
+        /// WAL checkpoint mode
+        /// </summary>
         public enum CheckpointMode
         {
             /// <summary>

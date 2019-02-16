@@ -4,6 +4,11 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+    /// <summary>
+    /// Statement wraps a SQLite prepared statement that has one or more result rows.
+    /// Create a Statement (by calling Connection.CompileStatement), reuse it as many times as necessary, then dispose it.
+    /// Statement instances are not thread-safe.
+    /// </summary>
     public sealed class ResultStatement<TResult> : IDisposable
     {
         private readonly Statement _statement;
@@ -23,7 +28,11 @@ namespace Sqlite.Fast
                 throw;
             }
         }
-        
+
+        /// <summary>
+        /// Executes the statement and assigns the first result row to an instance of the result type.
+        /// </summary>
+        /// <returns>False if there were no result rows; true otherwise.</returns>
         public bool Execute(ref TResult result)
         {
             Rows<TResult>.Enumerator rows = ExecuteInternal(_converter).GetEnumerator();
@@ -42,6 +51,10 @@ namespace Sqlite.Fast
             }
         }
 
+        /// <summary>
+        /// Executes the statement and assigns the first result row using a custom converter.
+        /// </summary>
+        /// <returns>False if there were no result rows; true otherwise.</returns>
         public bool Execute<TCallerResult>(ResultConverter<TCallerResult> converter, ref TCallerResult result)
         {
             ValidateConverter(converter);
@@ -61,8 +74,16 @@ namespace Sqlite.Fast
             }
         }
 
+        /// <summary>
+        /// Executes the statement.
+        /// </summary>
+        /// <returns>An enumeration of result rows.</returns>
         public Rows<TResult> Execute() => ExecuteInternal(_converter);
 
+        /// <summary>
+        /// Executes the statement and assigns the result rows using a custom converter.
+        /// </summary>
+        /// <returns>An enueration of result rows.</returns>
         public Rows<TCallerResult> Execute<TCallerResult>(ResultConverter<TCallerResult> converter)
         {
             ValidateConverter(converter);
@@ -82,7 +103,10 @@ namespace Sqlite.Fast
                 throw new ArgumentException($"Converter expects {converter.FieldCount} columns; statement returns {_statement.ColumnCount} columns");
             }
         }
-
+        
+        /// <summary>
+        /// Finalizes the prepared statement. If Dispose is not called, the prepared statement will be finalized by the finalizer thread.
+        /// </summary>
         public void Dispose() => _statement.Dispose();
     }
 }

@@ -3,6 +3,11 @@ using System.Runtime.InteropServices;
 
 namespace Sqlite.Fast
 {
+    /// <summary>
+    /// Statement wraps a SQLite prepared statement that has no paremeters and no results.
+    /// Create a Statement (by calling Connection.CompileStatement), reuse it as many times as necessary, then dispose it.
+    /// Statement instances are not thread-safe.
+    /// </summary>
     public sealed class Statement : IDisposable
     {
         private readonly IntPtr _statement;
@@ -21,9 +26,11 @@ namespace Sqlite.Fast
             _resetter = new StatementResetter(statement);
         }
 
+        /// <summary>
+        /// Executes the statement.
+        /// </summary>
         public void Execute()
         {
-            CheckDisposed();
             Rows.Enumerator rows = ExecuteInternal().GetEnumerator();
             try
             {
@@ -114,8 +121,15 @@ namespace Sqlite.Fast
             }
         }
 
-        ~Statement() => Dispose(disposing: false);
+        /// <summary>
+        /// Finalizes the prepared statement. If Dispose is not called, the prepared statement will be finalized by the finalizer thread.
+        /// </summary>
         public void Dispose() => Dispose(disposing: true);
+
+        /// <summary>
+        /// Finalizes the prepared statement.
+        /// </summary>
+        ~Statement() => Dispose(disposing: false);
 
         private void Dispose(bool disposing)
         { 
@@ -124,12 +138,12 @@ namespace Sqlite.Fast
                 return;
             }
             Sqlite.Result r = Sqlite.Finalize(_statement);
-            _disposed = true;
             if (!disposing)
             {
                 return;
             }
             GC.SuppressFinalize(this);
+            _disposed = true;
             r.ThrowIfNotOK("Failed to finalize prepared sql statement");
         }
     }

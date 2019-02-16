@@ -4,8 +4,14 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+    /// <summary>
+    /// SqliteException is thrown when a SQLite call returns an unexpected error code.
+    /// </summary>
     public class SqliteException : Exception
     {
+        /// <summary>
+        /// The error code.
+        /// </summary>
         public Sqlite.Result Error { get; }
 
         internal SqliteException(Sqlite.Result error, string message)

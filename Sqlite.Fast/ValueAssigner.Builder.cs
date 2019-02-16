@@ -17,13 +17,13 @@ namespace Sqlite.Fast
 
     internal static class ValueAssigner
     {
-        internal static IBuilder<TResult> Build<TResult>(MemberInfo member) =>
-            (IBuilder<TResult>)BuildInternal<TResult>(member);
+        public static IBuilder<TResult> Build<TResult>(MemberInfo member) =>
+            (IBuilder<TResult>)Buildpublic<TResult>(member);
 
-        internal static Builder<TResult, TResult> Build<TResult>() =>
-            (Builder<TResult, TResult>)BuildInternal<TResult>(member: null);
+        public static Builder<TResult, TResult> Build<TResult>() =>
+            (Builder<TResult, TResult>)Buildpublic<TResult>(member: null);
 
-        private static object BuildInternal<TResult>(MemberInfo member)
+        private static object Buildpublic<TResult>(MemberInfo member)
         {
             Type valueType = member != null ? member.ValueType() : typeof(TResult);
             ConstructorInfo constructor = typeof(Builder<,>)
@@ -33,29 +33,29 @@ namespace Sqlite.Fast
             return constructor.Invoke(new[] { member });
         }
    
-        internal interface IBuilder<TResult>
+        public interface IBuilder<TResult>
         {
             MemberInfo Member { get; }
             IValueAssigner<TResult> Compile(bool withDefaults);
             Builder<TResult, TField> AsConcrete<TField>();
         }
 
-        internal sealed class Builder<TResult, TField> : IBuilder<TResult>
+        public sealed class Builder<TResult, TField> : IBuilder<TResult>
         {
             public MemberInfo Member { get; }
 
-            internal FromInteger<TField> FromInteger;
-            internal FromFloat<TField> FromFloat;
-            internal FromText<TField> FromUtf16Text;
-            internal FromUtf8Text<TField> FromUtf8Text;
-            internal FromBlob<TField> FromBlob;
-            internal FromNull<TField> FromNull;
+            public FromInteger<TField> FromInteger;
+            public FromFloat<TField> FromFloat;
+            public FromText<TField> FromUtf16Text;
+            public FromUtf8Text<TField> FromUtf8Text;
+            public FromBlob<TField> FromBlob;
+            public FromNull<TField> FromNull;
 
             public Builder(MemberInfo member) => Member = member;
 
             IValueAssigner<TResult> IBuilder<TResult>.Compile(bool withDefaults) => Compile(withDefaults);
 
-            internal ValueAssigner<TResult, TField> Compile(bool withDefaults)
+            public ValueAssigner<TResult, TField> Compile(bool withDefaults)
             {
                 if (withDefaults)
                 {
