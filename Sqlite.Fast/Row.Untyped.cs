@@ -59,7 +59,7 @@ namespace Sqlite.Fast
                     Reset();
                     return false;
                 }
-                r.ThrowIfNot(Sqlite.Result.Row, "Statement execution failed");
+                r.ThrowIfNot(Sqlite.Result.Row, nameof(Sqlite.Step));
                 Current = new Row(_statement, _columnCount);
                 return true;
             }

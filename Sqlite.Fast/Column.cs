@@ -17,9 +17,9 @@ namespace Sqlite.Fast
             DataType = Sqlite.ColumnType(statement, index);
         }
 
-        public long AsInteger() => Sqlite.ColumnInteger(_statement, Index);
+        public long AsInteger() => Sqlite.ColumnInt64(_statement, Index);
 
-        public double AsFloat() => Sqlite.ColumnFloat(_statement, Index);
+        public double AsFloat() => Sqlite.ColumnDouble(_statement, Index);
 
         public ReadOnlySpan<byte> AsUtf8Text()
         {

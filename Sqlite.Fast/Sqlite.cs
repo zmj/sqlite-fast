@@ -22,16 +22,16 @@ namespace Sqlite.Fast
         internal static extern Result WalCheckpointV2(IntPtr conn, [MarshalAs(UnmanagedType.U1)] in byte attachedDbName, CheckpointMode mode, out int walLogSize, out int checkpointedFrames);
 
         [DllImport(DllName, EntryPoint = "sqlite3_prepare16_v2", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result PrepareV2(IntPtr conn, [MarshalAs(UnmanagedType.U2)] in char sql, int sqlByteCount, out IntPtr stmt, out IntPtr endSql);
+        internal static extern Result Prepare16V2(IntPtr conn, [MarshalAs(UnmanagedType.U2)] in char sql, int sqlByteCount, out IntPtr stmt, out IntPtr endSql);
 
         [DllImport(DllName, EntryPoint = "sqlite3_finalize", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result Finalize(IntPtr stmt);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_int64", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindInteger(IntPtr stmt, int paramIndex, long value);
+        internal static extern Result BindInt64(IntPtr stmt, int paramIndex, long value);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_double", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindFloat(IntPtr stmt, int paramIndex, double value);
+        internal static extern Result BindDouble(IntPtr stmt, int paramIndex, double value);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_text", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U1)] in byte value, int valueByteCount, IntPtr destructor);
@@ -67,10 +67,10 @@ namespace Sqlite.Fast
         internal static extern int ColumnBytes16(IntPtr stmt, int colIndex);
 
         [DllImport(DllName, EntryPoint = "sqlite3_column_int64", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern long ColumnInteger(IntPtr stmt, int colIndex);
+        internal static extern long ColumnInt64(IntPtr stmt, int colIndex);
 
         [DllImport(DllName, EntryPoint = "sqlite3_column_double", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern double ColumnFloat(IntPtr stmt, int colIndex);
+        internal static extern double ColumnDouble(IntPtr stmt, int colIndex);
 
         [DllImport(DllName, EntryPoint = "sqlite3_column_text", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr ColumnText(IntPtr stmt, int colIndex);

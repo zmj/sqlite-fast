@@ -20,7 +20,7 @@ namespace Sqlite.Fast
             {
                 return false;
             }
-            Sqlite.Reset(_statement).ThrowIfNotOK("Failed to reset statement");
+            Sqlite.Reset(_statement).ThrowIfNotOK(nameof(Sqlite.Reset));
             _version++;
             return true;
         }

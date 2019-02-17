@@ -64,14 +64,14 @@ namespace Sqlite.Fast
 
         internal void BindInteger(int index, long value)
         {
-            Sqlite.BindInteger(_statement, index, value)
-                .ThrowIfNotOK($"Failed to bind {value} to parameter {index}");
+            Sqlite.BindInt64(_statement, index, value)
+                .ThrowIfNotOK(nameof(Sqlite.BindInt64));
         }
 
         internal void BindFloat(int index, double value)
         {
-            Sqlite.BindFloat(_statement, index, value)
-                .ThrowIfNotOK($"Failed to bind {value} to parameter {index}");
+            Sqlite.BindDouble(_statement, index, value)
+                .ThrowIfNotOK(nameof(Sqlite.BindDouble));
         }
 
         internal void BindUtf16Text(int index, ReadOnlySpan<char> value)
@@ -82,7 +82,7 @@ namespace Sqlite.Fast
                 in MemoryMarshal.GetReference(value),
                 value.Length << 1,
                 Sqlite.Destructor.Transient)
-                .ThrowIfNotOK($"Failed to bind '{value.ToString()}' to parameter {index}");
+                .ThrowIfNotOK(nameof(Sqlite.BindText16));
         }
 
         internal void BindUtf8Text(int index, ReadOnlySpan<byte> value)
@@ -93,7 +93,7 @@ namespace Sqlite.Fast
                 in MemoryMarshal.GetReference(value),
                 value.Length,
                 Sqlite.Destructor.Transient)
-                .ThrowIfNotOK($"Failed to bind UTF-8 text to parameter {index}"); // todo: tostring value
+                .ThrowIfNotOK(nameof(Sqlite.BindText));
         }
 
         internal void BindBlob(int index, ReadOnlySpan<byte> value)
@@ -104,13 +104,13 @@ namespace Sqlite.Fast
                 in MemoryMarshal.GetReference(value),
                 value.Length,
                 Sqlite.Destructor.Transient)
-                .ThrowIfNotOK($"Failed to bind binary blob to parameter {index}");
+                .ThrowIfNotOK(nameof(Sqlite.BindBlob));
         }
 
         internal void BindNull(int index)
         {
             Sqlite.BindNull(_statement, index)
-                .ThrowIfNotOK($"Failed to bind null to parameter {index}");
+                .ThrowIfNotOK(nameof(Sqlite.BindNull));
         }               
     
         private void CheckDisposed()
@@ -144,7 +144,7 @@ namespace Sqlite.Fast
             }
             GC.SuppressFinalize(this);
             _disposed = true;
-            r.ThrowIfNotOK("Failed to finalize prepared sql statement");
+            r.ThrowIfNotOK(nameof(Sqlite.Finalize));
         }
     }
 }

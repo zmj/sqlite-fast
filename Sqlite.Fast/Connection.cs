@@ -27,7 +27,7 @@ namespace Sqlite.Fast
             Sqlite.Result r = Sqlite.Open(MemoryMarshal.GetReference(utf8Path.AsSpan()), out IntPtr conn);
             _connnection = conn;
 
-            try { r.ThrowIfNotOK("Failed to open database connection"); }
+            try { r.ThrowIfNotOK(nameof(Sqlite.Open)); }
             catch
             {
                 Dispose();
@@ -41,13 +41,13 @@ namespace Sqlite.Fast
         public Statement CompileStatement(string sql)
         {
             CheckDisposed();
-            Sqlite.PrepareV2(
-                _connnection, 
-                sql: MemoryMarshal.GetReference(sql.AsSpan()), 
-                sqlByteCount: -1, 
+            Sqlite.Prepare16V2(
+                _connnection,
+                sql: MemoryMarshal.GetReference(sql.AsSpan()),
+                sqlByteCount: -1,
                 out IntPtr stmt,
                 out _)
-                .ThrowIfNotOK("Failed to compile sql statement");
+                .ThrowIfNotOK(nameof(Sqlite.Prepare16V2));
             return new Statement(stmt);
         }
 
@@ -161,7 +161,7 @@ namespace Sqlite.Fast
             {
                 return false;
             }
-            r.ThrowIfNotOK("Unexpected checkpoint failure");
+            r.ThrowIfNotOK(nameof(Sqlite.WalCheckpointV2));
             return true;
         }
 
@@ -197,7 +197,7 @@ namespace Sqlite.Fast
             }
             GC.SuppressFinalize(this);
             _disposed = true;
-            r.ThrowIfNotOK("Failed to close database connection");
+            r.ThrowIfNotOK(nameof(Sqlite.CloseV2));
         }
     }
 }
