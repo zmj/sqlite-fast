@@ -8,11 +8,19 @@ namespace Sqlite.Fast
 {
     public sealed partial class ResultConverter<TResult>
     {
+        /// <summary>
+        /// ResultConverter.Builder constructs a custom ResultConverter.
+        /// </summary>
         public sealed class Builder
         {
             private readonly List<ValueAssigner.IBuilder<TResult>> _assignerBuilders = new List<ValueAssigner.IBuilder<TResult>>();
             private readonly bool _withDefaults;
 
+            /// <summary>
+            /// Creates a builder for a custom ResultConverter.
+            /// Call builder.With(...) to define member conversions, then builder.Compile().
+            /// </summary>
+            /// <param name="withDefaultConversions">If true, member conversions will fall back to default conversion when no custom conversion is defined.</param>
             public Builder(bool withDefaultConversions = true)
             {
                 _withDefaults = withDefaultConversions;
@@ -43,41 +51,66 @@ namespace Sqlite.Fast
                 throw new ArgumentException($"Expression is not settable field or property of {typeof(TResult).Name}");
             }
 
+            /// <summary>
+            /// Compiles the custom conversions to a ResultConverter instance.
+            /// </summary>
             public ResultConverter<TResult> Compile()
             {
                 return new ResultConverter<TResult>(_assignerBuilders.Select(b => b.Compile(_withDefaults)));
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromInteger<TField> fromInteger)
+            /// <summary>
+            /// Defines a conversion from a SQLite integer to a member value.
+            /// </summary>
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, Func<long, TField> fromInteger)
             {
                 GetOrAdd(propertyOrField).FromInteger = fromInteger;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromFloat<TField> fromFloat)
+            /// <summary>
+            /// Defines a conversion from a SQLite float to a member value.
+            /// </summary>
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, Func<double, TField> fromFloat)
             {
                 GetOrAdd(propertyOrField).FromFloat = fromFloat;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromText<TField> fromText)
+            /// <summary>
+            /// Defines a conversion from a UTF-16 string to a member value.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="fromText">Deserializes a value from a source ReadOnlySpan&lt;char&gt;</param>
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromSpan<char, TField> fromText)
             {
                 GetOrAdd(propertyOrField).FromUtf16Text = fromText;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromBlob<TField> fromBlob)
+            /// <summary>
+            /// Defines a conversion from a byte sequence to a member value.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="fromBytes">Deserializes a value from a source ReadOnlySpan&lt;byte&gt;</param>
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromSpan<byte, TField> fromBytes)
             {
-                GetOrAdd(propertyOrField).FromBlob = fromBlob;
+                GetOrAdd(propertyOrField).FromBlob = fromBytes;
                 return this;
             }
 
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromNull<TField> fromNull)
+            /// <summary>
+            /// Defines a conversion from SQLite null to a member value.
+            /// </summary>
+            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, Func<TField> fromNull)
             {
                 GetOrAdd(propertyOrField).FromNull = fromNull;
                 return this;
             }
 
+            /// <summary>
+            /// Removes all defined conversions for a member.
+            /// </summary>
             public Builder Ignore<TField>(Expression<Func<TResult, TField>> propertyOrField)
             {
                 if (GetSettableMember(propertyOrField, out MemberInfo member))

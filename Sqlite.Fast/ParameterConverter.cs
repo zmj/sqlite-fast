@@ -49,9 +49,9 @@ namespace Sqlite.Fast
     {
         /// <summary>
         /// Creates a builder for a custom ParameterConverter.
-        /// Call builder.With(...) to define field conversions, then builder.Compile().
+        /// Call builder.With(...) to define member conversions, then builder.Compile().
         /// </summary>
-        /// <param name="withDefaultConversions">If true, field conversions will fall back to default conversion when no custom conversion can be used.</param>
+        /// <param name="withDefaultConversions">If true, member conversions will fall back to default conversion when no custom conversion can be used.</param>
         public static ParameterConverter<TParams>.Builder Builder<TParams>(bool withDefaultConversions = true) =>
             new ParameterConverter<TParams>.Builder(withDefaultConversions);
 

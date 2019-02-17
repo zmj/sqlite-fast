@@ -12,22 +12,22 @@ namespace Sqlite.Fast
         private readonly string _fieldName;
         private readonly FieldSetter<TResult, TField> _setter;
 
-        private readonly FromInteger<TField> _convertInteger;
-        private readonly FromFloat<TField> _convertFloat;
-        private readonly FromText<TField> _convertTextUtf16;
-        private readonly FromUtf8Text<TField> _convertTextUtf8;
-        private readonly FromBlob<TField> _convertBlob;
-        private readonly FromNull<TField> _convertNull;
+        private readonly Func<long, TField> _convertInteger;
+        private readonly Func<double, TField> _convertFloat;
+        private readonly FromSpan<char, TField> _convertTextUtf16;
+        private readonly FromSpan<byte, TField> _convertTextUtf8;
+        private readonly FromSpan<byte, TField> _convertBlob;
+        private readonly Func<TField> _convertNull;
 
         public ValueAssigner(
             string fieldName,
             FieldSetter<TResult, TField> setter,
-            FromInteger<TField> convertInteger,
-            FromFloat<TField> convertFloat,
-            FromText<TField> convertTextUtf16,
-            FromUtf8Text<TField> convertTextUtf8,
-            FromBlob<TField> convertBlob,
-            FromNull<TField> convertNull)
+            Func<long, TField> convertInteger,
+            Func<double, TField> convertFloat,
+            FromSpan<char, TField> convertTextUtf16,
+            FromSpan<byte, TField> convertTextUtf8,
+            FromSpan<byte, TField> convertBlob,
+            Func<TField> convertNull)
         {
             _fieldName = fieldName;
             _setter = setter;

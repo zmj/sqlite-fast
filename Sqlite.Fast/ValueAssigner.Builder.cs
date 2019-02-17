@@ -6,12 +6,13 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public delegate T FromInteger<T>(long value);
-    public delegate T FromFloat<T>(double value);
-    public delegate T FromText<T>(ReadOnlySpan<char> value);
-    internal delegate T FromUtf8Text<T>(ReadOnlySpan<byte> value); // internal until official type
-    public delegate T FromBlob<T>(ReadOnlySpan<byte> value);
-    public delegate T FromNull<T>();
+    /// <summary>
+    /// Deserializes an instance of T.
+    /// </summary>
+    /// <typeparam name="TElem">The elemental type of the SQLite value.</typeparam>
+    /// <typeparam name="T">The result member type.</typeparam>
+    /// <param name="value">A ReadOnlySpan&lt;TElem&gt; view of the SQLite value.</param>
+    public delegate T FromSpan<TElem, T>(ReadOnlySpan<TElem> value);
 
     internal delegate void FieldSetter<TResult, TField>(ref TResult result, TField value);
 
@@ -44,12 +45,12 @@ namespace Sqlite.Fast
         {
             public MemberInfo Member { get; }
 
-            public FromInteger<TField> FromInteger;
-            public FromFloat<TField> FromFloat;
-            public FromText<TField> FromUtf16Text;
-            public FromUtf8Text<TField> FromUtf8Text;
-            public FromBlob<TField> FromBlob;
-            public FromNull<TField> FromNull;
+            public Func<long, TField> FromInteger;
+            public Func<double, TField> FromFloat;
+            public FromSpan<char, TField> FromUtf16Text;
+            public FromSpan<byte, TField> FromUtf8Text;
+            public FromSpan<byte, TField> FromBlob;
+            public Func<TField> FromNull;
 
             public Builder(MemberInfo member) => Member = member;
 

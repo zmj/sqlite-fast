@@ -70,8 +70,8 @@ namespace Sqlite.Fast
             /// <summary>
             /// Defines a conversion to a UTF-16 string.
             /// </summary>
-            /// <param name="toText">Writes the value to the destination Span&lt;char&gt;</param>
-            /// <param name="length">Length of the Span&lt;char&gt; that the value will be written to.</param>
+            /// <param name="toText">Serializes a value to a destination Span&lt;char&gt;</param>
+            /// <param name="length">Length of the Span&lt;char&gt; that a value will be serialized to.</param>
             public ScalarBuilder With(ToSpan<TParams, char> toText, Func<TParams, int> length)
             {
                 _builder.Converters.Add(ValueBinder.Converter.Utf16Text(toText, length));
@@ -82,8 +82,8 @@ namespace Sqlite.Fast
             /// Defines a conditional conversion to a UTF-16 string.
             /// </summary>
             /// <param name="canConvert"></param>
-            /// <param name="toText">Writes the value to the destination Span&lt;char&gt;</param>
-            /// <param name="length">Length of the Span&lt;char&gt; that the value will be written to.</param>
+            /// <param name="toText">Serializes a value to a destination Span&lt;char&gt;</param>
+            /// <param name="length">Length of the Span&lt;char&gt; that a value will be serialized to.</param>
             public ScalarBuilder With(Func<TParams, bool> canConvert, ToSpan<TParams, char> toText, Func<TParams, int> length)
             {
                 _builder.Converters.Add(ValueBinder.Converter.Utf16Text(canConvert, toText, length));
@@ -93,7 +93,7 @@ namespace Sqlite.Fast
             /// <summary>
             /// Defines a reinterpret cast to a UTF-16 string.
             /// </summary>
-            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of the value.</param>
+            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of a value.</param>
             public ScalarBuilder With(AsSpan<TParams, char> asText)
             {
                 _builder.Converters.Add(ValueBinder.Converter.Utf16Text(asText));
@@ -104,7 +104,7 @@ namespace Sqlite.Fast
             /// Defines a conditional reinterpret cast to a UTF-16 string.
             /// </summary>
             /// <param name="canConvert"></param>
-            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of the value.</param>
+            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of a value.</param>
             public ScalarBuilder With(Func<TParams, bool> canConvert, AsSpan<TParams, char> asText)
             {
                 _builder.Converters.Add(ValueBinder.Converter.Utf16Text(canConvert, asText));
@@ -114,8 +114,8 @@ namespace Sqlite.Fast
             /// <summary>
             /// Defines a conversion to a byte sequence.
             /// </summary>
-            /// <param name="toBytes">Writes the value to the destination Span&lt;byte&gt;</param>
-            /// <param name="length">Length of the Span&lt;byte&gt; that the value will be written to.</param>
+            /// <param name="toBytes">Serializes a value to a destination Span&lt;byte&gt;</param>
+            /// <param name="length">Length of the Span&lt;byte&gt; that a value will be serialized to.</param>
             public ScalarBuilder With(ToSpan<TParams, byte> toBytes, Func<TParams, int> length)
             {
                 _builder.Converters.Add(ValueBinder.Converter.Blob(toBytes, length));
@@ -127,8 +127,8 @@ namespace Sqlite.Fast
             /// Defines a conditional conversion to a byte sequence.
             /// </summary>
             /// <param name="canConvert"></param>
-            /// <param name="toBytes">Writes the value to the destination Span&lt;byte&gt;</param>
-            /// <param name="length">Length of the Span&lt;byte&gt; that the value will be written to.</param>
+            /// <param name="toBytes">Serializes a value to a destination Span&lt;byte&gt;</param>
+            /// <param name="length">Length of the Span&lt;byte&gt; that a value will be serialized to.</param>
             public ScalarBuilder With(Func<TParams, bool> canConvert, ToSpan<TParams, byte> toBytes, Func<TParams, int> length)
             {
                 _builder.Converters.Add(ValueBinder.Converter.Blob(canConvert, toBytes, length));
@@ -138,7 +138,7 @@ namespace Sqlite.Fast
             /// <summary>
             /// Defines a reinterpret cast to a byte sequence.
             /// </summary>
-            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of the value.</param>
+            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of a value.</param>
             public ScalarBuilder With(AsSpan<TParams, byte> asBytes)
             {
                 _builder.Converters.Add(ValueBinder.Converter.Blob(asBytes));
@@ -149,7 +149,7 @@ namespace Sqlite.Fast
             /// Defines a conditional reinterpret cast to a byte sequence.
             /// </summary>
             /// <param name="canConvert"></param>
-            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of the value.</param>
+            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of a value.</param>
             public ScalarBuilder With(Func<TParams, bool> canConvert, AsSpan<TParams, byte> asBytes)
             {
                 _builder.Converters.Add(ValueBinder.Converter.Blob(canConvert, asBytes));

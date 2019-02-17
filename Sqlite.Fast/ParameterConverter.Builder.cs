@@ -121,8 +121,8 @@ namespace Sqlite.Fast
             /// Defines a conversion from a member value to a UTF-16 string.
             /// </summary>
             /// <param name="propertyOrField"></param>
-            /// <param name="toText">Writes the value to the destination Span&lt;char&gt;</param>
-            /// <param name="length">Length of the Span&lt;char&gt; that the value will be written to.</param>
+            /// <param name="toText">Serializes a value to a destination Span&lt;char&gt;</param>
+            /// <param name="length">Length of the Span&lt;char&gt; that a value will be serialized to.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 ToSpan<TField, char> toText,
@@ -139,8 +139,8 @@ namespace Sqlite.Fast
             /// </summary>
             /// <param name="propertyOrField"></param>
             /// <param name="canConvert"></param>
-            /// <param name="toText">Writes the value to the destination Span&lt;char&gt;</param>
-            /// <param name="length">Length of the Span&lt;char&gt; that the value will be written to.</param>
+            /// <param name="toText">Serializes a value to a destination Span&lt;char&gt;</param>
+            /// <param name="length">Length of the Span&lt;char&gt; that a value will be serialized to.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
@@ -157,7 +157,7 @@ namespace Sqlite.Fast
             /// Defines a reinterpret cast from a member value to a UTF-16 string.
             /// </summary>
             /// <param name="propertyOrField"></param>
-            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of the value.</param>
+            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of a value.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 AsSpan<TField, char> asText)
@@ -173,7 +173,7 @@ namespace Sqlite.Fast
             /// </summary>
             /// <param name="propertyOrField"></param>
             /// <param name="canConvert"></param>
-            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of the value.</param>
+            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of a value.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
@@ -189,8 +189,8 @@ namespace Sqlite.Fast
             /// Defines a conversion from a member value to a byte sequence.
             /// </summary>
             /// <param name="propertyOrField"></param>
-            /// <param name="toBytes">Writes the value to the destination Span&lt;byte&gt;</param>
-            /// <param name="length">Length of the Span&lt;byte&gt; that the value will be written to.</param>
+            /// <param name="toBytes">Serializes a value to a destination Span&lt;byte&gt;</param>
+            /// <param name="length">Length of the Span&lt;byte&gt; that a value will be serialized to.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 ToSpan<TField, byte> toBytes,
@@ -207,8 +207,8 @@ namespace Sqlite.Fast
             /// </summary>
             /// <param name="propertyOrField"></param>
             /// <param name="canConvert"></param>
-            /// <param name="toBytes">Writes the value to the destination Span&lt;byte&gt;</param>
-            /// <param name="length">Length of the Span&lt;byte&gt; that the value will be written to.</param>
+            /// <param name="toBytes">Serializes a value to a destination Span&lt;byte&gt;</param>
+            /// <param name="length">Length of the Span&lt;byte&gt; that a value will be serialized to.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
@@ -225,7 +225,7 @@ namespace Sqlite.Fast
             /// Defines a reinterpret cast from a member value to a byte sequence.
             /// </summary>
             /// <param name="propertyOrField"></param>
-            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of the value.</param>
+            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of a value.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 AsSpan<TField, byte> asBytes)
@@ -241,7 +241,7 @@ namespace Sqlite.Fast
             /// </summary>
             /// <param name="propertyOrField"></param>
             /// <param name="canConvert"></param>
-            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of the value.</param>
+            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of a value.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
