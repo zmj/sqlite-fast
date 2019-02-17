@@ -42,11 +42,25 @@ namespace Sqlite.Fast
         }
     }
 
+    /// <summary>
+    /// ParameterConverter binds an instance of the parameter type to SQLite parameter values.
+    /// </summary>
     public static class ParameterConverter
     {
+        /// <summary>
+        /// Creates a builder for a custom ParameterConverter.
+        /// Call builder.With(...) to define field conversions, then builder.Compile().
+        /// </summary>
+        /// <param name="withDefaultConversions">If true, field conversions will fall back to default conversion when no custom conversion can be used.</param>
         public static ParameterConverter<TParams>.Builder Builder<TParams>(bool withDefaultConversions = true) =>
             new ParameterConverter<TParams>.Builder(withDefaultConversions);
 
+        /// <summary>
+        /// Creates a builder for a custom ParameterConverter.
+        /// Call builder.With(...) to define conversions, then builder.Compile().
+        /// </summary>
+        /// <param name="withDefaultConversions">If true, conversion will fall back to the default conversion when no custom conversion can be used.</param>
+        /// <returns></returns>
         public static ParameterConverter<TParams>.ScalarBuilder ScalarBuilder<TParams>(bool withDefaultConversions = true) =>
             new ParameterConverter<TParams>.ScalarBuilder(withDefaultConversions);
 

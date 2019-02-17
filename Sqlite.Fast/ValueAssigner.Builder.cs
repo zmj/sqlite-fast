@@ -18,12 +18,12 @@ namespace Sqlite.Fast
     internal static class ValueAssigner
     {
         public static IBuilder<TResult> Build<TResult>(MemberInfo member) =>
-            (IBuilder<TResult>)Buildpublic<TResult>(member);
+            (IBuilder<TResult>)BuildInternal<TResult>(member);
 
         public static Builder<TResult, TResult> Build<TResult>() =>
-            (Builder<TResult, TResult>)Buildpublic<TResult>(member: null);
+            (Builder<TResult, TResult>)BuildInternal<TResult>(member: null);
 
-        private static object Buildpublic<TResult>(MemberInfo member)
+        private static object BuildInternal<TResult>(MemberInfo member)
         {
             Type valueType = member != null ? member.ValueType() : typeof(TResult);
             ConstructorInfo constructor = typeof(Builder<,>)

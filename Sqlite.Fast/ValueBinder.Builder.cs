@@ -6,27 +6,27 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-    public delegate long ToInteger<T>(T value);
-    public delegate double ToFloat<T>(T value);
-    public delegate void ToText<T>(T value, Span<char> destination);
-    public delegate ReadOnlySpan<char> AsText<T>(T value);
-    internal delegate void ToUtf8Text<T>(T value, Span<byte> destination);
-    internal delegate ReadOnlySpan<byte> AsUtf8Text<T>(T value);
-    public delegate void ToBlob<T>(T value, Span<byte> destination);
-    public delegate ReadOnlySpan<byte> AsBlob<T>(T value);
-    public delegate void ToNull<T>(T value);
+    /// <summary>
+    /// Writes value to the destination span.
+    /// </summary>
+    public delegate void ToSpan<T, TElem>(T value, Span<TElem> destination);
 
+    /// <summary>
+    /// Reinterpret casts value as a span.
+    /// </summary>
+    public delegate ReadOnlySpan<TElem> AsSpan<T, TElem>(T value);
+    
     internal delegate TField FieldGetter<TParams, TField>(in TParams parameters);
 
     internal static class ValueBinder
     {
         public static IBuilder<TParams> Build<TParams>(MemberInfo member) =>
-            (IBuilder<TParams>)Buildpublic<TParams>(member);
+            (IBuilder<TParams>)BuildInternal<TParams>(member);
 
         public static Builder<TParams, TParams> Build<TParams>() =>
-            (Builder<TParams, TParams>)Buildpublic<TParams>(member: null);
+            (Builder<TParams, TParams>)BuildInternal<TParams>(member: null);
 
-        private static object Buildpublic<TParams>(MemberInfo member)
+        private static object BuildInternal<TParams>(MemberInfo member)
         {
             Type valueType = member != null ? member.ValueType() : typeof(TParams);
             ConstructorInfo constructor = typeof(Builder<,>)
@@ -108,14 +108,14 @@ namespace Sqlite.Fast
         {
             public readonly Sqlite.DataType DataType;
             public readonly bool Utf8Text;
-            public readonly ToInteger<TField> ToInteger;
-            public readonly ToFloat<TField> ToFloat;
-            public readonly ToText<TField> ToUtf16Text;
-            public readonly AsText<TField> AsUtf16Text;
-            public readonly ToUtf8Text<TField> ToUtf8Text;
-            public readonly AsUtf8Text<TField> AsUtf8Text;
-            public readonly ToBlob<TField> ToBlob;
-            public readonly AsBlob<TField> AsBlob;
+            public readonly Func<TField, long> ToInteger;
+            public readonly Func<TField, double> ToFloat;
+            public readonly ToSpan<TField, char> ToUtf16Text;
+            public readonly AsSpan<TField, char> AsUtf16Text;
+            public readonly ToSpan<TField, byte> ToUtf8Text;
+            public readonly AsSpan<TField, byte> AsUtf8Text;
+            public readonly ToSpan<TField, byte> ToBlob;
+            public readonly AsSpan<TField, byte> AsBlob;
             public readonly Func<TField, int> Length;
 
             private readonly Func<TField, bool> _canConvert;
@@ -125,14 +125,14 @@ namespace Sqlite.Fast
                 bool utf8Text,
                 Func<TField, bool> canConvert,
                 Func<TField, int> length,
-                ToInteger<TField> toInteger,
-                ToFloat<TField> toFloat,
-                ToText<TField> toUtf16Text,
-                AsText<TField> asUtf16Text,
-                ToUtf8Text<TField> toUtf8Text,
-                AsUtf8Text<TField> asUtf8Text,
-                ToBlob<TField> toBlob,
-                AsBlob<TField> asBlob)
+                Func<TField, long> toInteger,
+                Func<TField, double> toFloat,
+                ToSpan<TField, char> toUtf16Text,
+                AsSpan<TField, char> asUtf16Text,
+                ToSpan<TField, byte> toUtf8Text,
+                AsSpan<TField, byte> asUtf8Text,
+                ToSpan<TField, byte> toBlob,
+                AsSpan<TField, byte> asBlob)
             {
                 DataType = dataType;
                 Utf8Text = utf8Text;
@@ -153,8 +153,10 @@ namespace Sqlite.Fast
 
         public static class Converter
         { 
-            public static Converter<T> Integer<T>(ToInteger<T> toInteger) => Integer(canConvert: null, toInteger);
-            public static Converter<T> Integer<T>(Func<T, bool> canConvert, ToInteger<T> toInteger) =>
+            public static Converter<T> Integer<T>(Func<T, long> toInteger) => 
+                Integer(canConvert: null, toInteger);
+
+            public static Converter<T> Integer<T>(Func<T, bool> canConvert, Func<T, long> toInteger) =>
                 new Converter<T>(
                     Sqlite.DataType.Integer,
                     utf8Text: false,
@@ -169,8 +171,10 @@ namespace Sqlite.Fast
                     toBlob: null,
                     asBlob: null);
 
-            public static Converter<T> Float<T>(ToFloat<T> toFloat) => Float(canConvert: null, toFloat);
-            public static Converter<T> Float<T>(Func<T, bool> canConvert, ToFloat<T> toFloat) =>
+            public static Converter<T> Float<T>(Func<T, double> toFloat) => 
+                Float(canConvert: null, toFloat);
+
+            public static Converter<T> Float<T>(Func<T, bool> canConvert, Func<T, double> toFloat) =>
                 new Converter<T>(
                     Sqlite.DataType.Float,
                     utf8Text: false,
@@ -185,9 +189,10 @@ namespace Sqlite.Fast
                     toBlob: null,
                     asBlob: null);
 
-            public static Converter<T> Utf8Text<T>(ToUtf8Text<T> toUtf8Text, Func<T, int> byteLength) =>
+            public static Converter<T> Utf8Text<T>(ToSpan<T, byte> toUtf8Text, Func<T, int> byteLength) =>
                 Utf8Text(canConvert: null, toUtf8Text, byteLength);
-            public static Converter<T> Utf8Text<T>(Func<T, bool> canConvert, ToUtf8Text<T> toUtf8Text, Func<T, int> byteLength) =>
+
+            public static Converter<T> Utf8Text<T>(Func<T, bool> canConvert, ToSpan<T, byte> toUtf8Text, Func<T, int> byteLength) =>
                 new Converter<T>(
                     Sqlite.DataType.Text,
                     utf8Text: true,
@@ -202,8 +207,10 @@ namespace Sqlite.Fast
                     toBlob: null,
                     asBlob: null);
 
-            public static Converter<T> Utf8Text<T>(AsUtf8Text<T> asUtf8Text) => Utf8Text(canConvert: null, asUtf8Text);
-            public static Converter<T> Utf8Text<T>(Func<T, bool> canConvert, AsUtf8Text<T> asUtf8Text) =>
+            public static Converter<T> Utf8Text<T>(AsSpan<T, byte> asUtf8Text) => 
+                Utf8Text(canConvert: null, asUtf8Text);
+
+            public static Converter<T> Utf8Text<T>(Func<T, bool> canConvert, AsSpan<T, byte> asUtf8Text) =>
                 new Converter<T>(
                     Sqlite.DataType.Text,
                     utf8Text: true,
@@ -218,9 +225,10 @@ namespace Sqlite.Fast
                     toBlob: null,
                     asBlob: null);
 
-            public static Converter<T> Utf16Text<T>(ToText<T> toUtf16Text, Func<T, int> utf16Length) =>
+            public static Converter<T> Utf16Text<T>(ToSpan<T, char> toUtf16Text, Func<T, int> utf16Length) =>
                 Utf16Text(canConvert: null, toUtf16Text, utf16Length);
-            public static Converter<T> Utf16Text<T>(Func<T, bool> canConvert, ToText<T> toUtf16Text, Func<T, int> utf16Length) =>
+
+            public static Converter<T> Utf16Text<T>(Func<T, bool> canConvert, ToSpan<T, char> toUtf16Text, Func<T, int> utf16Length) =>
                 new Converter<T>(
                     Sqlite.DataType.Text,
                     utf8Text: false,
@@ -235,8 +243,10 @@ namespace Sqlite.Fast
                     toBlob: null,
                     asBlob: null);
 
-            public static Converter<T> Utf16Text<T>(AsText<T> asUtf16Text) => Utf16Text(canConvert: null, asUtf16Text);
-            public static Converter<T> Utf16Text<T>(Func<T, bool> canConvert, AsText<T> asUtf16Text) =>
+            public static Converter<T> Utf16Text<T>(AsSpan<T, char> asUtf16Text) => 
+                Utf16Text(canConvert: null, asUtf16Text);
+
+            public static Converter<T> Utf16Text<T>(Func<T, bool> canConvert, AsSpan<T, char> asUtf16Text) =>
                 new Converter<T>(
                     Sqlite.DataType.Text,
                     utf8Text: false,
@@ -251,8 +261,10 @@ namespace Sqlite.Fast
                     toBlob: null,
                     asBlob: null);
 
-            public static Converter<T> Blob<T>(ToBlob<T> toBlob, Func<T, int> byteLength) => Blob(canConvert: null, toBlob, byteLength);
-            public static Converter<T> Blob<T>(Func<T, bool> canConvert, ToBlob<T> toBlob, Func<T, int> byteLength) =>
+            public static Converter<T> Blob<T>(ToSpan<T, byte> toBlob, Func<T, int> byteLength) => 
+                Blob(canConvert: null, toBlob, byteLength);
+
+            public static Converter<T> Blob<T>(Func<T, bool> canConvert, ToSpan<T, byte> toBlob, Func<T, int> byteLength) =>
                 new Converter<T>(
                     Sqlite.DataType.Blob,
                     utf8Text: false,
@@ -267,8 +279,10 @@ namespace Sqlite.Fast
                     toBlob,
                     asBlob: null);
 
-            public static Converter<T> Blob<T>(AsBlob<T> asBlob) => Blob(canConvert: null, asBlob);
-            public static Converter<T> Blob<T>(Func<T, bool> canConvert, AsBlob<T> asBlob) =>
+            public static Converter<T> Blob<T>(AsSpan<T, byte> asBlob) =>
+                Blob(canConvert: null, asBlob);
+
+            public static Converter<T> Blob<T>(Func<T, bool> canConvert, AsSpan<T, byte> asBlob) =>
                 new Converter<T>(
                     Sqlite.DataType.Blob,
                     utf8Text: false,

@@ -7,13 +7,24 @@ using System.Reflection;
 
 namespace Sqlite.Fast
 {
+    /// <summary>
+    /// ParameterConverter binds an instance of the parameter type to SQLite parameter values.
+    /// </summary>
     public sealed partial class ParameterConverter<TParams>
     {
+        /// <summary>
+        /// ParameterConverter.Builder constructs a custom ParameterConverter.
+        /// </summary>
         public sealed class Builder
         {
             private readonly List<ValueBinder.IBuilder<TParams>> _binderBuilders;
             private readonly bool _withDefaults;
 
+            /// <summary>
+            /// Creates a builder for a custom ParameterConverter.
+            /// Call builder.With(...) to define field conversions, then builder.Compile().
+            /// </summary>
+            /// <param name="withDefaultConversions">If true, field conversions will fall back to default conversion when no custom conversion can be used.</param>
             public Builder(bool withDefaultConversions = true)
             {
                 _withDefaults = withDefaultConversions;
@@ -44,134 +55,232 @@ namespace Sqlite.Fast
                 throw new ArgumentException($"Expression is not gettable field or property of {typeof(TParams).Name}");
             }
 
+            /// <summary>
+            /// Compiles the custom conversions to a ParameterConverter instance.
+            /// </summary>
             public ParameterConverter<TParams> Compile()
             {
                 return new ParameterConverter<TParams>(_binderBuilders.Select(b => b.Compile(_withDefaults)));
             }
 
+            /// <summary>
+            /// Defines a conversion from a member value to a SQLite integer.
+            /// </summary>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
-                ToInteger<TField> toInteger)
+                Func<TField, long> toInteger)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Integer(toInteger));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Integer(toInteger));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conditional conversion from a member value to a SQLite integer.
+            /// </summary>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
-                ToInteger<TField> toInteger)
+                Func<TField, long> toInteger)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Integer(canConvert, toInteger));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Integer(canConvert, toInteger));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conversion from a member value to a SQLite float.
+            /// </summary>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
-                ToFloat<TField> toFloat)
+                Func<TField, double> toFloat)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Float(toFloat));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Float(toFloat));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conditional conversion from a member value to a SQLite float.
+            /// </summary>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
-                ToFloat<TField> toFloat)
+                Func<TField, double> toFloat)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Float(canConvert, toFloat));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Float(canConvert, toFloat));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conversion from a member value to a UTF-16 string.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="toText">Writes the value to the destination Span&lt;char&gt;</param>
+            /// <param name="length">Length of the Span&lt;char&gt; that the value will be written to.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
-                ToText<TField> toText,
+                ToSpan<TField, char> toText,
                 Func<TField, int> length)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Utf16Text(toText, length));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Utf16Text(toText, length));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conditional conversion from a member value to a UTF-16 string.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="canConvert"></param>
+            /// <param name="toText">Writes the value to the destination Span&lt;char&gt;</param>
+            /// <param name="length">Length of the Span&lt;char&gt; that the value will be written to.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
-                ToText<TField> toText,
+                ToSpan<TField, char> toText,
                 Func<TField, int> length)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Utf16Text(canConvert, toText, length));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Utf16Text(canConvert, toText, length));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a reinterpret cast from a member value to a UTF-16 string.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of the value.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
-                AsText<TField> asText)
+                AsSpan<TField, char> asText)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Utf16Text(asText));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Utf16Text(asText));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conditional reinterpret cast from a member value to a UTF-16 string.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="canConvert"></param>
+            /// <param name="asText">A ReadOnlySpan&lt;char&gt; view of the value.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
-                AsText<TField> asText)
+                AsSpan<TField, char> asText)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Utf16Text(canConvert, asText));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Utf16Text(canConvert, asText));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conversion from a member value to a byte sequence.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="toBytes">Writes the value to the destination Span&lt;byte&gt;</param>
+            /// <param name="length">Length of the Span&lt;byte&gt; that the value will be written to.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
-                ToBlob<TField> toBlob,
+                ToSpan<TField, byte> toBytes,
                 Func<TField, int> length)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Blob(toBlob, length));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Blob(toBytes, length));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conditional conversion from a member value to a byte sequence.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="canConvert"></param>
+            /// <param name="toBytes">Writes the value to the destination Span&lt;byte&gt;</param>
+            /// <param name="length">Length of the Span&lt;byte&gt; that the value will be written to.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
-                ToBlob<TField> toBlob,
+                ToSpan<TField, byte> toBytes,
                 Func<TField, int> length)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Blob(canConvert, toBlob, length));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Blob(canConvert, toBytes, length));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a reinterpret cast from a member value to a byte sequence.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of the value.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
-                AsBlob<TField> asBlob)
+                AsSpan<TField, byte> asBytes)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Blob(asBlob));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Blob(asBytes));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conditional reinterpret cast from a member value to a byte sequence.
+            /// </summary>
+            /// <param name="propertyOrField"></param>
+            /// <param name="canConvert"></param>
+            /// <param name="asBytes">A ReadOnlySpan&lt;byte&gt; view of the value.</param>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert,
-                AsBlob<TField> asBlob)
+                AsSpan<TField, byte> asBytes)
             {
-                GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Blob(canConvert, asBlob));
+                GetOrAdd(propertyOrField)
+                    .Converters
+                    .Add(ValueBinder.Converter.Blob(canConvert, asBytes));
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conversion from a member value to SQLite null.
+            /// </summary>
             public Builder With<TField>(
-                Expression<Func<TParams, TField>> propertyOrField,
-                ToNull<TField> toNull)
+                Expression<Func<TParams, TField>> propertyOrField)
             {
                 GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Null<TField>());
                 return this;
             }
 
+            /// <summary>
+            /// Defines a conditional conversion from a member value to SQLite null.
+            /// </summary>
+            /// <typeparam name="TField"></typeparam>
+            /// <param name="propertyOrField"></param>
+            /// <param name="canConvert"></param>
+            /// <returns></returns>
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField,
-                Func<TField, bool> canConvert,
-                ToNull<TField> toNull)
+                Func<TField, bool> canConvert)
             {
                 GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Null(canConvert));
                 return this;
             }
 
+            /// <summary>
+            /// Removes all defined conversions for a member.
+            /// </summary>
             public Builder Ignore<TField>(Expression<Func<TParams, TField>> propertyOrField)
             {
                 if (GetGettableMember(propertyOrField, out MemberInfo member))
