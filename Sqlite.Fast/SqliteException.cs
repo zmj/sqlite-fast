@@ -34,7 +34,7 @@ namespace Sqlite.Fast
             if (result != Sqlite.Result.Ok)
                 throw new SqliteException(function, result);
         }
-
+        
         public static void ThrowIfNot(this Sqlite.Result result, Sqlite.Result expected, string function)
         {
             if (result != expected)

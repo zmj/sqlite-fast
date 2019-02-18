@@ -13,9 +13,7 @@ namespace Sqlite.Fast
         private readonly IntPtr _statement;
         internal readonly int ColumnCount;
         internal readonly int ParameterCount;
-        private readonly StatementResetter _resetter;
-
-        private StatementVersion? _lastExecuteVersion = null;
+        
         private bool _disposed = false;
 
         internal Statement(IntPtr statement)
@@ -23,7 +21,6 @@ namespace Sqlite.Fast
             _statement = statement;
             ColumnCount = Sqlite.ColumnCount(statement);
             ParameterCount = Sqlite.BindParameterCount(statement);
-            _resetter = new StatementResetter(statement);
         }
 
         /// <summary>
@@ -45,21 +42,13 @@ namespace Sqlite.Fast
         internal Rows ExecuteInternal()
         {
             CheckDisposed();
-            if (_lastExecuteVersion.HasValue)
-            {
-                _resetter.ResetIfNecessary(_lastExecuteVersion.Value);
-            }
-            _lastExecuteVersion = _resetter.CurrentVersion;
-            return new Rows(_statement, ColumnCount, _resetter);
+            return new Rows(_statement, ColumnCount);
         }
         
         internal void BeginBinding()
         {
             CheckDisposed();
-            if (_lastExecuteVersion.HasValue)
-            {
-                _resetter.ResetIfNecessary(_lastExecuteVersion.Value);
-            }
+            Sqlite.Reset(_statement).ThrowIfNotOK(nameof(Sqlite.Reset));
         }
 
         internal void BindInteger(int index, long value)
