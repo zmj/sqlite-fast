@@ -4,7 +4,7 @@ namespace Sqlite.Fast
 {
     internal interface IValueAssigner<TResult>
     {
-        void Assign(ref TResult result, Column value);
+        void Assign(ref TResult result, in Column value);
     }
 
     internal sealed class ValueAssigner<TResult, TField> : IValueAssigner<TResult>
@@ -39,7 +39,7 @@ namespace Sqlite.Fast
             _convertNull = convertNull;
         }
 
-        public void Assign(ref TResult result, Column col)
+        public void Assign(ref TResult result, in Column col)
         {
             bool converted;
             TField value = default;
@@ -78,7 +78,7 @@ namespace Sqlite.Fast
             _setter(ref result, value);
         }
 
-        private bool ConvertInteger(Column col, ref TField value)
+        private bool ConvertInteger(in Column col, ref TField value)
         {
             if (_convertInteger != null)
             {
@@ -88,7 +88,7 @@ namespace Sqlite.Fast
             return false;
         }
 
-        private bool ConvertFloat(Column col, ref TField value)
+        private bool ConvertFloat(in Column col, ref TField value)
         {
             if (_convertFloat != null)
             {
@@ -98,7 +98,7 @@ namespace Sqlite.Fast
             return false;
         }
 
-        private bool ConvertText(Column col, ref TField value)
+        private bool ConvertText(in Column col, ref TField value)
         {
             if (_convertTextUtf8 != null)
             {
@@ -114,7 +114,7 @@ namespace Sqlite.Fast
             return false;
         }
 
-        private bool ConvertBlob(Column col, ref TField value)
+        private bool ConvertBlob(in Column col, ref TField value)
         {
             if (_convertBlob != null)
             {

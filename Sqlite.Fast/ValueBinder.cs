@@ -75,7 +75,7 @@ namespace Sqlite.Fast
             throw BindingException.ConversionMissing(_fieldName, typeof(TParams), value);
         }
 
-        private void BindInteger(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindInteger(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             long bindValue;
             try { bindValue = converter.ToInteger(value); }
@@ -83,7 +83,7 @@ namespace Sqlite.Fast
             statement.BindInteger(index, bindValue);
         }
 
-        private void BindFloat(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindFloat(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             double bindValue;
             try { bindValue = converter.ToFloat(value); }
@@ -91,7 +91,7 @@ namespace Sqlite.Fast
             statement.BindFloat(index, bindValue);
         }
 
-        private void BindToUtf8Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindToUtf8Text(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             int length;
             try { length = converter.Length(value); }
@@ -102,7 +102,7 @@ namespace Sqlite.Fast
             statement.BindUtf8Text(index, bindValue);
         }
 
-        private void BindAsUtf8Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindAsUtf8Text(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             ReadOnlySpan<byte> bindValue;
             try { bindValue = converter.AsUtf8Text(value); }
@@ -110,7 +110,7 @@ namespace Sqlite.Fast
             statement.BindUtf8Text(index, bindValue);
         }
 
-        private void BindToUtf16Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindToUtf16Text(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             int length;
             try { length = converter.Length(value); }
@@ -121,7 +121,7 @@ namespace Sqlite.Fast
             statement.BindUtf16Text(index, bindValue);
         }
 
-        private void BindAsUtf16Text(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindAsUtf16Text(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             ReadOnlySpan<char> bindValue;
             try { bindValue = converter.AsUtf16Text(value); }
@@ -129,7 +129,7 @@ namespace Sqlite.Fast
             statement.BindUtf16Text(index, bindValue);
         }
 
-        private void BindToBlob(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindToBlob(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             int length;
             try { length = converter.Length(value); }
@@ -140,7 +140,7 @@ namespace Sqlite.Fast
             statement.BindBlob(index, bindValue);
         }
 
-        private void BindAsBlob(Statement statement, int index, TField value, ValueBinder.Converter<TField> converter)
+        private void BindAsBlob(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             ReadOnlySpan<byte> bindValue;
             try { bindValue = converter.AsBlob(value); }

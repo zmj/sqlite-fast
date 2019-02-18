@@ -213,5 +213,25 @@ namespace Sqlite.Fast.Tests
                 Assert.Equal(g, r);
             }
         }
+
+        [Fact]
+        public void Custom_ToBlob()
+        {
+            var pc = ParameterConverter.ScalarBuilder<int>()
+                .With((int i, Span<byte> span) => span[0] = (byte)(i + 1), _ => 1)
+                .Compile();
+            var rc = ResultConverter.ScalarBuilder<int>()
+                .With((ReadOnlySpan<byte> span) => span[0] + 1)
+                .Compile();
+            using (var tbl = new TestTable("create table t (x)"))
+            using (var insert = tbl.Stmt("insert into t values (@x)", pc))
+            using (var select = tbl.RStmt("select x from t", rc))
+            {
+                insert.Bind(1).Execute();
+                int i = 0;
+                Assert.True(select.Execute(ref i));
+                Assert.Equal(3, i);
+            }
+        }
     }
 }

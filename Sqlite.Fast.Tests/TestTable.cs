@@ -29,6 +29,7 @@ namespace Sqlite.Fast.Tests
         public Statement<T> Stmt<T>(string sql) => Connection.CompileStatement<T>(sql);
         public Statement<T> Stmt<T>(string sql, ParameterConverter<T> converter) => Connection.CompileStatement(sql, converter);
         public ResultStatement<T> RStmt<T>(string sql) => Connection.CompileResultStatement<T>(sql);
+        public ResultStatement<T> RStmt<T>(string sql, ResultConverter<T> converter) => Connection.CompileStatement(sql, converter);
         public ResultStatement<T> Stmt<T>(string sql, ResultConverter<T> converter) => Connection.CompileStatement(sql, converter);
         public Statement<T, U> Stmt<T, U>(string sql) => Connection.CompileStatement<T, U>(sql);
         public Statement<T, U> Stmt<T, U>(string sql, ResultConverter<T> rc, ParameterConverter<U> pc)

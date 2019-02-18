@@ -24,7 +24,7 @@ namespace Sqlite.Fast
         {
             // Marshal screws up the utf16->utf8 reencode, so do it in managed
             byte[] utf8Path = Encoding.UTF8.GetBytes(dbFilePath);
-            Sqlite.Result r = Sqlite.Open(MemoryMarshal.GetReference(utf8Path.AsSpan()), out IntPtr conn);
+            Sqlite.Result r = Sqlite.Open(ref MemoryMarshal.GetReference(utf8Path.AsSpan()), out IntPtr conn);
             _connnection = conn;
 
             try { r.ThrowIfNotOK(nameof(Sqlite.Open)); }
@@ -43,7 +43,7 @@ namespace Sqlite.Fast
             CheckDisposed();
             Sqlite.Prepare16V2(
                 _connnection,
-                sql: MemoryMarshal.GetReference(sql.AsSpan()),
+                sql: ref MemoryMarshal.GetReference(sql.AsSpan()),
                 sqlByteCount: -1,
                 out IntPtr stmt,
                 out _)
@@ -156,7 +156,8 @@ namespace Sqlite.Fast
         public bool TryCheckpoint(Sqlite.CheckpointMode mode)
         {
             CheckDisposed();
-            Sqlite.Result r = Sqlite.WalCheckpointV2(_connnection, default, mode, out _, out _);
+            byte attachedTableName = default;
+            Sqlite.Result r = Sqlite.WalCheckpointV2(_connnection, ref attachedTableName, mode, out _, out _);
             if (r == Sqlite.Result.Busy || r == Sqlite.Result.Locked)
             {
                 return false;

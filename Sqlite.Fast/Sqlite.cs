@@ -11,18 +11,18 @@ namespace Sqlite.Fast
     public static class Sqlite
     {
         private const string DllName = "sqlite3.dll";
-
+        
         [DllImport(DllName, EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result Open([MarshalAs(UnmanagedType.U1)] in byte filename, out IntPtr conn);
+        internal static extern Result Open([MarshalAs(UnmanagedType.U1)] ref byte filename, out IntPtr conn);
 
         [DllImport(DllName, EntryPoint = "sqlite3_close_v2", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result CloseV2(IntPtr conn);
 
         [DllImport(DllName, EntryPoint = "sqlite3_wal_checkpoint_v2", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result WalCheckpointV2(IntPtr conn, [MarshalAs(UnmanagedType.U1)] in byte attachedDbName, CheckpointMode mode, out int walLogSize, out int checkpointedFrames);
+        internal static extern Result WalCheckpointV2(IntPtr conn, [MarshalAs(UnmanagedType.U1)] ref byte attachedDbName, CheckpointMode mode, out int walLogSize, out int checkpointedFrames);
 
         [DllImport(DllName, EntryPoint = "sqlite3_prepare16_v2", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result Prepare16V2(IntPtr conn, [MarshalAs(UnmanagedType.U2)] in char sql, int sqlByteCount, out IntPtr stmt, out IntPtr endSql);
+        internal static extern Result Prepare16V2(IntPtr conn, [MarshalAs(UnmanagedType.U2)] ref char sql, int sqlByteCount, out IntPtr stmt, out IntPtr endSql);
 
         [DllImport(DllName, EntryPoint = "sqlite3_finalize", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result Finalize(IntPtr stmt);
@@ -34,13 +34,13 @@ namespace Sqlite.Fast
         internal static extern Result BindDouble(IntPtr stmt, int paramIndex, double value);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_text", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U1)] in byte value, int valueByteCount, IntPtr destructor);
+        internal static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U1)] ref byte value, int valueByteCount, IntPtr destructor);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_text16", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindText16(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U2)] in char value, int valueByteCount, IntPtr destructor);
+        internal static extern Result BindText16(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U2)] ref char value, int valueByteCount, IntPtr destructor);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_blob", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindBlob(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U1)] in byte value, int valueByteCount, IntPtr destructor);
+        internal static extern Result BindBlob(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U1)] ref byte value, int valueByteCount, IntPtr destructor);
 
         [DllImport(DllName, EntryPoint = "sqlite3_bind_null", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result BindNull(IntPtr stmt, int paramIndex);

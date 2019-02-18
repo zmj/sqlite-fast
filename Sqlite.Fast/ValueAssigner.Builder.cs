@@ -6,6 +6,7 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+#pragma warning disable EPS05
     /// <summary>
     /// Deserializes an instance of T.
     /// </summary>
@@ -13,6 +14,7 @@ namespace Sqlite.Fast
     /// <typeparam name="T">The result member type.</typeparam>
     /// <param name="value">A ReadOnlySpan&lt;TElem&gt; view of the SQLite value.</param>
     public delegate T FromSpan<TElem, T>(ReadOnlySpan<TElem> value);
+#pragma warning restore EPS05
 
     internal delegate void FieldSetter<TResult, TField>(ref TResult result, TField value);
 

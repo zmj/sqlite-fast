@@ -44,12 +44,8 @@ namespace Sqlite.Fast
             CheckDisposed();
             return new Rows(_statement, ColumnCount);
         }
-        
-        internal void BeginBinding()
-        {
-            CheckDisposed();
-            Sqlite.Reset(_statement).ThrowIfNotOK(nameof(Sqlite.Reset));
-        }
+
+        internal void BeginBinding() => CheckDisposed();
 
         internal void BindInteger(int index, long value)
         {
@@ -63,34 +59,34 @@ namespace Sqlite.Fast
                 .ThrowIfNotOK(nameof(Sqlite.BindDouble));
         }
 
-        internal void BindUtf16Text(int index, ReadOnlySpan<char> value)
+        internal void BindUtf16Text(int index, in ReadOnlySpan<char> value)
         {
             Sqlite.BindText16(
                 _statement,
                 index,
-                in MemoryMarshal.GetReference(value),
+                ref MemoryMarshal.GetReference(value),
                 value.Length << 1,
                 Sqlite.Destructor.Transient)
                 .ThrowIfNotOK(nameof(Sqlite.BindText16));
         }
 
-        internal void BindUtf8Text(int index, ReadOnlySpan<byte> value)
+        internal void BindUtf8Text(int index, in ReadOnlySpan<byte> value)
         {
             Sqlite.BindText(
                 _statement,
                 index,
-                in MemoryMarshal.GetReference(value),
+                ref MemoryMarshal.GetReference(value),
                 value.Length,
                 Sqlite.Destructor.Transient)
                 .ThrowIfNotOK(nameof(Sqlite.BindText));
         }
 
-        internal void BindBlob(int index, ReadOnlySpan<byte> value)
+        internal void BindBlob(int index, in ReadOnlySpan<byte> value)
         {
             Sqlite.BindBlob(
                 _statement,
                 index,
-                in MemoryMarshal.GetReference(value),
+                ref MemoryMarshal.GetReference(value),
                 value.Length,
                 Sqlite.Destructor.Transient)
                 .ThrowIfNotOK(nameof(Sqlite.BindBlob));

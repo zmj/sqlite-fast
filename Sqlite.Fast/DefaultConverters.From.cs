@@ -162,6 +162,7 @@ namespace Sqlite.Fast
                 return null;
             }
 
+#pragma warning disable EPS05
             private static Guid ToGuid(ReadOnlySpan<byte> text)
             {
                 char format = default;
@@ -178,7 +179,9 @@ namespace Sqlite.Fast
                 }
                 return ThrowParseFailed<Guid>(text);
             }
+#pragma warning restore EPS05
 
+#pragma warning disable EPS05
             private static TimeSpan ToTimeSpan(ReadOnlySpan<byte> text)
             {
                 if (Utf8Parser.TryParse(text, out TimeSpan value, out _))
@@ -187,13 +190,14 @@ namespace Sqlite.Fast
                 }
                 return ThrowParseFailed<TimeSpan>(text);
             }
+#pragma warning restore EPS05
 
-            private static T ThrowParseFailed<T>(ReadOnlySpan<byte> text)
+            private static T ThrowParseFailed<T>(in ReadOnlySpan<byte> text)
             {
                 throw new ArgumentException($"Unable to parse '{Utf8ToString(text)}' to {typeof(T).Name}");
             }
 
-            private static unsafe string Utf8ToString(ReadOnlySpan<byte> text)
+            private static unsafe string Utf8ToString(in ReadOnlySpan<byte> text)
             {
                 ref byte b = ref MemoryMarshal.GetReference(text);
                 fixed (byte* ptr = &b)

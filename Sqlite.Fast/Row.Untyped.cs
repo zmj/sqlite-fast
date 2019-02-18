@@ -50,7 +50,6 @@ namespace Sqlite.Fast
                     return true;
                 }
                 r.ThrowIfNot(Sqlite.Result.Done, nameof(Sqlite.Step));
-                Reset();
                 return false;
             }
 
