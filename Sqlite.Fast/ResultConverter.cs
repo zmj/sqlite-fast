@@ -22,7 +22,7 @@ namespace Sqlite.Fast
             FieldCount = 1;
         }
 
-        internal void AssignValues(ref TResult result, Columns columns)
+        internal void AssignValues(ref TResult result, in Columns columns)
         {
             // counts verified equal before execution
             if (_scalarAssigner != null)

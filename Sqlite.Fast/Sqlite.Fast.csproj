@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
-    <Version>1.2.3-alpha</Version>
+    <Version>1.2.4-alpha</Version>
     <Authors>zmj</Authors>
     <Description>A high-performance SQLite wrapper. Details and examples: https://github.com/zmj/sqlite-fast</Description>
     <PackageProjectUrl>https://github.com/zmj/sqlite-fast</PackageProjectUrl>
@@ -15,7 +15,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ErrorProne.NET" Version="0.1.5898.41180" />
+    <PackageReference Include="ErrorProne.NET" Version="0.1.5898.41180" >
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>      
     <PackageReference Include="ErrorProne.NET.CoreAnalyzers" Version="0.1.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
