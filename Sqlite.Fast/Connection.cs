@@ -12,6 +12,8 @@ namespace Sqlite.Fast
     /// </summary>
     public sealed class Connection : IDisposable
     {
+        static Connection() => SQLitePCL.Batteries_V2.Init();
+
         private readonly IntPtr _connnection;
 
         private bool _disposed = false;

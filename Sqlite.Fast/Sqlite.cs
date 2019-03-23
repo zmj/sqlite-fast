@@ -10,7 +10,7 @@ namespace Sqlite.Fast
     /// </summary>
     public static class Sqlite
     {
-        private const string DllName = "sqlite3.dll";
+        private const string DllName = "e_sqlite3";
         
         [DllImport(DllName, EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Result Open([MarshalAs(UnmanagedType.U1)] ref byte filename, out IntPtr conn);

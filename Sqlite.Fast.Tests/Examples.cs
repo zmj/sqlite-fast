@@ -90,5 +90,17 @@ namespace Sqlite.Fast.Tests
             }
             return i;
         }
+
+        [Fact]
+        public void ConverterTypes() 
+        {
+            ParameterConverter.Builder<User>()
+                // customize parameter mappings
+                .Compile();
+
+            ResultConverter.Builder<User>()
+                // customize result mappings
+                .Compile();
+        }
     }
 }
