@@ -98,6 +98,7 @@ namespace Sqlite.Fast
 
         private void ValidateConverter<TCallerResult>(ResultConverter<TCallerResult> converter)
         {
+            converter.ThrowIfNull(nameof(ResultConverter));
             if (converter.FieldCount != _statement.ColumnCount)
             {
                 throw new ArgumentException($"Converter expects {converter.FieldCount} columns; statement returns {_statement.ColumnCount} columns");

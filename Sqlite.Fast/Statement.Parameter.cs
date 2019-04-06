@@ -57,6 +57,7 @@ namespace Sqlite.Fast
 
         private void ValidateConverter<TCallerParams>(ParameterConverter<TCallerParams> converter)
         {
+            converter.ThrowIfNull(nameof(ParameterConverter));
             if (converter.FieldCount != _statement.ParameterCount)
             {
                 throw new ArgumentException($"Converter expects {converter.FieldCount} parameters; query has {_statement.ParameterCount} parameters");

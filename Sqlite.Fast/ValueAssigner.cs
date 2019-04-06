@@ -9,25 +9,25 @@ namespace Sqlite.Fast
 
     internal sealed class ValueAssigner<TResult, TField> : IValueAssigner<TResult>
     {
-        private readonly string _fieldName;
+        private readonly string? _fieldName;
         private readonly FieldSetter<TResult, TField> _setter;
 
-        private readonly Func<long, TField> _convertInteger;
-        private readonly Func<double, TField> _convertFloat;
-        private readonly FromSpan<char, TField> _convertTextUtf16;
-        private readonly FromSpan<byte, TField> _convertTextUtf8;
-        private readonly FromSpan<byte, TField> _convertBlob;
-        private readonly Func<TField> _convertNull;
+        private readonly Func<long, TField>? _convertInteger;
+        private readonly Func<double, TField>? _convertFloat;
+        private readonly FromSpan<char, TField>? _convertTextUtf16;
+        private readonly FromSpan<byte, TField>? _convertTextUtf8;
+        private readonly FromSpan<byte, TField>? _convertBlob;
+        private readonly Func<TField>? _convertNull;
 
         public ValueAssigner(
-            string fieldName,
+            string? fieldName,
             FieldSetter<TResult, TField> setter,
-            Func<long, TField> convertInteger,
-            Func<double, TField> convertFloat,
-            FromSpan<char, TField> convertTextUtf16,
-            FromSpan<byte, TField> convertTextUtf8,
-            FromSpan<byte, TField> convertBlob,
-            Func<TField> convertNull)
+            Func<long, TField>? convertInteger,
+            Func<double, TField>? convertFloat,
+            FromSpan<char, TField>? convertTextUtf16,
+            FromSpan<byte, TField>? convertTextUtf8,
+            FromSpan<byte, TField>? convertBlob,
+            Func<TField>? convertNull)
         {
             _fieldName = fieldName;
             _setter = setter;
@@ -41,26 +41,26 @@ namespace Sqlite.Fast
 
         public void Assign(ref TResult result, in Column col)
         {
-            bool converted;
-            TField value = default;
+            bool converted = false;
+            TField value = default!;
             try 
             {
                 switch (col.DataType)
                 {
                     case Sqlite.DataType.Integer:
-                        converted = ConvertInteger(col, ref value);
+                        converted = ConvertInteger(col, out value);
                         break;
                     case Sqlite.DataType.Float:
-                        converted = ConvertFloat(col, ref value);
+                        converted = ConvertFloat(col, out value);
                         break;
                     case Sqlite.DataType.Text:
-                        converted = ConvertText(col, ref value);
+                        converted = ConvertText(col, out value);
                         break;
                     case Sqlite.DataType.Blob:
-                        converted = ConvertBlob(col, ref value);
+                        converted = ConvertBlob(col, out value);
                         break;
                     case Sqlite.DataType.Null:
-                        converted = ConvertNull(ref value);
+                        converted = ConvertNull(out value);
                         break;
                     default:
                         converted = false;
@@ -69,36 +69,38 @@ namespace Sqlite.Fast
             }
             catch (Exception ex)
             {
-                throw AssignmentException.ConversionFailed(_fieldName, typeof(TField), typeof(TResult), col.DataType, ex);
+                AssignmentException.ThrowConversionFailed(_fieldName, typeof(TField), typeof(TResult), col.DataType, ex);
             }
             if (!converted) 
             {
-                throw AssignmentException.ConversionMissing(_fieldName, typeof(TField), typeof(TResult), col.DataType);
+                AssignmentException.ThrowConversionMissing(_fieldName, typeof(TField), typeof(TResult), col.DataType);
             }
             _setter(ref result, value);
         }
 
-        private bool ConvertInteger(in Column col, ref TField value)
+        private bool ConvertInteger(in Column col, out TField value)
         {
             if (_convertInteger != null)
             {
                 value = _convertInteger(col.AsInteger());
                 return true;
             }
+            value = default!;
             return false;
         }
 
-        private bool ConvertFloat(in Column col, ref TField value)
+        private bool ConvertFloat(in Column col, out TField value)
         {
             if (_convertFloat != null)
             {
                 value = _convertFloat(col.AsFloat());
                 return true;
             }
+            value = default!;
             return false;
         }
 
-        private bool ConvertText(in Column col, ref TField value)
+        private bool ConvertText(in Column col, out TField value)
         {
             if (_convertTextUtf8 != null)
             {
@@ -111,26 +113,29 @@ namespace Sqlite.Fast
                 value = _convertTextUtf16(col.AsUtf16Text());
                 return true;
             }
+            value = default!;
             return false;
         }
 
-        private bool ConvertBlob(in Column col, ref TField value)
+        private bool ConvertBlob(in Column col, out TField value)
         {
             if (_convertBlob != null)
             {
                 value = _convertBlob(col.AsBlob());
                 return true;
             }
+            value = default!;
             return false;
         }
 
-        private bool ConvertNull(ref TField value)
+        private bool ConvertNull(out TField value)
         {
             if (_convertNull != null)
             {
                 value = _convertNull();
                 return true;
             }
+            value = default!;
             return false;
         }
     }

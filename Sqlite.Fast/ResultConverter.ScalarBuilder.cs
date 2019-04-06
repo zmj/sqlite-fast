@@ -40,6 +40,7 @@ namespace Sqlite.Fast
             /// </summary>
             public ScalarBuilder With(Func<long, TResult> fromInteger)
             {
+                fromInteger.ThrowIfNull(nameof(fromInteger));
                 _builder.FromInteger = fromInteger;
                 return this;
             }
@@ -49,6 +50,7 @@ namespace Sqlite.Fast
             /// </summary>
             public ScalarBuilder With(Func<double, TResult> fromFloat)
             {
+                fromFloat.ThrowIfNull(nameof(fromFloat));
                 _builder.FromFloat = fromFloat;
                 return this;
             }
@@ -59,6 +61,7 @@ namespace Sqlite.Fast
             /// <param name="fromText">Deserializes a value from a source ReadOnlySpan&lt;char&gt;</param>
             public ScalarBuilder With(FromSpan<char, TResult> fromText)
             {
+                fromText.ThrowIfNull(nameof(fromText));
                 _builder.FromUtf16Text = fromText;
                 return this;
             }
@@ -69,6 +72,7 @@ namespace Sqlite.Fast
             /// <param name="fromBytes">Deserializes a value from a source ReadOnlySpan&lt;byte&gt;</param>
             public ScalarBuilder With(FromSpan<byte, TResult> fromBytes)
             {
+                fromBytes.ThrowIfNull(nameof(fromBytes));
                 _builder.FromBlob = fromBytes;
                 return this;
             }
@@ -78,6 +82,7 @@ namespace Sqlite.Fast
             /// </summary>
             public ScalarBuilder With(Func<TResult> fromNull)
             {
+                fromNull.ThrowIfNull(nameof(fromNull));
                 _builder.FromNull = fromNull;
                 return this;
             }

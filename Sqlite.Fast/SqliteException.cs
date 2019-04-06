@@ -26,19 +26,4 @@ namespace Sqlite.Fast
             Error = error;
         }
     }
-
-    internal static class SqliteExceptionExtensions
-    {
-        public static void ThrowIfNotOK(this Sqlite.Result result, string function)
-        {
-            if (result != Sqlite.Result.Ok)
-                throw new SqliteException(function, result);
-        }
-        
-        public static void ThrowIfNot(this Sqlite.Result result, Sqlite.Result expected, string function)
-        {
-            if (result != expected)
-                throw new SqliteException(function, result);
-        }
-    }
 }

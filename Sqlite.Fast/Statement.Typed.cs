@@ -14,7 +14,9 @@ namespace Sqlite.Fast
         private readonly ResultStatement<TResult> _resultStatement;
         private readonly Statement<TParams> _parameterStatement;
 
-        internal Statement(ResultStatement<TResult> resultStatement, Statement<TParams> parameterStatement)
+        internal Statement(
+            ResultStatement<TResult> resultStatement,
+            Statement<TParams> parameterStatement)
         {
             _resultStatement = resultStatement;
             _parameterStatement = parameterStatement;
@@ -50,7 +52,9 @@ namespace Sqlite.Fast
         /// Executes the statement and assigns the first result row using a custom converter.
         /// </summary>
         /// <returns>False if there were no result rows; true otherwise.</returns>
-        public bool Execute<TCallerResult>(ResultConverter<TCallerResult> converter, ref TCallerResult result) =>
+        public bool Execute<TCallerResult>(
+            ResultConverter<TCallerResult> converter, 
+            ref TCallerResult result) =>
             _resultStatement.Execute(converter, ref result);
 
         /// <summary>
@@ -63,7 +67,8 @@ namespace Sqlite.Fast
         /// Executes the statement and assigns the result rows using a custom converter.
         /// </summary>
         /// <returns>An enueration of result rows.</returns>
-        public Rows<TCallerResult> Execute<TCallerResult>(ResultConverter<TCallerResult> converter) =>
+        public Rows<TCallerResult> Execute<TCallerResult>(
+            ResultConverter<TCallerResult> converter) =>
             _resultStatement.Execute(converter);
 
         /// <summary>

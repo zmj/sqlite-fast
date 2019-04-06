@@ -6,8 +6,8 @@ namespace Sqlite.Fast
 {
     public sealed partial class ResultConverter<TResult>
     {
-        private readonly IValueAssigner<TResult>[] _assigners;
-        private readonly ValueAssigner<TResult, TResult> _scalarAssigner;
+        private readonly IValueAssigner<TResult>[]? _assigners;
+        private readonly ValueAssigner<TResult, TResult>? _scalarAssigner;
         internal readonly int FieldCount;
 
         internal ResultConverter(IEnumerable<IValueAssigner<TResult>> valueAssigners)
@@ -35,7 +35,7 @@ namespace Sqlite.Fast
             { 
                 foreach (Column col in columns)
                 {
-                    _assigners[col.Index].Assign(ref result, col);
+                    _assigners![col.Index].Assign(ref result, col);
                 }
             }
         }
@@ -51,7 +51,8 @@ namespace Sqlite.Fast
         /// Call builder.With(...) to define member conversions, then builder.Compile().
         /// </summary>
         /// <param name="withDefaultConversions">If true, member conversions will fall back to default conversion when no custom conversion is defined.</param>
-        public static ResultConverter<TResult>.Builder Builder<TResult>(bool withDefaultConversions = true) =>
+        public static ResultConverter<TResult>.Builder Builder<TResult>(
+            bool withDefaultConversions = true) =>
             new ResultConverter<TResult>.Builder(withDefaultConversions);
 
         /// <summary>
@@ -59,7 +60,8 @@ namespace Sqlite.Fast
         /// Call builder.With(...) to define conversions, then builder.Compile().
         /// </summary>
         /// <param name="withDefaultConversions">If true, conversion will fall back to default conversion when no custom conversion is defined.</param>
-        public static ResultConverter<TResult>.ScalarBuilder ScalarBuilder<TResult>(bool withDefaultConversions = true) =>
+        public static ResultConverter<TResult>.ScalarBuilder ScalarBuilder<TResult>(
+            bool withDefaultConversions = true) =>
             new ResultConverter<TResult>.ScalarBuilder(withDefaultConversions);
 
         internal static ResultConverter<TResult> Default<TResult>()
