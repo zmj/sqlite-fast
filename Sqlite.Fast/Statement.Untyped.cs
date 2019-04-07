@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace Sqlite.Fast
 {
-#nullable enable
     /// <summary>
     /// Statement wraps a SQLite prepared statement that has no paremeters and no results.
     /// Create a Statement (by calling Connection.CompileStatement), reuse it as many times as necessary, then dispose it.
@@ -125,5 +124,4 @@ namespace Sqlite.Fast
             r.ThrowIfNotOK(nameof(Sqlite.Finalize));
         }
     }
-#nullable restore
 }

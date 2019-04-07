@@ -9,23 +9,23 @@ namespace Sqlite.Fast
 {
     internal static partial class DefaultConverters
     {
-        public static Func<long, T> GetIntegerConverter<T>() =>
-            (Func<long, T>)Integer.From(typeof(T));
+        public static Func<long, T>? GetIntegerConverter<T>() =>
+            (Func<long, T>?)Integer.From(typeof(T));
 
-        public static Func<double, T> FromFloat<T>() =>
-            (Func<double, T>)Float.From(typeof(T));
+        public static Func<double, T>? FromFloat<T>() =>
+            (Func<double, T>?)Float.From(typeof(T));
 
-        public static FromSpan<char, T> FromUtf16Text<T>() =>
-            (FromSpan<char, T>)Utf16Text.From(typeof(T));
+        public static FromSpan<char, T>? FromUtf16Text<T>() =>
+            (FromSpan<char, T>?)Utf16Text.From(typeof(T));
 
-        public static FromSpan<byte, T> FromUtf8Text<T>() =>
-            (FromSpan<byte, T>)Utf8Text.From(typeof(T));
+        public static FromSpan<byte, T>? FromUtf8Text<T>() =>
+            (FromSpan<byte, T>?)Utf8Text.From(typeof(T));
 
-        public static FromSpan<byte, T> FromBlob<T>() =>
-            (FromSpan<byte, T>)Blob.From(typeof(T));
+        public static FromSpan<byte, T>? FromBlob<T>() =>
+            (FromSpan<byte, T>?)Blob.From(typeof(T));
 
-        public static Func<T> FromNull<T>() =>
-            (Func<T>)Null.From(typeof(T));
+        public static Func<T>? FromNull<T>() =>
+            (Func<T>?)Null.From(typeof(T));
 
         private static class Integer
         {
@@ -54,7 +54,7 @@ namespace Sqlite.Fast
             private static Func<long, TimeSpan> _toTimeSpan;
             private static Func<long, TimeSpan?> _toTimeSpanNull;
             
-            public static Delegate From(Type type)
+            public static Delegate? From(Type type)
             {
                 if (type == typeof(long)) return _toLong ?? (_toLong = (long value) => value);
                 if (type == typeof(long?)) return _toLongNull ?? (_toLongNull = (long value) => value);
@@ -107,7 +107,7 @@ namespace Sqlite.Fast
             private static Func<double, float> _toFloat;
             private static Func<double, float?> _toFloatNull;
             
-            public static Delegate From(Type type)
+            public static Delegate? From(Type type)
             {
                 if (type == typeof(double)) return _toDouble ?? (_toDouble = (double value) => value);
                 if (type == typeof(double?)) return _toDoubleNull ?? (_toDoubleNull = (double value) => value);
@@ -122,7 +122,7 @@ namespace Sqlite.Fast
             private static FromSpan<char, string> _toString;
             private static FromSpan<char, ReadOnlyMemory<char>> _toStringMemory;
 
-            public static Delegate From(Type type)
+            public static Delegate? From(Type type)
             {
                 if (type == typeof(string)) return _toString ?? 
                         (_toString = (ReadOnlySpan<char> text) => text.ToString());
@@ -139,7 +139,7 @@ namespace Sqlite.Fast
             private static FromSpan<byte, TimeSpan> _toTimeSpan;
             private static FromSpan<byte, TimeSpan?> _toTimeSpanNull;
 
-            public static Delegate From(Type type)
+            public static Delegate? From(Type type)
             {
                 // bool
                 // byte
@@ -179,9 +179,7 @@ namespace Sqlite.Fast
                 }
                 return ThrowParseFailed<Guid>(text);
             }
-#pragma warning restore EPS05
 
-#pragma warning disable EPS05
             private static TimeSpan ToTimeSpan(ReadOnlySpan<byte> text)
             {
                 if (Utf8Parser.TryParse(text, out TimeSpan value, out _))
@@ -209,12 +207,12 @@ namespace Sqlite.Fast
 
         private static class Blob
         {
-            public static Delegate From(Type type) => null;
+            public static Delegate? From(Type type) => null;
         }
 
         private static class Null
         {
-            private static Func<string> _toString;
+            private static Func<string?> _toString;
             private static Func<ReadOnlyMemory<char>> _toStringMemory;
             private static Func<long?> _toLongNull;
             private static Func<ulong?> _toUlongNull;
@@ -230,7 +228,7 @@ namespace Sqlite.Fast
             private static Func<DateTimeOffset?> _toDateTimeOffsetNull;
             private static Func<TimeSpan?> _toTimeSpanNull;
 
-            public static Delegate From(Type type)
+            public static Delegate? From(Type type)
             {
                 if (type == typeof(string)) return _toString ?? (_toString = () => null);
                 if (type == typeof(ReadOnlyMemory<char>)) return _toStringMemory ?? (_toStringMemory = () => default);

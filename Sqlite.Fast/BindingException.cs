@@ -12,7 +12,7 @@ namespace Sqlite.Fast
         /// <summary>
         /// The name of the parameter type member (null if the parameter type is scalar).
         /// </summary>
-        public string MemberName { get; }
+        public string? MemberName { get; }
 
         /// <summary>
         /// The type of the parameter type member.
@@ -27,13 +27,13 @@ namespace Sqlite.Fast
         /// <summary>
         /// The value of the parameter type member.
         /// </summary>
-        public object Value { get; }
+        public object? Value { get; }
 
         private BindingException(
-            string memberName,
+            string? memberName,
             Type memberType,
             Type parameterType,
-            object value,
+            object? value,
             string message)
             : base(message)
         {
@@ -44,10 +44,10 @@ namespace Sqlite.Fast
         }
 
         private BindingException(
-            string memberName,
+            string? memberName,
             Type memberType,
             Type parameterType,
-            object value,
+            object? value,
             string message,
             Exception innerException)
             : base(message, innerException)
@@ -58,12 +58,12 @@ namespace Sqlite.Fast
             Value = value;
         }
 
-        internal static BindingException ConversionMissing<T>(
-            string memberName,
+        internal static void  ThrowConversionMissing<T>(
+            string? memberName,
             Type paramsType,
             T value)
         {
-            return new BindingException(
+            throw new BindingException(
                 memberName,
                 typeof(T),
                 paramsType,
@@ -71,18 +71,19 @@ namespace Sqlite.Fast
                 $"No defined conversion from value {value} (type {typeof(T).Name}) for {paramsType.Name}.{memberName}");
         }
 
-        internal static BindingException ConversionFailed<T>(
-            string memberName,
+        internal static void ThrowConversionFailed<T>(
+            string? memberName,
             Type paramsType,
             T value,
             Exception innerException)
         {
-            return new BindingException(
+            throw new BindingException(
                 memberName,
                 typeof(T),
                 paramsType,
                 value,
-                $"Conversion failed from value {value} (type {typeof(T).Name}) for {paramsType.Name}.{memberName}");
+                $"Conversion failed from value {value} (type {typeof(T).Name}) for {paramsType.Name}.{memberName}",
+                innerException);
         }
     }
 }

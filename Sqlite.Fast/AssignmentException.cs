@@ -12,7 +12,7 @@ namespace Sqlite.Fast
         /// <summary>
         /// The name of the result type member (null if the result type is scalar).
         /// </summary>
-        public string MemberName { get; }
+        public string? MemberName { get; }
 
         /// <summary>
         /// The type of the result type member.
@@ -30,7 +30,7 @@ namespace Sqlite.Fast
         public string DataType { get; }
 
         private AssignmentException(
-            string memberName, 
+            string? memberName, 
             Type memberType, 
             Type resultType, 
             Sqlite.DataType dataType,
@@ -44,7 +44,7 @@ namespace Sqlite.Fast
         }
 
         private AssignmentException(
-            string memberName,
+            string? memberName,
             Type memberType,
             Type resultType,
             Sqlite.DataType dataType,
@@ -58,13 +58,13 @@ namespace Sqlite.Fast
             DataType = dataType.ToString();
         }
 
-        internal static AssignmentException ConversionMissing(
-            string memberName,
+        internal static void ThrowConversionMissing(
+            string? memberName,
             Type memberType,
             Type resultType,
             Sqlite.DataType dataType)
         {
-            return new AssignmentException(
+            throw new AssignmentException(
                 memberName,
                 memberType,
                 resultType,
@@ -72,14 +72,14 @@ namespace Sqlite.Fast
                 $"No defined conversion from SQLite.{dataType} to {memberType.Name} for {resultType.Name}.{memberName}. (Add custom conversions with {nameof(ResultConverter)}.{nameof(ResultConverter.Builder)}.)");
         }
 
-        internal static AssignmentException ConversionFailed(
-            string memberName,
+        internal static void ThrowConversionFailed(
+            string? memberName,
             Type memberType,
             Type resultType,
             Sqlite.DataType dataType,
             Exception innerException)
         {
-            return new AssignmentException(
+            throw new AssignmentException(
                 memberName,
                 memberType,
                 resultType,

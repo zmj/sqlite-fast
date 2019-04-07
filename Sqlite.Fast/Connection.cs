@@ -5,7 +5,6 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-#nullable enable
     /// <summary>
     /// Connection wraps a SQLite database connection handle. 
     /// Create a Connection instance, use it for the duration of the application session, then dispose it.
@@ -212,5 +211,4 @@ namespace Sqlite.Fast
             r.ThrowIfNotOK(nameof(Sqlite.CloseV2));
         }
     }
-#nullable restore
 }

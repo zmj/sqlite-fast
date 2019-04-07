@@ -32,7 +32,7 @@ namespace Sqlite.Fast
         public static Builder<TParams, TParams> Build<TParams>() =>
             (Builder<TParams, TParams>)BuildInternal<TParams>(member: null);
 
-        private static object BuildInternal<TParams>(MemberInfo member)
+        private static object BuildInternal<TParams>(MemberInfo? member)
         {
             Type valueType = member != null ? member.ValueType() : typeof(TParams);
             ConstructorInfo constructor = typeof(Builder<,>)
@@ -44,19 +44,20 @@ namespace Sqlite.Fast
 
         public interface IBuilder<TParams>
         {
-            MemberInfo Member { get; }
+            MemberInfo? Member { get; }
             IValueBinder<TParams> Compile(bool withDefaults);
             Builder<TParams, TField> AsConcrete<TField>();
         }
 
         public sealed class Builder<TParams, TField> : IBuilder<TParams>
         {
-            public MemberInfo Member { get; }
+            public MemberInfo? Member { get; }
             public readonly List<Converter<TField>> Converters = new List<Converter<TField>>();
 
-            public Builder(MemberInfo member) => Member = member;
+            public Builder(MemberInfo? member) => Member = member;
 
-            IValueBinder<TParams> IBuilder<TParams>.Compile(bool withDefaults) => Compile(withDefaults);
+            IValueBinder<TParams> IBuilder<TParams>.Compile(bool withDefaults) => 
+                Compile(withDefaults);
 
             public ValueBinder<TParams, TField> Compile(bool withDefaults)
             {
@@ -84,7 +85,7 @@ namespace Sqlite.Fast
                     converters);
             }
 
-            private static FieldGetter<TParams, TField> CompileGetter(MemberInfo member)
+            private static FieldGetter<TParams, TField> CompileGetter(MemberInfo? member)
             {
                 var parameters = Expression.Parameter(typeof(TParams).MakeByRefType());
                 Expression value;

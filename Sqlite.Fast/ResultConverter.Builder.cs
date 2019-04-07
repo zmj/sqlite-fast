@@ -6,7 +6,6 @@ using System.Linq.Expressions;
 
 namespace Sqlite.Fast
 {
-#nullable enable
     public sealed partial class ResultConverter<TResult>
     {
         /// <summary>
@@ -67,6 +66,8 @@ namespace Sqlite.Fast
                 Expression<Func<TResult, TField>> propertyOrField,
                 Func<long, TField> fromInteger)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                fromInteger.ThrowIfNull(nameof(fromInteger));
                 GetOrAdd(propertyOrField).FromInteger = fromInteger;
                 return this;
             }
@@ -78,6 +79,8 @@ namespace Sqlite.Fast
                 Expression<Func<TResult, TField>> propertyOrField,
                 Func<double, TField> fromFloat)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                fromFloat.ThrowIfNull(nameof(fromFloat));
                 GetOrAdd(propertyOrField).FromFloat = fromFloat;
                 return this;
             }
@@ -91,6 +94,8 @@ namespace Sqlite.Fast
                 Expression<Func<TResult, TField>> propertyOrField, 
                 FromSpan<char, TField> fromText)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                fromText.ThrowIfNull(nameof(fromText));
                 GetOrAdd(propertyOrField).FromUtf16Text = fromText;
                 return this;
             }
@@ -104,6 +109,8 @@ namespace Sqlite.Fast
                 Expression<Func<TResult, TField>> propertyOrField,
                 FromSpan<byte, TField> fromBytes)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                fromBytes.ThrowIfNull(nameof(fromBytes));
                 GetOrAdd(propertyOrField).FromBlob = fromBytes;
                 return this;
             }
@@ -115,6 +122,8 @@ namespace Sqlite.Fast
                 Expression<Func<TResult, TField>> propertyOrField,
                 Func<TField> fromNull)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                fromNull.ThrowIfNull(nameof(fromNull));
                 GetOrAdd(propertyOrField).FromNull = fromNull;
                 return this;
             }
@@ -124,6 +133,7 @@ namespace Sqlite.Fast
             /// </summary>
             public Builder Ignore<TField>(Expression<Func<TResult, TField>> propertyOrField)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
                 MemberInfo member = GetSettableMember(propertyOrField);
                 _assignerBuilders.RemoveAll(builder => builder.Member == member);
                 return this;
@@ -154,5 +164,4 @@ namespace Sqlite.Fast
             }
         }
     }
-#nullable restore
 }

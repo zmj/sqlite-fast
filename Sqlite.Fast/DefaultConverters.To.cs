@@ -10,7 +10,7 @@ namespace Sqlite.Fast
 	internal static partial class DefaultConverters
     {
         public static ValueBinder.Converter<T>[] To<T>() =>
-            (ValueBinder.Converter<T>[])(To(typeof(T)) ?? Array.Empty<ValueBinder.Converter<T>>());
+            (ValueBinder.Converter<T>[]?)(To(typeof(T)) ?? Array.Empty<ValueBinder.Converter<T>>());
 
         private static ValueBinder.Converter<string>[] _fromString;
         private static ValueBinder.Converter<ReadOnlyMemory<char>>[] _fromStringROMemory;
@@ -49,7 +49,7 @@ namespace Sqlite.Fast
         private static ValueBinder.Converter<double>[] _fromDouble;
         private static ValueBinder.Converter<double?>[] _fromDoubleNull;
 
-        private static object To(Type type)
+        private static object? To(Type type)
         {
             if (type == typeof(string)) return _fromString ??
                     (_fromString = new[] { ValueBinder.Converter.Utf16Text((string value) => value.AsSpan()) });

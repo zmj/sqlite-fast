@@ -1,23 +1,40 @@
 using System;
 
-internal static class ThrowExtensions
+namespace Sqlite.Fast
 {
-#nullable enable
-    public static void ThrowIfNull<T>(this T? value, string name)
-        where T : class
+    internal static class ThrowExtensions
     {
-        if (value == null)
+        public static void ThrowIfNull<T>(this T? value, string name)
+            where T : class
         {
-            throw new ArgumentNullException(name);
+            if (value == null)
+            {
+                throw new ArgumentNullException(name);
+            }
         }
-    }
 
-    public static void ThrowIfDisposed(this bool disposed, string name)
-    {
-        if (disposed)
+        public static void ThrowIfDisposed(this bool disposed, string name)
         {
-            throw new ObjectDisposedException(name);
+            if (disposed)
+            {
+                throw new ObjectDisposedException(name);
+            }
+        }
+
+        public static void ThrowIfNotOK(this Sqlite.Result result, string function)
+        {
+            if (result != Sqlite.Result.Ok)
+            {
+                throw new SqliteException(function, result);
+            }
+        }
+
+        public static void ThrowIfNot(this Sqlite.Result result, Sqlite.Result expected, string function)
+        {
+            if (result != expected)
+            {
+                throw new SqliteException(function, result);
+            }
         }
     }
-#nullable restore
 }

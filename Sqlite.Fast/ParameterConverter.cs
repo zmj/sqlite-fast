@@ -7,7 +7,6 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-#nullable enable
     public sealed partial class ParameterConverter<TParams>
     {
         private readonly IValueBinder<TParams>[]? _binders;
@@ -53,7 +52,8 @@ namespace Sqlite.Fast
         /// Call builder.With(...) to define member conversions, then builder.Compile().
         /// </summary>
         /// <param name="withDefaultConversions">If true, member conversions will fall back to default conversion when no custom conversion can be used.</param>
-        public static ParameterConverter<TParams>.Builder Builder<TParams>(bool withDefaultConversions = true) =>
+        public static ParameterConverter<TParams>.Builder Builder<TParams>(
+            bool withDefaultConversions = true) =>
             new ParameterConverter<TParams>.Builder(withDefaultConversions);
 
         /// <summary>
@@ -62,7 +62,8 @@ namespace Sqlite.Fast
         /// </summary>
         /// <param name="withDefaultConversions">If true, conversion will fall back to the default conversion when no custom conversion can be used.</param>
         /// <returns></returns>
-        public static ParameterConverter<TParams>.ScalarBuilder ScalarBuilder<TParams>(bool withDefaultConversions = true) =>
+        public static ParameterConverter<TParams>.ScalarBuilder ScalarBuilder<TParams>(
+            bool withDefaultConversions = true) =>
             new ParameterConverter<TParams>.ScalarBuilder(withDefaultConversions);
 
         internal static ParameterConverter<TParams> Default<TParams>()
@@ -77,5 +78,4 @@ namespace Sqlite.Fast
             }
         }
     }
-#nullable restore
 }

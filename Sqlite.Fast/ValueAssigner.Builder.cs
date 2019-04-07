@@ -26,7 +26,7 @@ namespace Sqlite.Fast
         public static Builder<TResult, TResult> Build<TResult>() =>
             (Builder<TResult, TResult>)BuildInternal<TResult>(member: null);
 
-        private static object BuildInternal<TResult>(MemberInfo member)
+        private static object BuildInternal<TResult>(MemberInfo? member)
         {
             Type valueType = member != null ? member.ValueType() : typeof(TResult);
             ConstructorInfo constructor = typeof(Builder<,>)
@@ -38,23 +38,23 @@ namespace Sqlite.Fast
    
         public interface IBuilder<TResult>
         {
-            MemberInfo Member { get; }
+            MemberInfo? Member { get; }
             IValueAssigner<TResult> Compile(bool withDefaults);
             Builder<TResult, TField> AsConcrete<TField>();
         }
 
         public sealed class Builder<TResult, TField> : IBuilder<TResult>
         {
-            public MemberInfo Member { get; }
+            public MemberInfo? Member { get; }
 
-            public Func<long, TField> FromInteger;
-            public Func<double, TField> FromFloat;
-            public FromSpan<char, TField> FromUtf16Text;
-            public FromSpan<byte, TField> FromUtf8Text;
-            public FromSpan<byte, TField> FromBlob;
-            public Func<TField> FromNull;
+            public Func<long, TField>? FromInteger;
+            public Func<double, TField>? FromFloat;
+            public FromSpan<char, TField>? FromUtf16Text;
+            public FromSpan<byte, TField>? FromUtf8Text;
+            public FromSpan<byte, TField>? FromBlob;
+            public Func<TField>? FromNull;
 
-            public Builder(MemberInfo member) => Member = member;
+            public Builder(MemberInfo? member) => Member = member;
 
             IValueAssigner<TResult> IBuilder<TResult>.Compile(bool withDefaults) => Compile(withDefaults);
 
@@ -80,7 +80,7 @@ namespace Sqlite.Fast
                     FromNull);
             }
 
-            private static FieldSetter<TResult, TField> CompileSetter(MemberInfo memberInfo)
+            private static FieldSetter<TResult, TField> CompileSetter(MemberInfo? memberInfo)
             {
                 var result = Expression.Parameter(typeof(TResult).MakeByRefType());
                 Expression target;

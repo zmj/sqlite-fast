@@ -114,11 +114,8 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = "hello";
                 insert.Bind(p).Execute();
-                // TODO
-                #nullable disable
-                string r = null;
+                string r = null!;
                 Assert.True(select.Execute(ref r));
-                #nullable enable
                 Assert.Equal(p.Value, r);
             }
         }

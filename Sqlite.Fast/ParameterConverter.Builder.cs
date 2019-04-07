@@ -7,7 +7,6 @@ using System.Reflection;
 
 namespace Sqlite.Fast
 {
-#nullable enable
     /// <summary>
     /// ParameterConverter binds an instance of the parameter type to SQLite parameter values.
     /// </summary>
@@ -68,6 +67,8 @@ namespace Sqlite.Fast
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, long> toInteger)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                toInteger.ThrowIfNull(nameof(toInteger));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Integer(toInteger));
@@ -82,6 +83,9 @@ namespace Sqlite.Fast
                 Func<TField, bool> canConvert,
                 Func<TField, long> toInteger)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                canConvert.ThrowIfNull(nameof(canConvert));
+                toInteger.ThrowIfNull(nameof(toInteger));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Integer(canConvert, toInteger));
@@ -95,6 +99,8 @@ namespace Sqlite.Fast
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, double> toFloat)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                toFloat.ThrowIfNull(nameof(toFloat));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Float(toFloat));
@@ -109,6 +115,9 @@ namespace Sqlite.Fast
                 Func<TField, bool> canConvert,
                 Func<TField, double> toFloat)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                canConvert.ThrowIfNull(nameof(canConvert));
+                toFloat.ThrowIfNull(nameof(toFloat));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Float(canConvert, toFloat));
@@ -126,6 +135,9 @@ namespace Sqlite.Fast
                 ToSpan<TField, char> toText,
                 Func<TField, int> length)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                toText.ThrowIfNull(nameof(toText));
+                length.ThrowIfNull(nameof(length));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Utf16Text(toText, length));
@@ -145,6 +157,10 @@ namespace Sqlite.Fast
                 ToSpan<TField, char> toText,
                 Func<TField, int> length)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                canConvert.ThrowIfNull(nameof(canConvert));
+                toText.ThrowIfNull(nameof(toText));
+                length.ThrowIfNull(nameof(length));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Utf16Text(canConvert, toText, length));
@@ -160,6 +176,8 @@ namespace Sqlite.Fast
                 Expression<Func<TParams, TField>> propertyOrField,
                 AsSpan<TField, char> asText)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                asText.ThrowIfNull(nameof(asText));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Utf16Text(asText));
@@ -177,6 +195,9 @@ namespace Sqlite.Fast
                 Func<TField, bool> canConvert,
                 AsSpan<TField, char> asText)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                canConvert.ThrowIfNull(nameof(canConvert));
+                asText.ThrowIfNull(nameof(asText));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Utf16Text(canConvert, asText));
@@ -194,6 +215,9 @@ namespace Sqlite.Fast
                 ToSpan<TField, byte> toBytes,
                 Func<TField, int> length)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                toBytes.ThrowIfNull(nameof(toBytes));
+                length.ThrowIfNull(nameof(length));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Blob(toBytes, length));
@@ -213,6 +237,10 @@ namespace Sqlite.Fast
                 ToSpan<TField, byte> toBytes,
                 Func<TField, int> length)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                canConvert.ThrowIfNull(nameof(canConvert));
+                toBytes.ThrowIfNull(nameof(toBytes));
+                length.ThrowIfNull(nameof(length));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Blob(canConvert, toBytes, length));
@@ -228,6 +256,8 @@ namespace Sqlite.Fast
                 Expression<Func<TParams, TField>> propertyOrField,
                 AsSpan<TField, byte> asBytes)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                asBytes.ThrowIfNull(nameof(asBytes));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Blob(asBytes));
@@ -245,6 +275,9 @@ namespace Sqlite.Fast
                 Func<TField, bool> canConvert,
                 AsSpan<TField, byte> asBytes)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                canConvert.ThrowIfNull(nameof(canConvert));
+                asBytes.ThrowIfNull(nameof(asBytes));
                 GetOrAdd(propertyOrField)
                     .Converters
                     .Add(ValueBinder.Converter.Blob(canConvert, asBytes));
@@ -257,6 +290,7 @@ namespace Sqlite.Fast
             public Builder With<TField>(
                 Expression<Func<TParams, TField>> propertyOrField)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
                 GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Null<TField>());
                 return this;
             }
@@ -272,6 +306,8 @@ namespace Sqlite.Fast
                 Expression<Func<TParams, TField>> propertyOrField,
                 Func<TField, bool> canConvert)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
+                canConvert.ThrowIfNull(nameof(canConvert));
                 GetOrAdd(propertyOrField).Converters.Add(ValueBinder.Converter.Null(canConvert));
                 return this;
             }
@@ -281,6 +317,7 @@ namespace Sqlite.Fast
             /// </summary>
             public Builder Ignore<TField>(Expression<Func<TParams, TField>> propertyOrField)
             {
+                propertyOrField.ThrowIfNull(nameof(propertyOrField));
                 MemberInfo member = GetGettableMember(propertyOrField);
                 _binderBuilders.RemoveAll(builder => builder.Member == member);
                 return this;
@@ -311,5 +348,4 @@ namespace Sqlite.Fast
             }
         }
     }
-#nullable restore
 }

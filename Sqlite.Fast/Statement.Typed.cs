@@ -4,7 +4,6 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-#nullable enable
     /// <summary>
     /// Statement wraps a SQLite prepared statement that has one or more parameters and one or more result rows.
     /// Create a Statement (by calling Connection.CompileStatement), reuse it as many times as necessary, then dispose it.
@@ -81,5 +80,4 @@ namespace Sqlite.Fast
             _resultStatement.Dispose();
         }
     }
-#nullable restore
 }
