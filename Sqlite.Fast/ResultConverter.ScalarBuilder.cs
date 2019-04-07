@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+#nullable enable
     /// <summary>
     /// ResultConverter assigns a SQLite result row to an instance of the result type.
     /// </summary>
@@ -83,4 +84,5 @@ namespace Sqlite.Fast
             }
         }
     }
+#nullable restore
 }

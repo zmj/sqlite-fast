@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+#nullable enable
     /// <summary>
     /// Statement wraps a SQLite prepared statement that has one or more result rows.
     /// Create a Statement (by calling Connection.CompileStatement), reuse it as many times as necessary, then dispose it.
@@ -98,6 +99,7 @@ namespace Sqlite.Fast
 
         private void ValidateConverter<TCallerResult>(ResultConverter<TCallerResult> converter)
         {
+            converter.ThrowIfNull(nameof(ResultConverter));
             if (converter.FieldCount != _statement.ColumnCount)
             {
                 throw new ArgumentException($"Converter expects {converter.FieldCount} columns; statement returns {_statement.ColumnCount} columns");
@@ -109,4 +111,5 @@ namespace Sqlite.Fast
         /// </summary>
         public void Dispose() => _statement.Dispose();
     }
+#nullable restore
 }

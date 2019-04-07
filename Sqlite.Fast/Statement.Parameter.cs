@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+#nullable enable
     /// <summary>
     /// Statement wraps a SQLite prepared statement that has one or more parameters.
     /// Create a Statement (by calling Connection.CompileStatement), reuse it as many times as necessary, then dispose it.
@@ -57,6 +58,7 @@ namespace Sqlite.Fast
 
         private void ValidateConverter<TCallerParams>(ParameterConverter<TCallerParams> converter)
         {
+            converter.ThrowIfNull(nameof(ParameterConverter));
             if (converter.FieldCount != _statement.ParameterCount)
             {
                 throw new ArgumentException($"Converter expects {converter.FieldCount} parameters; query has {_statement.ParameterCount} parameters");
@@ -73,4 +75,5 @@ namespace Sqlite.Fast
         /// </summary>
         public void Dispose() => _statement.Dispose();
     }
+#nullable restore
 }

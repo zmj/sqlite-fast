@@ -2,7 +2,8 @@ using System;
 
 internal static class ThrowExtensions
 {
-    public static void ThrowIfNull<T>(this T value, string name) // todo ?
+#nullable enable
+    public static void ThrowIfNull<T>(this T? value, string name)
         where T : class
     {
         if (value == null)
@@ -18,4 +19,5 @@ internal static class ThrowExtensions
             throw new ObjectDisposedException(name);
         }
     }
+#nullable restore
 }

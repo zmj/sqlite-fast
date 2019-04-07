@@ -7,10 +7,11 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+#nullable enable
     public sealed partial class ParameterConverter<TParams>
     {
-        private readonly IValueBinder<TParams>[] _binders;
-        private readonly ValueBinder<TParams, TParams> _scalarBinder;
+        private readonly IValueBinder<TParams>[]? _binders;
+        private readonly ValueBinder<TParams, TParams>? _scalarBinder;
         internal readonly int FieldCount;
 
         internal ParameterConverter(IEnumerable<IValueBinder<TParams>> valueBinders)
@@ -34,7 +35,7 @@ namespace Sqlite.Fast
             }
             else
             {
-                for (int i = 0; i < _binders.Length; i++)
+                for (int i = 0; i < _binders!.Length; i++)
                 {
                     _binders[i].Bind(in parameters, statement, i + 1);
                 }
@@ -76,4 +77,5 @@ namespace Sqlite.Fast
             }
         }
     }
+#nullable restore
 }

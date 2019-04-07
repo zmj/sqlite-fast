@@ -7,6 +7,7 @@ using System.Reflection;
 
 namespace Sqlite.Fast
 {
+#nullable enable
     /// <summary>
     /// ParameterConverter binds an instance of the parameter type to SQLite parameter values.
     /// </summary>
@@ -48,11 +49,8 @@ namespace Sqlite.Fast
 
             private ValueBinder.Builder<TParams, TField> GetOrAdd<TField>(Expression<Func<TParams, TField>> propertyOrField)
             {
-                if (GetGettableMember(propertyOrField, out MemberInfo member))
-                {
-                    return GetOrAdd(member).AsConcrete<TField>();
-                }
-                throw new ArgumentException($"Expression is not gettable field or property of {typeof(TParams).Name}");
+                MemberInfo member = GetGettableMember(propertyOrField);
+                return GetOrAdd(member).AsConcrete<TField>();
             }
 
             /// <summary>
@@ -283,22 +281,20 @@ namespace Sqlite.Fast
             /// </summary>
             public Builder Ignore<TField>(Expression<Func<TParams, TField>> propertyOrField)
             {
-                if (GetGettableMember(propertyOrField, out MemberInfo member))
-                {
-                    _binderBuilders.RemoveAll(builder => builder.Member == member);
-                }
+                MemberInfo member = GetGettableMember(propertyOrField);
+                _binderBuilders.RemoveAll(builder => builder.Member == member);
                 return this;
             }
 
-            private static bool GetGettableMember<TField>(Expression<Func<TParams, TField>> propertyOrField, out MemberInfo member)
+            private static MemberInfo GetGettableMember<TField>(
+                Expression<Func<TParams, TField>> propertyOrField)
             {
-                if (propertyOrField.Body is MemberExpression memberExpression && CanGetValue(memberExpression.Member))
+                if (propertyOrField.Body is MemberExpression memberExpression &&
+                    CanGetValue(memberExpression.Member))
                 {
-                    member = memberExpression.Member;
-                    return true;
+                    return memberExpression.Member;
                 }
-                member = null;
-                return false;
+                throw new ArgumentException($"Expression is not gettable field or property of {typeof(TParams).Name}");
             }
 
             private static bool CanGetValue(MemberInfo member)
@@ -315,4 +311,5 @@ namespace Sqlite.Fast
             }
         }
     }
+#nullable restore
 }

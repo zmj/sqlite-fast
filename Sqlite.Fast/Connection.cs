@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+#nullable enable
     /// <summary>
     /// Connection wraps a SQLite database connection handle. 
     /// Create a Connection instance, use it for the duration of the application session, then dispose it.
@@ -21,7 +22,7 @@ namespace Sqlite.Fast
         /// <summary>
         /// Opens a database connection handle.
         /// </summary>
-        /// <param name="dbFilePath">The full or relative path to a database file, or :memory: for an in-memory database.</param>
+        /// <param name="dbFilePath">The full or relative path to a database file.</param>
         public Connection(string dbFilePath)
         {
             dbFilePath.ThrowIfNull(nameof(dbFilePath));
@@ -211,4 +212,5 @@ namespace Sqlite.Fast
             r.ThrowIfNotOK(nameof(Sqlite.CloseV2));
         }
     }
+#nullable restore
 }

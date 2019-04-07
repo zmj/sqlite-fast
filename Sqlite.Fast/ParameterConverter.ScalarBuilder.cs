@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
+#nullable enable
     public sealed partial class ParameterConverter<TParams>
     {
         /// <summary>
@@ -157,4 +158,5 @@ namespace Sqlite.Fast
             }
         }
     }
+#nullable restore
 }

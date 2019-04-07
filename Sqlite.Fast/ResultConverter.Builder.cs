@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 
 namespace Sqlite.Fast
 {
+#nullable enable
     public sealed partial class ResultConverter<TResult>
     {
         /// <summary>
@@ -13,7 +14,8 @@ namespace Sqlite.Fast
         /// </summary>
         public sealed class Builder
         {
-            private readonly List<ValueAssigner.IBuilder<TResult>> _assignerBuilders = new List<ValueAssigner.IBuilder<TResult>>();
+            private readonly List<ValueAssigner.IBuilder<TResult>> _assignerBuilders =
+                new List<ValueAssigner.IBuilder<TResult>>();
             private readonly bool _withDefaults;
 
             /// <summary>
@@ -42,13 +44,11 @@ namespace Sqlite.Fast
                 return builder;
             }
 
-            private ValueAssigner.Builder<TResult, TField> GetOrAdd<TField>(Expression<Func<TResult, TField>> propertyOrField)
+            private ValueAssigner.Builder<TResult, TField> GetOrAdd<TField>(
+                Expression<Func<TResult, TField>> propertyOrField)
             {
-                if (GetSettableMember(propertyOrField, out MemberInfo member))
-                {
-                    return GetOrAdd(member).AsConcrete<TField>();
-                }
-                throw new ArgumentException($"Expression is not settable field or property of {typeof(TResult).Name}");
+                MemberInfo member = GetSettableMember(propertyOrField);
+                return GetOrAdd(member).AsConcrete<TField>();
             }
 
             /// <summary>
@@ -56,13 +56,16 @@ namespace Sqlite.Fast
             /// </summary>
             public ResultConverter<TResult> Compile()
             {
-                return new ResultConverter<TResult>(_assignerBuilders.Select(b => b.Compile(_withDefaults)));
+                return new ResultConverter<TResult>(
+                    _assignerBuilders.Select(b => b.Compile(_withDefaults)));
             }
 
             /// <summary>
             /// Defines a conversion from a SQLite integer to a member value.
             /// </summary>
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, Func<long, TField> fromInteger)
+            public Builder With<TField>(
+                Expression<Func<TResult, TField>> propertyOrField,
+                Func<long, TField> fromInteger)
             {
                 GetOrAdd(propertyOrField).FromInteger = fromInteger;
                 return this;
@@ -71,7 +74,9 @@ namespace Sqlite.Fast
             /// <summary>
             /// Defines a conversion from a SQLite float to a member value.
             /// </summary>
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, Func<double, TField> fromFloat)
+            public Builder With<TField>(
+                Expression<Func<TResult, TField>> propertyOrField,
+                Func<double, TField> fromFloat)
             {
                 GetOrAdd(propertyOrField).FromFloat = fromFloat;
                 return this;
@@ -82,7 +87,9 @@ namespace Sqlite.Fast
             /// </summary>
             /// <param name="propertyOrField"></param>
             /// <param name="fromText">Deserializes a value from a source ReadOnlySpan&lt;char&gt;</param>
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromSpan<char, TField> fromText)
+            public Builder With<TField>(
+                Expression<Func<TResult, TField>> propertyOrField, 
+                FromSpan<char, TField> fromText)
             {
                 GetOrAdd(propertyOrField).FromUtf16Text = fromText;
                 return this;
@@ -93,7 +100,9 @@ namespace Sqlite.Fast
             /// </summary>
             /// <param name="propertyOrField"></param>
             /// <param name="fromBytes">Deserializes a value from a source ReadOnlySpan&lt;byte&gt;</param>
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, FromSpan<byte, TField> fromBytes)
+            public Builder With<TField>(
+                Expression<Func<TResult, TField>> propertyOrField,
+                FromSpan<byte, TField> fromBytes)
             {
                 GetOrAdd(propertyOrField).FromBlob = fromBytes;
                 return this;
@@ -102,7 +111,9 @@ namespace Sqlite.Fast
             /// <summary>
             /// Defines a conversion from SQLite null to a member value.
             /// </summary>
-            public Builder With<TField>(Expression<Func<TResult, TField>> propertyOrField, Func<TField> fromNull)
+            public Builder With<TField>(
+                Expression<Func<TResult, TField>> propertyOrField,
+                Func<TField> fromNull)
             {
                 GetOrAdd(propertyOrField).FromNull = fromNull;
                 return this;
@@ -113,22 +124,20 @@ namespace Sqlite.Fast
             /// </summary>
             public Builder Ignore<TField>(Expression<Func<TResult, TField>> propertyOrField)
             {
-                if (GetSettableMember(propertyOrField, out MemberInfo member))
-                {
-                    _assignerBuilders.RemoveAll(builder => builder.Member == member);
-                }
+                MemberInfo member = GetSettableMember(propertyOrField);
+                _assignerBuilders.RemoveAll(builder => builder.Member == member);
                 return this;
             }
 
-            private static bool GetSettableMember<TField>(Expression<Func<TResult, TField>> propertyOrField, out MemberInfo member)
+            private static MemberInfo GetSettableMember<TField>(
+                Expression<Func<TResult, TField>> propertyOrField)
             {
-                if (propertyOrField.Body is MemberExpression memberExpression && CanSetValue(memberExpression.Member))
+                if (propertyOrField.Body is MemberExpression memberExpression &&
+                    CanSetValue(memberExpression.Member))
                 {
-                    member = memberExpression.Member;
-                    return true;
+                    return memberExpression.Member;
                 }
-                member = null;
-                return false;
+                throw new ArgumentException($"Expression is not settable field or property of {typeof(TResult).Name}");
             }
 
             private static bool CanSetValue(MemberInfo member)
@@ -145,4 +154,5 @@ namespace Sqlite.Fast
             }
         }
     }
+#nullable restore
 }

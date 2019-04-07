@@ -4,10 +4,11 @@ using System.Linq;
 
 namespace Sqlite.Fast
 {
+#nullable enable
     public sealed partial class ResultConverter<TResult>
     {
-        private readonly IValueAssigner<TResult>[] _assigners;
-        private readonly ValueAssigner<TResult, TResult> _scalarAssigner;
+        private readonly IValueAssigner<TResult>[]? _assigners;
+        private readonly ValueAssigner<TResult, TResult>? _scalarAssigner;
         internal readonly int FieldCount;
 
         internal ResultConverter(IEnumerable<IValueAssigner<TResult>> valueAssigners)
@@ -35,7 +36,7 @@ namespace Sqlite.Fast
             { 
                 foreach (Column col in columns)
                 {
-                    _assigners[col.Index].Assign(ref result, col);
+                    _assigners![col.Index].Assign(ref result, col);
                 }
             }
         }
@@ -74,4 +75,5 @@ namespace Sqlite.Fast
             }
         }
     }
+#nullable restore
 }
