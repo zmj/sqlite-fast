@@ -114,7 +114,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = "hello";
                 insert.Bind(p).Execute();
-                string r = default;
+                string r = null!;
                 Assert.True(select.Execute(ref r));
                 Assert.Equal(p.Value, r);
             }

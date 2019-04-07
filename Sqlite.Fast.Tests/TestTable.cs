@@ -10,7 +10,7 @@ namespace Sqlite.Fast.Tests
 
         public TestTable(string createTableSql)
         {
-            Connection = new Connection(":memory:");
+            Connection = new Connection();
             try
             {
                 using (var createTable = Connection.CompileStatement(createTableSql)) 

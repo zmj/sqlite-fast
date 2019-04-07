@@ -21,12 +21,15 @@ namespace Sqlite.Fast
         /// <summary>
         /// Opens a database connection handle.
         /// </summary>
-        /// <param name="dbFilePath">The full or relative path to a database file, or :memory: for an in-memory database.</param>
+        /// <param name="dbFilePath">The full or relative path to a database file.</param>
         public Connection(string dbFilePath)
         {
+            dbFilePath.ThrowIfNull(nameof(dbFilePath));
             // Marshal screws up the utf16->utf8 reencode, so do it in managed
-            byte[] utf8Path = Encoding.UTF8.GetBytes(dbFilePath);
-            Sqlite.Result r = Sqlite.Open(ref MemoryMarshal.GetReference(utf8Path.AsSpan()), out IntPtr conn);
+            Span<byte> utf8Path = Encoding.UTF8.GetBytes(dbFilePath);
+            Sqlite.Result r = Sqlite.Open(
+                ref MemoryMarshal.GetReference(utf8Path), 
+                out IntPtr conn);
             _connnection = conn;
 
             try { r.ThrowIfNotOK(nameof(Sqlite.Open)); }
@@ -38,11 +41,18 @@ namespace Sqlite.Fast
         }
 
         /// <summary>
+        /// Opens a database connection handle to a transient in-memory database.
+        /// Any data in this database will be lost when this connection is closed.
+        /// </summary>
+        public Connection() : this(":memory:") { }
+
+        /// <summary>
         /// Prepares a statement that has no parameters or result rows.
         /// </summary>
         public Statement CompileStatement(string sql)
         {
-            CheckDisposed();
+            _disposed.ThrowIfDisposed(nameof(Connection));
+            sql.ThrowIfNull(nameof(sql));
             Sqlite.Prepare16V2(
                 _connnection,
                 sql: ref MemoryMarshal.GetReference(sql.AsSpan()),
@@ -71,6 +81,8 @@ namespace Sqlite.Fast
         /// <param name="converter">A custom converter from the parameter type to SQLite values.</param>
         public Statement<TParams> CompileStatement<TParams>(string sql, ParameterConverter<TParams> converter)
         {
+            _disposed.ThrowIfDisposed(nameof(Connection));
+            converter.ThrowIfNull(nameof(ParameterConverter));
             return new Statement<TParams>(CompileStatement(sql), converter);
         }
         
@@ -92,6 +104,8 @@ namespace Sqlite.Fast
         /// <param name="converter">A custom converter from SQLite values to the result type.</param>
         public ResultStatement<TResult> CompileStatement<TResult>(string sql, ResultConverter<TResult> converter)
         {
+            _disposed.ThrowIfDisposed(nameof(Connection));
+            converter.ThrowIfNull(nameof(ResultConverter));
             return new ResultStatement<TResult>(CompileStatement(sql), converter);
         }
 
@@ -145,6 +159,8 @@ namespace Sqlite.Fast
             ParameterConverter<TParams> parameterConverter)
         {
             Statement statement = CompileStatement(sql);
+            resultConverter.ThrowIfNull(nameof(ResultConverter));
+            parameterConverter.ThrowIfNull(nameof(ParameterConverter));
             return new Statement<TResult, TParams>(
                 new ResultStatement<TResult>(statement, resultConverter),
                 new Statement<TParams>(statement, parameterConverter));
@@ -157,7 +173,7 @@ namespace Sqlite.Fast
         /// </summary>
         public bool TryCheckpoint(Sqlite.CheckpointMode mode)
         {
-            CheckDisposed();
+            _disposed.ThrowIfDisposed(nameof(Connection));
             byte attachedTableName = default;
             Sqlite.Result r = Sqlite.WalCheckpointV2(_connnection, ref attachedTableName, mode, out _, out _);
             if (r == Sqlite.Result.Busy || r == Sqlite.Result.Locked)
@@ -166,14 +182,6 @@ namespace Sqlite.Fast
             }
             r.ThrowIfNotOK(nameof(Sqlite.WalCheckpointV2));
             return true;
-        }
-
-        private void CheckDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(Statement));
-            }
         }
 
         /// <summary>

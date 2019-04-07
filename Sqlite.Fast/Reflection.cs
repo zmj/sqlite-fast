@@ -62,14 +62,14 @@ namespace Sqlite.Fast
             throw new NotSupportedException(member.MemberType.ToString());
         }
 
-        internal static bool IsNullable(this Type type, out Type innerType)
+        internal static bool IsNullable(this Type type, out Type? innerType)
         {
             if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
             {
                 innerType = type.GenericTypeArguments[0];
                 return true;
             }
-            innerType = default;
+            innerType = null;
             return false;
         }
 
@@ -82,7 +82,7 @@ namespace Sqlite.Fast
                 || typeInfo.IsPrimitive
                 || typeInfo.IsEnum
                 || type == typeof(Guid)
-                || (IsNullable(type, out Type innerType) && IsScalar(innerType));
+                || (IsNullable(type, out Type? innerType) && IsScalar(innerType!));
         }
     }
 }

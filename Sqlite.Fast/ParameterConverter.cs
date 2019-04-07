@@ -9,8 +9,8 @@ namespace Sqlite.Fast
 {
     public sealed partial class ParameterConverter<TParams>
     {
-        private readonly IValueBinder<TParams>[] _binders;
-        private readonly ValueBinder<TParams, TParams> _scalarBinder;
+        private readonly IValueBinder<TParams>[]? _binders;
+        private readonly ValueBinder<TParams, TParams>? _scalarBinder;
         internal readonly int FieldCount;
 
         internal ParameterConverter(IEnumerable<IValueBinder<TParams>> valueBinders)
@@ -34,7 +34,7 @@ namespace Sqlite.Fast
             }
             else
             {
-                for (int i = 0; i < _binders.Length; i++)
+                for (int i = 0; i < _binders!.Length; i++)
                 {
                     _binders[i].Bind(in parameters, statement, i + 1);
                 }
@@ -52,7 +52,8 @@ namespace Sqlite.Fast
         /// Call builder.With(...) to define member conversions, then builder.Compile().
         /// </summary>
         /// <param name="withDefaultConversions">If true, member conversions will fall back to default conversion when no custom conversion can be used.</param>
-        public static ParameterConverter<TParams>.Builder Builder<TParams>(bool withDefaultConversions = true) =>
+        public static ParameterConverter<TParams>.Builder Builder<TParams>(
+            bool withDefaultConversions = true) =>
             new ParameterConverter<TParams>.Builder(withDefaultConversions);
 
         /// <summary>
@@ -61,7 +62,8 @@ namespace Sqlite.Fast
         /// </summary>
         /// <param name="withDefaultConversions">If true, conversion will fall back to the default conversion when no custom conversion can be used.</param>
         /// <returns></returns>
-        public static ParameterConverter<TParams>.ScalarBuilder ScalarBuilder<TParams>(bool withDefaultConversions = true) =>
+        public static ParameterConverter<TParams>.ScalarBuilder ScalarBuilder<TParams>(
+            bool withDefaultConversions = true) =>
             new ParameterConverter<TParams>.ScalarBuilder(withDefaultConversions);
 
         internal static ParameterConverter<TParams> Default<TParams>()

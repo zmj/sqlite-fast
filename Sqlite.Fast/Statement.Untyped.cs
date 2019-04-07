@@ -41,11 +41,11 @@ namespace Sqlite.Fast
 
         internal Rows ExecuteInternal()
         {
-            CheckDisposed();
+            _disposed.ThrowIfDisposed(nameof(Statement));
             return new Rows(_statement, ColumnCount);
         }
 
-        internal void BeginBinding() => CheckDisposed();
+        internal void BeginBinding() => _disposed.ThrowIfDisposed(nameof(Statement));
 
         internal void BindInteger(int index, long value)
         {
@@ -96,14 +96,6 @@ namespace Sqlite.Fast
         {
             Sqlite.BindNull(_statement, index)
                 .ThrowIfNotOK(nameof(Sqlite.BindNull));
-        }               
-    
-        private void CheckDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(Statement));
-            }
         }
 
         /// <summary>
