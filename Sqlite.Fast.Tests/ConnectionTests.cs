@@ -7,7 +7,7 @@ namespace Sqlite.Fast.Tests
     public class ConnectionTests
     {
         [Fact]
-        public void PathNulll()
+        public void Connection_PathNulll()
         {
             Assert.Throws<ArgumentNullException>(
                 () => new Connection(null));
@@ -16,7 +16,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement0_SqlNull()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 Assert.Throws<ArgumentNullException>(
                     () => conn.CompileStatement(null));
@@ -26,7 +26,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement0_Disposed()
         {
-            var conn = new Connection(":memory:");
+            var conn = new Connection();
             conn.Dispose();
             Assert.Throws<ObjectDisposedException>(
                 () => conn.CompileStatement(null));
@@ -36,7 +36,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement1_SqlNull()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 Assert.Throws<ArgumentNullException>(
                     () => conn.CompileStatement<int>(null));
@@ -46,7 +46,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement1_ConverterNull()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 ParameterConverter<int>? p = null;
                 Assert.Throws<ArgumentNullException>(
@@ -57,7 +57,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement1_Disposed()
         {
-            var conn = new Connection(":memory:");
+            var conn = new Connection();
             conn.Dispose();
             ParameterConverter<int>? p = null;
             Assert.Throws<ObjectDisposedException>(
@@ -67,7 +67,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement1R_SqlNull()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 Assert.Throws<ArgumentNullException>(
                     () => conn.CompileResultStatement<int>(null));
@@ -77,7 +77,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement1R_ConverterNull()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 ResultConverter<int>? r = null;
                 Assert.Throws<ArgumentNullException>(
@@ -88,7 +88,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement1R_Disposed()
         {
-            var conn = new Connection(":memory:");
+            var conn = new Connection();
             conn.Dispose();
             ResultConverter<int>? r = null;
             Assert.Throws<ObjectDisposedException>(
@@ -98,7 +98,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_SqlNull()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 Assert.Throws<ArgumentNullException>(
                     () => conn.CompileStatement<int, int>(null));
@@ -108,7 +108,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_SqlNull_PConverter()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 var p = ParameterConverter.Builder<int>().Compile();
                 Assert.Throws<ArgumentNullException>(
@@ -119,7 +119,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_SqlNull_RConverter()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 var r = ResultConverter.Builder<int>().Compile();
                 Assert.Throws<ArgumentNullException>(
@@ -130,7 +130,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_SqlNull_BothConverters()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 var p = ParameterConverter.Builder<int>().Compile();
                 var r = ResultConverter.Builder<int>().Compile();
@@ -142,7 +142,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_PConverterNull()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 ParameterConverter<int>? p = null;
                 Assert.Throws<ArgumentNullException>(
@@ -153,7 +153,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_PConverterNull_BothConverters()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 ParameterConverter<int>? p = null;
                 var r = ResultConverter.Builder<int>().Compile();
@@ -165,7 +165,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_RConverterNull()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 ResultConverter<int>? r = null;
                 Assert.Throws<ArgumentNullException>(
@@ -176,7 +176,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_RConverterNull_BothConverters()
         {
-            using (var conn = new Connection(":memory:"))
+            using (var conn = new Connection())
             {
                 var p = ParameterConverter.Builder<int>().Compile();
                 ResultConverter<int>? r = null;
@@ -188,7 +188,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_Disposed()
         {
-            var conn = new Connection(":memory:");
+            var conn = new Connection();
             conn.Dispose();
             Assert.Throws<ObjectDisposedException>(
                 () => conn.CompileStatement<int, int>(null));
@@ -197,7 +197,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_Disposed_PConverter()
         {
-            var conn = new Connection(":memory:");
+            var conn = new Connection();
             conn.Dispose();
             ParameterConverter<int>? p = null;
             Assert.Throws<ObjectDisposedException>(
@@ -207,7 +207,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_Disposed_RConverter()
         {
-            var conn = new Connection(":memory:");
+            var conn = new Connection();
             conn.Dispose();
             ResultConverter<int>? r = null;
             Assert.Throws<ObjectDisposedException>(
@@ -217,7 +217,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Statement2_Disposed_BothConverters()
         {
-            var conn = new Connection(":memory:");
+            var conn = new Connection();
             conn.Dispose();
             Assert.Throws<ObjectDisposedException>(
                 () => conn.CompileStatement<int, int>(null, null, null));

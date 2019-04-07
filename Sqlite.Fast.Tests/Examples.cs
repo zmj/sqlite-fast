@@ -28,7 +28,7 @@ namespace Sqlite.Fast.Tests
 
         private Connection UserDb()
         {
-            var conn = new Connection(":memory:");
+            var conn = new Connection();
             conn.CompileStatement("create table users (id int, firstname text, lastname text, created int)")
                 .Execute();
             conn.CompileStatement<(uint, string, string, DateTimeOffset)>("insert into users values (@id, @fname, @lname, @cdate)")

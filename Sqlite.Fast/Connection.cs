@@ -41,6 +41,12 @@ namespace Sqlite.Fast
         }
 
         /// <summary>
+        /// Opens a database connection handle to a transient in-memory database.
+        /// Any data in this database will be lost when this connection is closed.
+        /// </summary>
+        public Connection() : this(":memory:") { }
+
+        /// <summary>
         /// Prepares a statement that has no parameters or result rows.
         /// </summary>
         public Statement CompileStatement(string sql)
