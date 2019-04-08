@@ -80,7 +80,7 @@ namespace Sqlite.Fast
         private void BindInteger(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             long bindValue = default;
-            try { bindValue = converter.ToInteger(value); }
+            try { bindValue = converter.ToInteger!(value); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             statement.BindInteger(index, bindValue);
         }
@@ -88,7 +88,7 @@ namespace Sqlite.Fast
         private void BindFloat(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             double bindValue = default;
-            try { bindValue = converter.ToFloat(value); }
+            try { bindValue = converter.ToFloat!(value); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             statement.BindFloat(index, bindValue);
         }
@@ -96,10 +96,10 @@ namespace Sqlite.Fast
         private void BindToUtf8Text(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             int length = default;
-            try { length = converter.Length(value); }
+            try { length = converter.Length!(value); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             Span<byte> bindValue = length <= 128 ? stackalloc byte[length] : new byte[length];
-            try { converter.ToUtf8Text(value, bindValue); }
+            try { converter.ToUtf8Text!(value, bindValue); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             statement.BindUtf8Text(index, bindValue);
         }
@@ -107,7 +107,7 @@ namespace Sqlite.Fast
         private void BindAsUtf8Text(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             ReadOnlySpan<byte> bindValue = default;
-            try { bindValue = converter.AsUtf8Text(value); }
+            try { bindValue = converter.AsUtf8Text!(value); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             statement.BindUtf8Text(index, bindValue);
         }
@@ -115,10 +115,10 @@ namespace Sqlite.Fast
         private void BindToUtf16Text(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             int length = default;
-            try { length = converter.Length(value); }
+            try { length = converter.Length!(value); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             Span<char> bindValue = length <= 64 ? stackalloc char[length] : new char[length];
-            try { converter.ToUtf16Text(value, bindValue); }
+            try { converter.ToUtf16Text!(value, bindValue); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             statement.BindUtf16Text(index, bindValue);
         }
@@ -126,7 +126,7 @@ namespace Sqlite.Fast
         private void BindAsUtf16Text(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             ReadOnlySpan<char> bindValue = default;
-            try { bindValue = converter.AsUtf16Text(value); }
+            try { bindValue = converter.AsUtf16Text!(value); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             statement.BindUtf16Text(index, bindValue);
         }
@@ -134,10 +134,10 @@ namespace Sqlite.Fast
         private void BindToBlob(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             int length = default;
-            try { length = converter.Length(value); }
+            try { length = converter.Length!(value); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             Span<byte> bindValue = length <= 128 ? stackalloc byte[length] : new byte[length];
-            try { converter.ToBlob(value, bindValue); }
+            try { converter.ToBlob!(value, bindValue); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             statement.BindBlob(index, bindValue);
         }
@@ -145,7 +145,7 @@ namespace Sqlite.Fast
         private void BindAsBlob(Statement statement, int index, TField value, in ValueBinder.Converter<TField> converter)
         {
             ReadOnlySpan<byte> bindValue = default;
-            try { bindValue = converter.AsBlob(value); }
+            try { bindValue = converter.AsBlob!(value); }
             catch (Exception ex) { ThrowBindFailed(value, ex); }
             statement.BindBlob(index, bindValue);
         }

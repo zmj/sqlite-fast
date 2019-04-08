@@ -269,10 +269,10 @@ namespace Sqlite.Fast
 
         private static bool IsNullable(Type type) => IsNullable(type, out _);
 
-        private static bool IsNullable(Type type, out Type innerType) =>
+        private static bool IsNullable(Type type, out Type? innerType) =>
             type.IsNullable(out innerType);
 
         private static bool IsNullableEnum(Type type) =>
-            IsNullable(type, out Type innerType) && IsEnum(innerType);
+            IsNullable(type, out Type? innerType) && IsEnum(innerType!);
     }
 }

@@ -70,7 +70,7 @@ namespace Sqlite.Fast
                     {
                         ValueBinder.Converter.Utf8Text(
                             (Guid? value) => value.HasValue,
-                            (Guid? value, Span<byte> dest) => { if (!Utf8Formatter.TryFormat(value.Value, dest, out _)) throw new FormatException(); },
+                            (Guid? value, Span<byte> dest) => { if (!Utf8Formatter.TryFormat(value!.Value, dest, out _)) throw new FormatException(); },
                             _ => 36),
                         ValueBinder.Converter.Null<Guid?>(),
                     });
@@ -80,7 +80,7 @@ namespace Sqlite.Fast
             if (type == typeof(long?)) return _fromLongNull ??
                     (_fromLongNull = new[]
                     {
-                        ValueBinder.Converter.Integer((long? value) => value.HasValue, (long? value) => value.Value),
+                        ValueBinder.Converter.Integer((long? value) => value.HasValue, (long? value) => value!.Value),
                         ValueBinder.Converter.Null<long?>(),
                     });
             if (type == typeof(ulong)) return _fromUlong ??
@@ -88,7 +88,7 @@ namespace Sqlite.Fast
             if (type == typeof(ulong?)) return _fromUlongNull ??
                     (_fromUlongNull = new[]
                     {
-                        ValueBinder.Converter.Integer((ulong? value) => value.HasValue, (ulong? value) => (long)value.Value),
+                        ValueBinder.Converter.Integer((ulong? value) => value.HasValue, (ulong? value) => (long)value!.Value),
                         ValueBinder.Converter.Null<ulong?>(),
                     });
             if (type == typeof(int)) return _fromInt ??
@@ -96,7 +96,7 @@ namespace Sqlite.Fast
             if (type == typeof(int?)) return _fromIntNull ??
                     (_fromIntNull = new[]
                     {
-                        ValueBinder.Converter.Integer((int? value) => value.HasValue, (int? value) => value.Value),
+                        ValueBinder.Converter.Integer((int? value) => value.HasValue, (int? value) => value!.Value),
                         ValueBinder.Converter.Null<int?>(),
                     });
             if (type == typeof(uint)) return _fromUint ??
@@ -104,7 +104,7 @@ namespace Sqlite.Fast
             if (type == typeof(uint?)) return _fromUintNull ??
                     (_fromUintNull = new[]
                     {
-                        ValueBinder.Converter.Integer((uint? value) => value.HasValue, (uint? value) => value.Value),
+                        ValueBinder.Converter.Integer((uint? value) => value.HasValue, (uint? value) => value!.Value),
                         ValueBinder.Converter.Null<uint?>(),
                     });
             if (type == typeof(short)) return _fromShort ??
@@ -112,7 +112,7 @@ namespace Sqlite.Fast
             if (type == typeof(short?)) return _fromShortNull ??
                     (_fromShortNull = new[]
                     {
-                        ValueBinder.Converter.Integer((short? value) => value.HasValue, (short? value) => value.Value),
+                        ValueBinder.Converter.Integer((short? value) => value.HasValue, (short? value) => value!.Value),
                         ValueBinder.Converter.Null<short?>(),
                     });
             if (type == typeof(ushort)) return _fromUshort ??
@@ -120,7 +120,7 @@ namespace Sqlite.Fast
             if (type == typeof(ushort?)) return _fromUshortNull ??
                     (_fromUshortNull = new[]
                     {
-                        ValueBinder.Converter.Integer((ushort? value) => value.HasValue, (ushort? value) => value.Value),
+                        ValueBinder.Converter.Integer((ushort? value) => value.HasValue, (ushort? value) => value!.Value),
                         ValueBinder.Converter.Null<ushort?>(),
                     });
             if (type == typeof(char)) return _fromChar ??
@@ -128,7 +128,7 @@ namespace Sqlite.Fast
             if (type == typeof(char?)) return _fromCharNull ??
                     (_fromCharNull = new[]
                     {
-                        ValueBinder.Converter.Integer((char? value) => value.HasValue, (char? value) => value.Value),
+                        ValueBinder.Converter.Integer((char? value) => value.HasValue, (char? value) => value!.Value),
                         ValueBinder.Converter.Null<char?>(),
                     });
             if (type == typeof(byte)) return _fromByte ??
@@ -136,7 +136,7 @@ namespace Sqlite.Fast
             if (type == typeof(byte?)) return _fromByteNull ??
                     (_fromByteNull = new[]
                     {
-                        ValueBinder.Converter.Integer((byte? value) => value.HasValue, (byte? value) => value.Value),
+                        ValueBinder.Converter.Integer((byte? value) => value.HasValue, (byte? value) => value!.Value),
                         ValueBinder.Converter.Null<byte?>(),
                     });
             if (type == typeof(sbyte)) return _fromSbyte ??
@@ -144,7 +144,7 @@ namespace Sqlite.Fast
             if (type == typeof(sbyte?)) return _fromSbyteNull ??
                     (_fromSbyteNull = new[]
                     {
-                        ValueBinder.Converter.Integer((sbyte? value) => value.HasValue, (sbyte? value) => value.Value),
+                        ValueBinder.Converter.Integer((sbyte? value) => value.HasValue, (sbyte? value) => value!.Value),
                         ValueBinder.Converter.Null<sbyte?>(),
                     });
             if (type == typeof(bool)) return _fromBool ??
@@ -152,7 +152,7 @@ namespace Sqlite.Fast
             if (type == typeof(bool?)) return _fromBoolNull ??
                     (_fromBoolNull = new[]
                     {
-                        ValueBinder.Converter.Integer((bool? value) => value.HasValue, (bool? value) => value.Value ? 1 : 0),
+                        ValueBinder.Converter.Integer((bool? value) => value.HasValue, (bool? value) => value!.Value ? 1 : 0),
                         ValueBinder.Converter.Null<bool?>(),
                     });
             if (type == typeof(DateTimeOffset)) return _fromDateTimeOffset ??
@@ -160,7 +160,7 @@ namespace Sqlite.Fast
             if (type == typeof(DateTimeOffset?)) return _fromDateTimeOffsetNull ??
                     (_fromDateTimeOffsetNull = new[]
                     {
-                        ValueBinder.Converter.Integer((DateTimeOffset? value) => value.HasValue, (DateTimeOffset? value) => value.Value.UtcTicks),
+                        ValueBinder.Converter.Integer((DateTimeOffset? value) => value.HasValue, (DateTimeOffset? value) => value!.Value.UtcTicks),
                         ValueBinder.Converter.Null<DateTimeOffset?>(),
                     });
             if (type == typeof(TimeSpan)) return _fromTimeSpan ??
@@ -168,7 +168,7 @@ namespace Sqlite.Fast
             if (type == typeof(TimeSpan?)) return _fromTimeSpanNull ??
                     (_fromTimeSpanNull = new[]
                     {
-                        ValueBinder.Converter.Integer((TimeSpan? value) => value.HasValue, (TimeSpan? value) => value.Value.Ticks),
+                        ValueBinder.Converter.Integer((TimeSpan? value) => value.HasValue, (TimeSpan? value) => value!.Value.Ticks),
                         ValueBinder.Converter.Null<TimeSpan?>(),
                     });
             if (IsEnum(type))
@@ -185,7 +185,7 @@ namespace Sqlite.Fast
             if (type == typeof(float?)) return _fromFloatNull ??
                     (_fromFloatNull = new[]
                     {
-                        ValueBinder.Converter.Float((float? value) => value.HasValue, (float? value) => value.Value),
+                        ValueBinder.Converter.Float((float? value) => value.HasValue, (float? value) => value!.Value),
                         ValueBinder.Converter.Null<float?>(),
                     });
             if (type == typeof(double)) return _fromDouble ??
@@ -193,7 +193,7 @@ namespace Sqlite.Fast
             if (type == typeof(double?)) return _fromDoubleNull ??
                     (_fromDoubleNull = new[]
                     {
-                        ValueBinder.Converter.Float((double? value) => value.HasValue, (double? value) => value.Value),
+                        ValueBinder.Converter.Float((double? value) => value.HasValue, (double? value) => value!.Value),
                         ValueBinder.Converter.Null<double?>(),
                     });
 
@@ -225,7 +225,7 @@ namespace Sqlite.Fast
 
         private static ValueBinder.Converter<T>[] CreateFromEnumNull<T>()
         {
-            IsNullable(typeof(T), out Type innerType);
+            IsNullable(typeof(T), out Type? innerType);
             Func<T, bool> hasValue;
             {
                 var value = Expression.Parameter(typeof(T));
