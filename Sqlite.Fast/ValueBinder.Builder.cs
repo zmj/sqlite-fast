@@ -6,14 +6,12 @@ using System.Text;
 
 namespace Sqlite.Fast
 {
-#pragma warning disable EPS05
     /// <summary>
     /// Serializes an instance of T.
     /// </summary>
     /// <typeparam name="T">The parameter member type.</typeparam>
     /// <typeparam name="TElem">The elemental type of the SQLite value.</typeparam>
-    public delegate void ToSpan<T, TElem>(T value, Span<TElem> destination);
-#pragma warning restore EPS05
+    public delegate void ToSpan<T, TElem>(T value, in Span<TElem> destination);
 
     /// <summary>
     /// Reinterpret casts an instance of T.
