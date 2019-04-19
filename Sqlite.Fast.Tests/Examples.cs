@@ -45,8 +45,8 @@ namespace Sqlite.Fast.Tests
             using (Connection conn = UserDb())
             using (var select = conn.CompileStatement<User, uint>(sql))
             {
-                User user = default;
-                if (!select.Bind(id).Execute(ref user)) throw new Exception("not found");
+                if (!select.Bind(id).Execute(out User user))
+                    throw new Exception("not found");
                 return user;
             }
         }
@@ -86,7 +86,7 @@ namespace Sqlite.Fast.Tests
             using (var select = conn.CompileResultStatement<User>(sql))
             {
                 foreach (Row<User> row in select.Execute())
-                    row.AssignTo(ref users[i++]);
+                    row.AssignTo(out users[i++]);
             }
             return i;
         }

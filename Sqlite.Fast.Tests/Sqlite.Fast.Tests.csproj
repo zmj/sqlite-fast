@@ -9,6 +9,9 @@
     <StartupObject />
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NullableContextOptions>enable</NullableContextOptions>
+    <LangVersion>preview</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NullableContextOptions>enable</NullableContextOptions>
   </PropertyGroup>
   
   <PropertyGroup>
