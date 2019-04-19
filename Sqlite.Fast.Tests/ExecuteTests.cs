@@ -22,7 +22,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 insert.Execute();
-                select.Execute(ref r);
+                select.Execute(out r);
                 Assert.Equal(1, r.Value);
             }
         }
@@ -40,7 +40,7 @@ namespace Sqlite.Fast.Tests
                 insert.Bind(p).Execute();
                 p.Value = 2;
                 insert.Bind(p).Execute();
-                sum.Execute(ref r);
+                sum.Execute(out r);
                 Assert.Equal(3, r.Value);
             }
         }
@@ -61,7 +61,7 @@ namespace Sqlite.Fast.Tests
                 int sum = 0;
                 foreach (var row in select.Execute())
                 {
-                    row.AssignTo(ref r);
+                    row.AssignTo(out r);
                     sum += r.Value;
                 }
                 Assert.Equal(3, sum);
@@ -85,12 +85,12 @@ namespace Sqlite.Fast.Tests
                 var rows = select.Execute();
                 foreach (var row in rows)
                 {
-                    row.AssignTo(ref r);
+                    row.AssignTo(out r);
                     sum += r.Value;
                 }
                 foreach (var row in rows) 
                 {
-                    row.AssignTo(ref r);
+                    row.AssignTo(out r);
                     sum += r.Value;
                 }
                 Assert.Equal(6, sum);
@@ -136,11 +136,11 @@ namespace Sqlite.Fast.Tests
                 using (var enumerator = select.Bind(p).Execute().GetEnumerator())
                 {
                     Assert.True(enumerator.MoveNext());
-                    enumerator.Current.AssignTo(ref r);
+                    enumerator.Current.AssignTo(out r);
                     Assert.Equal(1, r.Value);
                 }
                 p.Value = 2;
-                select.Bind(p).Execute(ref r);
+                select.Bind(p).Execute(out r);
                 Assert.Equal(2, r.Value);
             }
         }
@@ -162,12 +162,12 @@ namespace Sqlite.Fast.Tests
                 using (var enumerator = select.Bind(p).Execute().GetEnumerator())
                 {
                     Assert.True(enumerator.MoveNext());
-                    enumerator.Current.AssignTo(ref r);
+                    enumerator.Current.AssignTo(out r);
                     Assert.Equal(1, r.Value);
 
                     enumerator.Reset();
                     Assert.True(enumerator.MoveNext());
-                    enumerator.Current.AssignTo(ref r);
+                    enumerator.Current.AssignTo(out r);
                     Assert.Equal(1, r.Value);
                 }
             }
@@ -189,11 +189,11 @@ namespace Sqlite.Fast.Tests
                 using (var enumerator = select.Execute().GetEnumerator())
                 {
                     Assert.True(enumerator.MoveNext());
-                    enumerator.Current.AssignTo(ref r);
+                    enumerator.Current.AssignTo(out r);
                     Assert.Equal(3, r.Value);
                 }
                 r = default;
-                select.Execute(ref r);
+                select.Execute(out r);
                 Assert.Equal(3, r.Value);
             }
         }
@@ -210,7 +210,7 @@ namespace Sqlite.Fast.Tests
                 p.Value1 = 1;
                 p.Value2 = "one";
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(1, r.Value1);
                 Assert.Equal("one", r.Value2);
             }
@@ -234,11 +234,37 @@ namespace Sqlite.Fast.Tests
                 int sum = 0;
                 foreach (var row in select.Execute())
                 {
-                    row.AssignTo(ref r);
+                    row.AssignTo(out r);
                     sum += r.Value1;
                     Assert.Equal(r.Value1.ToString(), r.Value2);
                 }
                 Assert.Equal(3, sum);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(10)]
+        public void SelectMany_Array(int n)
+        {
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt<int>("insert into t values (@x)"))
+            using (var select = tbl.RStmt<int>("select x from t"))
+            {
+                int expectedSum = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    insert.Bind(i).Execute();
+                    expectedSum += i;
+                }
+                int j = 0;
+                int[] values = new int[n];
+                foreach (Row<int> row in select.Execute())
+                {
+                    row.AssignTo(out values[j++]);
+                }
+                Assert.Equal(expectedSum, System.Linq.Enumerable.Sum(values));
             }
         }
     }

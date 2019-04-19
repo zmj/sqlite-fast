@@ -16,7 +16,7 @@ namespace Sqlite.Fast.Tests
                 var value = (1, "one");
                 insert.Bind(value).Execute();
                 (int, string) r = default;
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r);
             }
         }
@@ -35,7 +35,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = 5;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(-1 * p.Value, r.Value);
             }
         }
@@ -53,7 +53,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = 5;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(-1 * p.Value, r.Value);
             }
         }
@@ -68,7 +68,7 @@ namespace Sqlite.Fast.Tests
             {
                 int value = 5;
                 insert.Bind(value).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r.Value);
             }
         }
@@ -84,7 +84,7 @@ namespace Sqlite.Fast.Tests
                 p.Value = 5;
                 insert.Bind(p).Execute();
                 int r = default;
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(p.Value, r);
             }
         }
@@ -99,7 +99,7 @@ namespace Sqlite.Fast.Tests
             {
                 string value = "hello";
                 insert.Bind(value).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r.Value);
             }
         }
@@ -115,7 +115,7 @@ namespace Sqlite.Fast.Tests
                 p.Value = "hello";
                 insert.Bind(p).Execute();
                 string r = null!;
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(p.Value, r);
             }
         }
@@ -159,7 +159,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 insert.Execute();
-                Assert.Throws<AssignmentException>(() => select.Execute(ref r));
+                Assert.Throws<AssignmentException>(() => select.Execute(out r));
             }
         }
 
@@ -175,7 +175,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", conv))
             {
                 insert.Execute();
-                Assert.Throws<AssignmentException>(() => select.Execute(ref r));
+                Assert.Throws<AssignmentException>(() => select.Execute(out r));
             }
         }
 
@@ -191,7 +191,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", conv))
             {
                 insert.Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(1, r.Value2);
             }
         }
@@ -209,7 +209,7 @@ namespace Sqlite.Fast.Tests
                 Guid g = Guid.NewGuid();
                 insert.Bind(g).Execute();
                 Guid r = default;
-                select.Execute(ref r);
+                select.Execute(out r);
                 Assert.Equal(g, r);
             }
         }
@@ -229,7 +229,7 @@ namespace Sqlite.Fast.Tests
             {
                 insert.Bind(1).Execute();
                 int i = 0;
-                Assert.True(select.Execute(ref i));
+                Assert.True(select.Execute(out i));
                 Assert.Equal(3, i);
             }
         }

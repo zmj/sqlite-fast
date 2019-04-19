@@ -33,16 +33,17 @@ namespace Sqlite.Fast
         /// Executes the statement and assigns the first result row to an instance of the result type.
         /// </summary>
         /// <returns>False if there were no result rows; true otherwise.</returns>
-        public bool Execute(ref TResult result)
+        public bool Execute(out TResult result)
         {
             Rows<TResult>.Enumerator rows = ExecuteInternal(_converter).GetEnumerator();
             try
             {
                 if (!rows.MoveNext())
                 {
+                    result = default!;
                     return false;
                 }
-                rows.Current.AssignTo(ref result);
+                rows.Current.AssignTo(out result);
                 return true;
             }
             finally
@@ -55,7 +56,7 @@ namespace Sqlite.Fast
         /// Executes the statement and assigns the first result row using a custom converter.
         /// </summary>
         /// <returns>False if there were no result rows; true otherwise.</returns>
-        public bool Execute<TCallerResult>(ResultConverter<TCallerResult> converter, ref TCallerResult result)
+        public bool Execute<TCallerResult>(ResultConverter<TCallerResult> converter, out TCallerResult result)
         {
             ValidateConverter(converter);
             Rows<TCallerResult>.Enumerator rows = ExecuteInternal(converter).GetEnumerator();
@@ -63,9 +64,10 @@ namespace Sqlite.Fast
             {
                 if (!rows.MoveNext())
                 {
+                    result = default!;
                     return false;
                 }
-                rows.Current.AssignTo(ref result);
+                rows.Current.AssignTo(out result);
                 return true;
             }
             finally

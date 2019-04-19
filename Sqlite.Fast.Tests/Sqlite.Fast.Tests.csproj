@@ -1,12 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <IsPackable>false</IsPackable>
     <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NullableContextOptions>enable</NullableContextOptions>
+    <LangVersion>preview</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NullableContextOptions>enable</NullableContextOptions>
   </PropertyGroup>

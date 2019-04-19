@@ -18,7 +18,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = value;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r.Value);
             }
         }
@@ -37,7 +37,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = value;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r.Value);
             }
         }
@@ -54,7 +54,7 @@ namespace Sqlite.Fast.Tests
                 var dt = DateTimeOffset.Now;
                 p.Value = dt;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(dt, r.Value);
             }
         }
@@ -71,7 +71,7 @@ namespace Sqlite.Fast.Tests
                 var dt = DateTimeOffset.Now;
                 p.Value = dt;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(dt, r.Value);
             }
         }
@@ -86,7 +86,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Null(r.Value);
             }
         }
@@ -107,7 +107,7 @@ namespace Sqlite.Fast.Tests
                 Guid g = Guid.NewGuid();
                 p.Value = g.ToString(format);
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(g, r.Value);
             }
         }
@@ -123,7 +123,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = "not a guid";
                 insert.Bind(p).Execute();
-                Assert.Throws<AssignmentException>(() => select.Execute(ref r));
+                Assert.Throws<AssignmentException>(() => select.Execute(out r));
             }
         }
 
@@ -139,7 +139,7 @@ namespace Sqlite.Fast.Tests
                 Guid g = Guid.NewGuid();
                 p.Value = g.ToString();
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(g, r.Value);
             }
         }
@@ -154,7 +154,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Null(r.Value);
             }
         }
@@ -171,7 +171,7 @@ namespace Sqlite.Fast.Tests
                 TimeSpan t = TimeSpan.FromMinutes(42);
                 p.Value = t;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(t, r.Value);
             }
         }
@@ -188,7 +188,7 @@ namespace Sqlite.Fast.Tests
                 TimeSpan t = TimeSpan.FromMinutes(42);
                 p.Value = t.ToString();
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(t, r.Value);
             }
         }
@@ -205,7 +205,7 @@ namespace Sqlite.Fast.Tests
                 TimeSpan t = TimeSpan.FromMinutes(42);
                 p.Value = t;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(t, r.Value);
             }
         }
@@ -222,7 +222,7 @@ namespace Sqlite.Fast.Tests
                 TimeSpan t = TimeSpan.FromMinutes(42);
                 p.Value = t.ToString();
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(t, r.Value);
             }
         }
@@ -237,7 +237,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Null(r.Value);
             }
         }
@@ -256,7 +256,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = value;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r.Value);
             }
         }
@@ -275,7 +275,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = value.AsMemory();
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value.AsMemory().ToString(), r.Value.ToString());
             }
         }
@@ -293,7 +293,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = E.Value;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(E.Value, r.Value);
             }
         }
@@ -311,7 +311,7 @@ namespace Sqlite.Fast.Tests
                 E? value = (E?)intValue;
                 insert.Bind(value).Execute();
                 E? r = default;
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r);
             }
         }
@@ -327,7 +327,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 insert.Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Null(r.Value);
             }
         }
@@ -343,7 +343,7 @@ namespace Sqlite.Fast.Tests
             using (var select = tbl.Stmt("select x from t", r.C))
             {
                 insert.Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Null(r.Value);
             }
         }
@@ -362,7 +362,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = value;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r.Value);
             }
         }
@@ -382,7 +382,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = value;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r.Value);
             }
         }
@@ -401,7 +401,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = value;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r.Value);
             }
 
@@ -422,7 +422,7 @@ namespace Sqlite.Fast.Tests
             {
                 p.Value = value;
                 insert.Bind(p).Execute();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(value, r.Value);
             }
         }
@@ -437,7 +437,7 @@ namespace Sqlite.Fast.Tests
                 Guid g = Guid.NewGuid();
                 insert.Bind(g).Execute();
                 Guid r = default;
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(g, r);
             }
         }
@@ -452,7 +452,7 @@ namespace Sqlite.Fast.Tests
                 Guid g = Guid.NewGuid();
                 insert.Bind(g).Execute();
                 Guid? r = default;
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Equal(g, r);
             }
         }
@@ -466,8 +466,45 @@ namespace Sqlite.Fast.Tests
             {
                 insert.Bind(null).Execute();
                 Guid? r = Guid.NewGuid();
-                Assert.True(select.Execute(ref r));
+                Assert.True(select.Execute(out r));
                 Assert.Null(r);
+            }
+        }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        class Class<T> { public T Value { get; set; } = default!; }
+
+        [Fact]
+        public void Class_Default_Constructor()
+        {
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt("insert into t values (5)"))
+            using (var select = tbl.RStmt<Class<int>>("select x from t"))
+            {
+                insert.Execute();
+                Assert.True(select.Execute(out var r));
+                Assert.Equal(expected: 5, r.Value);
+            }
+        }
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        class ClassWithConstructor<T, U>
+        {
+            public T Value { get; set; } = default!;
+            public ClassWithConstructor(U required) =>
+                throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void Class_NoDefaultConstructor_Throws()
+        {
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt("insert into t values (5)"))
+            using (var select = tbl.RStmt<ClassWithConstructor<int, string>>("select x from t"))
+            {
+                insert.Execute();
+                Assert.Throws<ArgumentException>(() =>
+                    select.Execute(out _));
             }
         }
     }

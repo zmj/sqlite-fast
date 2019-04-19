@@ -56,7 +56,28 @@ namespace Sqlite.Fast
             public ResultConverter<TResult> Compile()
             {
                 return new ResultConverter<TResult>(
+                    CompileInitializer(),
                     _assignerBuilders.Select(b => b.Compile(_withDefaults)));
+            }
+
+            private Func<TResult>? CompileInitializer()
+            {
+                if (typeof(TResult).IsValueType)
+                {
+                    return null;
+                }
+                ConstructorInfo defaultConstructor =
+                    typeof(TResult).GetConstructor(new Type[] { });
+                if (defaultConstructor == null)
+                {
+                    // throw this at compile?
+                    // depends if (out notNullObject) is allowed
+                    return () => throw new ArgumentException(
+                        $"{typeof(TResult)} does not have a default constructor");
+                }
+                return Expression.Lambda<Func<TResult>>(
+                    Expression.New(defaultConstructor))
+                    .Compile();
             }
 
             /// <summary>

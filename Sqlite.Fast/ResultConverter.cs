@@ -6,12 +6,22 @@ namespace Sqlite.Fast
 {
     public sealed partial class ResultConverter<TResult>
     {
+        // null if scalar or non-scalar value type
+        private readonly Func<TResult>? _initializer;
+
+        // null if scalar
         private readonly IValueAssigner<TResult>[]? _assigners;
+
+        // null if non-scalar
         private readonly ValueAssigner<TResult, TResult>? _scalarAssigner;
+
         internal readonly int FieldCount;
 
-        internal ResultConverter(IEnumerable<IValueAssigner<TResult>> valueAssigners)
+        internal ResultConverter(
+            Func<TResult>? initalizer,
+            IEnumerable<IValueAssigner<TResult>> valueAssigners)
         {
+            _initializer = initalizer;
             _assigners = valueAssigners.ToArray();
             FieldCount = _assigners.Length;
         }
@@ -22,22 +32,38 @@ namespace Sqlite.Fast
             FieldCount = 1;
         }
 
-        internal void AssignValues(ref TResult result, in Columns columns)
+        internal void AssignTo(out TResult result, in Columns columns)
         {
-            // counts verified equal before execution
+            // todo:
+            // * index accessor instead of enumerator
+            // * assigner implementation?
             if (_scalarAssigner != null)
             {
-                var enumerator = columns.GetEnumerator();
-                enumerator.MoveNext();
-                _scalarAssigner.Assign(ref result, enumerator.Current);
+                AssignScalar(out result, columns);
             }
             else
-            { 
-                foreach (Column col in columns)
-                {
-                    _assigners![col.Index].Assign(ref result, col);
-                }
+            {
+                AssignValues(out result, columns);
             }
+        }
+
+        private void AssignValues(out TResult result, in Columns columns)
+        {
+            result = _initializer != null ? _initializer() : default!;
+            // counts verified equal before assignment
+            foreach (Column col in columns)
+            {
+                _assigners![col.Index].Assign(ref result, col);
+            }
+        }
+
+        private void AssignScalar(out TResult result, in Columns columns)
+        {
+            var enumerator = columns.GetEnumerator();
+            enumerator.MoveNext();
+            TResult value = default!;
+            _scalarAssigner!.Assign(ref value!, enumerator.Current);
+            result = value;
         }
     }
 

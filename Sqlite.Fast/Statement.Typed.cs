@@ -46,7 +46,8 @@ namespace Sqlite.Fast
         /// Executes the statement and assigns the first result row to an instance of the result type.
         /// </summary>
         /// <returns>False if there were no result rows; true otherwise.</returns>
-        public bool Execute(ref TResult result) => _resultStatement.Execute(ref result);
+        public bool Execute(out TResult result) => 
+            _resultStatement.Execute(out result);
 
         /// <summary>
         /// Executes the statement and assigns the first result row using a custom converter.
@@ -54,8 +55,8 @@ namespace Sqlite.Fast
         /// <returns>False if there were no result rows; true otherwise.</returns>
         public bool Execute<TCallerResult>(
             ResultConverter<TCallerResult> converter, 
-            ref TCallerResult result) =>
-            _resultStatement.Execute(converter, ref result);
+            out TCallerResult result) =>
+            _resultStatement.Execute(converter, out result);
 
         /// <summary>
         /// Executes the statement.

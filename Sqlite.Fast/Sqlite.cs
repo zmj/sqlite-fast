@@ -8,6 +8,7 @@ namespace Sqlite.Fast
     /// <summary>
     /// Sqlite contains native function and constant definitions.
     /// </summary>
+    [System.Security.SuppressUnmanagedCodeSecurity]
     public static class Sqlite
     {
         private const string DllName = "e_sqlite3";

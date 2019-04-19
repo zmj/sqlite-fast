@@ -1,6 +1,6 @@
 # SQLite-Fast
 
-SQLite-Fast is a high performance, low allocation SQLite wrapper targeting .NET Standard 1.6. This library is available on NuGet: https://www.nuget.org/packages/Sqlite.Fast/
+SQLite-Fast is a high performance, low allocation SQLite wrapper targeting .NET Standard 2.0. This library is available on NuGet: https://www.nuget.org/packages/Sqlite.Fast/
 
 This is a prototype under active development. Use at your own risk. Expect bugs and breaking changes.
 
@@ -48,14 +48,14 @@ To select a single user by id:
 ```
 User SelectSingleUser(uint id) 
 {
-    const string sql = "select id, firstname, lastname, created from users where id=@id";
-    using (Connection conn = UserDb())
-    using (var select = conn.CompileStatement<User, uint>(sql))
-    {
-        User user = default;
-        if (!select.Bind(id).Execute(ref user)) throw new Exception("not found");
-        return user;
-    }
+	const string sql = "select id, firstname, lastname, created from users where id=@id";
+	using (Connection conn = UserDb())
+	using (var select = conn.CompileStatement<User, uint>(sql))
+	{
+		if (!select.Bind(id).Execute(out User user))
+			throw new Exception("not found");
+		return user;
+	}
 }
 ```
 
@@ -84,7 +84,7 @@ int SelectAllUsers(User[] users)
     using (var select = conn.CompileResultStatement<User>(sql))
     {
         foreach (Row<User> row in select.Execute())
-            row.AssignTo(ref users[i++]);
+            row.AssignTo(out users[i++]);
     }
     return i;
 }

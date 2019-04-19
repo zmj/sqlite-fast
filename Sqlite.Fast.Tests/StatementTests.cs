@@ -71,7 +71,7 @@ namespace Sqlite.Fast.Tests
             {
                 insert.Execute();
                 string? s = null;
-                Assert.True(select.Execute(ref s));
+                Assert.True(select.Execute(out s));
                 Assert.Null(s);
             }
         }
@@ -85,7 +85,7 @@ namespace Sqlite.Fast.Tests
                 ResultConverter<string> r = null!;
                 string? s = null;
                 Assert.Throws<ArgumentNullException>(
-                    () => select.Execute(r, ref s));
+                    () => select.Execute(r, out s));
             }
         }
 
@@ -98,7 +98,7 @@ namespace Sqlite.Fast.Tests
                 select.Dispose();
                 string? s = null;
                 Assert.Throws<ObjectDisposedException>(
-                    () => select.Execute(ref s));
+                    () => select.Execute(out s));
             }
         }
 
@@ -134,7 +134,7 @@ namespace Sqlite.Fast.Tests
                 insert.Execute();
                 string? s = null;
                 stmt.Bind("x");
-                Assert.True(stmt.Execute(ref s));
+                Assert.True(stmt.Execute(out s));
                 Assert.Null(s);
             }
         }
@@ -148,7 +148,7 @@ namespace Sqlite.Fast.Tests
                 ResultConverter<string> r = null!;
                 string? s = null;
                 Assert.Throws<ArgumentNullException>(
-                    () => stmt.Execute(r, ref s));
+                    () => stmt.Execute(r, out s));
             }
         }
 
@@ -173,7 +173,7 @@ namespace Sqlite.Fast.Tests
                 stmt.Dispose();
                 int x = default;
                 Assert.Throws<ObjectDisposedException>(
-                    () => stmt.Execute(ref x));
+                    () => stmt.Execute(out x));
             }
         }
 
