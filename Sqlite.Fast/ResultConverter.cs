@@ -32,37 +32,35 @@ namespace Sqlite.Fast
             FieldCount = 1;
         }
 
-        internal void AssignTo(out TResult result, in Columns columns)
+        internal void AssignTo(out TResult result, Row row)
         {
             // todo:
             // * index accessor instead of enumerator
             // * assigner implementation?
             if (_scalarAssigner != null)
             {
-                AssignScalar(out result, columns);
+                AssignScalar(out result, row);
             }
             else
             {
-                AssignValues(out result, columns);
+                AssignValues(out result, row);
             }
         }
 
-        private void AssignValues(out TResult result, in Columns columns)
+        private void AssignValues(out TResult result, Row row)
         {
             result = _initializer != null ? _initializer() : default!;
             // counts verified equal before assignment
-            foreach (Column col in columns)
+            for (int i = 0; i < _assigners!.Length; i++)
             {
-                _assigners![col.Index].Assign(ref result, col);
+                _assigners[i].Assign(ref result, row[i]);
             }
         }
 
-        private void AssignScalar(out TResult result, in Columns columns)
+        private void AssignScalar(out TResult result, Row row)
         {
-            var enumerator = columns.GetEnumerator();
-            enumerator.MoveNext();
             TResult value = default!;
-            _scalarAssigner!.Assign(ref value!, enumerator.Current);
+            _scalarAssigner!.Assign(ref value!, row[0]);
             result = value;
         }
     }

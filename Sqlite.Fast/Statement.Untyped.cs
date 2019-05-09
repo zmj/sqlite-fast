@@ -42,7 +42,7 @@ namespace Sqlite.Fast
         internal Rows ExecuteInternal()
         {
             _disposed.ThrowIfDisposed(nameof(Statement));
-            return new Rows(_statement, ColumnCount);
+            return new Rows(_statement);
         }
 
         internal void BeginBinding() => _disposed.ThrowIfDisposed(nameof(Statement));

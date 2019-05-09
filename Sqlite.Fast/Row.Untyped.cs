@@ -6,47 +6,38 @@ namespace Sqlite.Fast
 {
     internal readonly struct Row
     {
-        public readonly Columns Columns;
+        private readonly IntPtr _statement;
 
-        public Row(IntPtr statement, int columnCount)
-        {
-            Columns = new Columns(statement, columnCount);
-        }
+        public Row(IntPtr statement) => _statement = statement;
+
+        public Column this[int index] => new Column(_statement, index);
     }
 
     internal readonly struct Rows
     {
         private readonly IntPtr _statement;
-        private readonly int _columnCount;
 
-        public Rows(IntPtr statement, int columnCount)
-        {
-            _statement = statement;
-            _columnCount = columnCount;
-        }
+        public Rows(IntPtr statement) => _statement = statement;
 
-        public Enumerator GetEnumerator() => new Enumerator(_statement, _columnCount);
+        public Enumerator GetEnumerator() => new Enumerator(_statement);
 
-        public struct Enumerator
+        public readonly struct Enumerator
         {
             private readonly IntPtr _statement;
-            private readonly int _columnCount;
 
-            public Enumerator(IntPtr statement, int columnCount)
+            public Enumerator(IntPtr statement)
             {
                 _statement = statement;
-                _columnCount = columnCount;
-                Current = default;
+                Current = new Row(statement);
             }
 
-            public Row Current { get; private set; }
+            public Row Current { get; }
 
             public bool MoveNext()
             {
                 Sqlite.Result r = Sqlite.Step(_statement);
                 if (r == Sqlite.Result.Row)
                 {
-                    Current = new Row(_statement, _columnCount);
                     return true;
                 }
                 r.ThrowIfNot(Sqlite.Result.Done, nameof(Sqlite.Step));
@@ -56,7 +47,6 @@ namespace Sqlite.Fast
             public void Reset()
             {
                 Sqlite.Reset(_statement).ThrowIfNotOK(nameof(Sqlite.Reset));
-                Current = default;
             }
 
             public void Dispose() => Reset();

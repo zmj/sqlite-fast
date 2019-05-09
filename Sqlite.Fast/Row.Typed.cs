@@ -23,7 +23,7 @@ namespace Sqlite.Fast
         /// <summary>
         /// Assigns this row's values to an instance of the result type.
         /// </summary>
-        public void AssignTo(out TResult result) => _converter.AssignTo(out result, _row.Columns);
+        public void AssignTo(out TResult result) => _converter.AssignTo(out result, _row);
     }
 
     /// <summary>

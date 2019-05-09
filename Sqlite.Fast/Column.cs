@@ -51,48 +51,4 @@ namespace Sqlite.Fast
             }
         }
     }
-
-    internal readonly struct Columns
-    {
-        private readonly IntPtr _statement;
-        private readonly int _columnCount;
-
-        public Columns(IntPtr statement, int columnCount)
-        {
-            _statement = statement;
-            _columnCount = columnCount;
-        }
-
-        public Enumerator GetEnumerator() => new Enumerator(_statement, _columnCount);
-
-        internal struct Enumerator
-        {
-            private readonly IntPtr _statement;
-            private readonly int _columnCount;
-
-            private int _columnIndex;
-
-            public Enumerator(IntPtr statement, int columnCount)
-            {
-                _statement = statement;
-                _columnCount = columnCount;
-                _columnIndex = -1;
-                Current = default;
-            }
-
-            public Column Current { get; private set; }
-
-            public bool MoveNext()
-            {
-                _columnIndex++;
-                if (_columnIndex >= _columnCount)
-                {
-                    Current = default;
-                    return false;
-                }
-                Current = new Column(_statement, _columnIndex);
-                return true;
-            }
-        }
-    }
 }
