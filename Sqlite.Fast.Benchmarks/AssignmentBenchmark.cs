@@ -9,24 +9,40 @@ namespace Sqlite.Fast.Benchmarks
     {
         private const int N = 1_000_000;
         private Connection? _connection;
-        private Random? _random;
+
+        private struct Record
+        {
+            public Guid PrimaryKey;
+            public Guid ForeignKey;
+            public int NumberOne;
+            public int NumberTwo;
+            public DateTimeOffset DateOne;
+            public DateTimeOffset DateTwo;
+        }
 
         [GlobalSetup]
         public void Setup()
         {
             _connection = new Connection();
-            _random = new Random(N);
             using (var tbl = _connection.CompileStatement(
-                "create table t (id text primarykey, n int, time int)"))
+                "create table t (id text primarykey, id2 text, n int, n2 int, time int, time2 int)"))
             {
                 tbl.Execute(); 
             }
-            using (var insert = _connection.CompileStatement<(Guid, int, DateTimeOffset)>(
-                "insert into t values (@id, @n, @time)"))
+            using (var insert = _connection.CompileStatement<Record>(
+                "insert into t values (@id, @id2, @n, @n2, @time, @time2)"))
             {
                 for (int i = 0; i < N; i++)
                 {
-                    insert.Bind((Guid.NewGuid(), i, DateTimeOffset.UtcNow)).Execute();
+                    insert.Bind(new Record 
+                    {
+                        PrimaryKey = Guid.NewGuid(),
+                        ForeignKey = Guid.NewGuid(),
+                        NumberOne = i,
+                        NumberTwo = ~i,
+                        DateOne = DateTimeOffset.UtcNow,
+                        DateTwo = DateTimeOffset.Now,
+                    }).Execute();
                 }
             }
         }
@@ -38,11 +54,14 @@ namespace Sqlite.Fast.Benchmarks
         public void Assign()
         {
             using (var select = _connection!
-                .CompileResultStatement<(Guid, int, DateTimeOffset)>(
-                    "select id, n, time from t"))
+                .CompileResultStatement<Record>(
+                    "select id, id2, n, n2, time, time2 from t"))
             {
-                (Guid, int, DateTimeOffset) z;
-                foreach (var row in select.Execute()) { row.AssignTo(out z); }
+                Record z;
+                foreach (var row in select.Execute()) 
+                { 
+                    row.AssignTo(out z); 
+                }
             }
         }
     }
