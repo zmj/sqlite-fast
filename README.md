@@ -1,18 +1,18 @@
-# SQLite-Fast
+# Sqlite.Fast
 
-SQLite-Fast is a high performance, low allocation SQLite wrapper targeting .NET Standard 2.0. This library is available on NuGet: https://www.nuget.org/packages/Sqlite.Fast/
+Sqlite.Fast is a high performance, low allocation SQLite wrapper targeting .NET Standard 2.0. This library is available on NuGet: https://www.nuget.org/packages/Sqlite.Fast/
 
 This is a prototype under active development. Use at your own risk. Expect bugs and breaking changes.
 
 ### Use Case
  
-SQLite-Fast is intended for applications with a small number of distinct SQL queries (varying by parameters) that execute many times in a typical application session.
+Sqlite.Fast is intended for applications with a small number of distinct SQL queries (varying by parameters) that execute many times in a typical application session.
 
-SQLite-Fast precomputes a strongly-typed mapping from a SQL result row to a target C# type. Each query execution reuses that mapping, meaning:
+Sqlite.Fast precomputes a strongly-typed mapping from a SQL result row to a target C# type. Each query execution reuses that mapping, meaning:
 * No reflection
 * No boxing
 
-SQLite-Fast does not include an ORM or query builder. There are no plans to add one. If your application needs to dynamically construct non-parameterized queries, this library is not intended for your use case.
+Sqlite.Fast does not include an ORM or query builder. There are no plans to add one. If your application needs to dynamically construct non-parameterized queries, this library is not intended for your use case.
 
 ### How To
 
@@ -106,7 +106,7 @@ ResultConverter.Builder<User>()
 
 TODO: replace with benchmark.net comparison on in-memory table
 
-In an informal benchmark selecting single records by primary key, SQLite-Fast was ~3.5x faster than SQLite.Net (140 records/ms vs 35-40 records/ms). Benchmark code:
+In an informal benchmark selecting single records by primary key, Sqlite.Fast was ~3.5x faster than SQLite.Net (140 records/ms vs 35-40 records/ms). Benchmark code:
 
 Record type:
 ```
@@ -140,7 +140,7 @@ private static long QueryAll_SQLiteNet(string dbPath, int maxKey, CancellationTo
 }
 ```
 
-SQLite-Fast
+Sqlite.Fast
 ```
 private static long QueryAll_SqliteFast(string dbPath, int maxKey, CancellationToken ct)
 {

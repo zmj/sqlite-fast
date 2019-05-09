@@ -9,6 +9,7 @@ namespace Sqlite.Fast.Benchmarks
     {
         private const int N = 1_000_000;
         private Connection? _connection;
+        private ResultStatement<Record>? _select;
 
         private struct Record
         {
@@ -45,23 +46,24 @@ namespace Sqlite.Fast.Benchmarks
                     }).Execute();
                 }
             }
+            _select = _connection.CompileResultStatement<Record>(
+                    "select id, id2, n, n2, time, time2 from t");
         }
 
         [GlobalCleanup]
-        public void Cleanup() => _connection?.Dispose();
+        public void Cleanup() 
+        {
+            _select?.Dispose();
+            _connection?.Dispose();
+        }
 
         [Benchmark]
         public void Assign()
         {
-            using (var select = _connection!
-                .CompileResultStatement<Record>(
-                    "select id, id2, n, n2, time, time2 from t"))
-            {
-                Record z;
-                foreach (var row in select.Execute()) 
-                { 
-                    row.AssignTo(out z); 
-                }
+            Record z;
+            foreach (var row in _select!.Execute()) 
+            { 
+                row.AssignTo(out z); 
             }
         }
     }
