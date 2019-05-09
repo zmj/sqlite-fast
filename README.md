@@ -48,14 +48,14 @@ To select a single user by id:
 ```
 User SelectSingleUser(uint id) 
 {
-	const string sql = "select id, firstname, lastname, created from users where id=@id";
-	using (Connection conn = UserDb())
-	using (var select = conn.CompileStatement<User, uint>(sql))
-	{
-		if (!select.Bind(id).Execute(out User user))
-			throw new Exception("not found");
-		return user;
-	}
+    const string sql = "select id, firstname, lastname, created from users where id=@id";
+    using (Connection conn = UserDb())
+    using (var select = conn.CompileStatement<User, uint>(sql))
+    {
+        if (!select.Bind(id).Execute(out User user))
+            throw new Exception("not found");
+        return user;
+    }
 }
 ```
 
