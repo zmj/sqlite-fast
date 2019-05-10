@@ -14,6 +14,13 @@ namespace Sqlite.Fast.Tests
         }
 
         [Fact]
+        public void Path_Invalid()
+        {
+            Assert.Throws<SqliteException>(
+                () => new Connection(@"\\\\\\\\\\\"));
+        }
+
+        [Fact]
         public void Statement0_SqlNull()
         {
             using (var conn = new Connection())

@@ -233,5 +233,40 @@ namespace Sqlite.Fast.Tests
                 Assert.Equal(3, i);
             }
         }
+
+        [Fact]
+        public void Custom_ToNull()
+        {
+            var pc = ParameterConverter.Builder<P<int>>()
+                .With(p => p.Value)
+                .Ignore(p => p.C)
+                .Compile();
+            using (var connection = new Connection())
+            using (var stmt = connection.CompileStatement<int?, P<int>>("select @x", pc))
+            {
+                Assert.True(
+                    stmt
+                    .Bind(new P<int> { Value = 5 })
+                    .Execute(out int? r));
+                Assert.Null(r);
+            }
+        }
+
+        [Fact]
+        public void Custom_FromNull()
+        {
+            var rc = ResultConverter.Builder<R<int?>>()
+                .With(r => r.Value, () => 5)
+                .Compile();
+            using (var connection = new Connection())
+            using (var stmt = connection.CompileStatement<R<int?>, int?>("select @x", rc))
+            {
+                Assert.True(
+                    stmt
+                    .Bind(null)
+                    .Execute(out R<int?> r));
+                Assert.Equal(expected: 5, r.Value);
+            }
+        }
     }
 }

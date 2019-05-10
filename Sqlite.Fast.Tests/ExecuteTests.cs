@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Sqlite.Fast.Tests
@@ -264,7 +266,56 @@ namespace Sqlite.Fast.Tests
                 {
                     row.AssignTo(out values[j++]);
                 }
-                Assert.Equal(expectedSum, System.Linq.Enumerable.Sum(values));
+                Assert.Equal(expectedSum, Enumerable.Sum(values));
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(10)]
+        public void SelectMany_Linq(int n)
+        {
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt<int>("insert into t values (@x)"))
+            using (var select = tbl.RStmt<int>("select x from t"))
+            {
+                int expectedSum = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    insert.Bind(i).Execute();
+                    expectedSum += i;
+                }
+                IEnumerable<Row<int>> rows = select.Execute();
+                int sum = rows.Sum(r => { r.AssignTo(out int x); return x; });
+                Assert.Equal(expectedSum, sum);
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(10)]
+        public void SelectMany_IEnumerable(int n)
+        {
+            using (var tbl = new TestTable("create table t (x int)"))
+            using (var insert = tbl.Stmt<int>("insert into t values (@x)"))
+            using (var select = tbl.RStmt<int>("select x from t"))
+            {
+                int expectedSum = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    insert.Bind(i).Execute();
+                    expectedSum += i;
+                }
+                System.Collections.IEnumerable rows = select.Execute();
+                int sum = 0;
+                foreach (object obj in rows)
+                {
+                    ((Row<int>)obj).AssignTo(out int x);
+                    sum += x;
+                }
+                Assert.Equal(expectedSum, sum);
             }
         }
     }
