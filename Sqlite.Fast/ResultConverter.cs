@@ -34,9 +34,6 @@ namespace Sqlite.Fast
 
         internal void AssignTo(out TResult result, Row row)
         {
-            // todo:
-            // * index accessor instead of enumerator
-            // * assigner implementation?
             if (_scalarAssigner != null)
             {
                 AssignScalar(out result, row);

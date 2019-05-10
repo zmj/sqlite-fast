@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sqlite.Fast", "Sqlite.Fast\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sqlite.Fast.Tests", "Sqlite.Fast.Tests\Sqlite.Fast.Tests.csproj", "{D72201A0-D8CE-414A-A72F-D18B89277417}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sqlite.Fast.Benchmarks", "Sqlite.Fast.Benchmarks\Sqlite.Fast.Benchmarks.csproj", "{72B8B2EB-26BD-4DDD-821D-01081B7C2095}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D72201A0-D8CE-414A-A72F-D18B89277417}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D72201A0-D8CE-414A-A72F-D18B89277417}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D72201A0-D8CE-414A-A72F-D18B89277417}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72B8B2EB-26BD-4DDD-821D-01081B7C2095}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72B8B2EB-26BD-4DDD-821D-01081B7C2095}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72B8B2EB-26BD-4DDD-821D-01081B7C2095}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72B8B2EB-26BD-4DDD-821D-01081B7C2095}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

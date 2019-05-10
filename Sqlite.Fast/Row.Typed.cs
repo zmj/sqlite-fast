@@ -11,19 +11,20 @@ namespace Sqlite.Fast
     /// <typeparam name="TResult">The type that this result row can be assigned to.</typeparam>
     public readonly struct Row<TResult>
     {
-        private readonly Row _row;
+        private readonly Rows.Enumerator _rowEnumerator;
         private readonly ResultConverter<TResult> _converter;
 
-        internal Row(Row row, ResultConverter<TResult> converter)
+        internal Row(Rows.Enumerator rowEnumerator, ResultConverter<TResult> converter)
         {
-            _row = row;
+            _rowEnumerator = rowEnumerator;
             _converter = converter;
         }
 
         /// <summary>
         /// Assigns this row's values to an instance of the result type.
         /// </summary>
-        public void AssignTo(out TResult result) => _converter.AssignTo(out result, _row);
+        public void AssignTo(out TResult result) => 
+            _converter.AssignTo(out result, _rowEnumerator.Current);
     }
 
     /// <summary>
@@ -54,23 +55,22 @@ namespace Sqlite.Fast
         /// Enumerator steps through the result rows of a statement.
         /// The statement is reset when enumeration finishes or the enumerator is disposed.
         /// </summary>
-        public struct Enumerator : IEnumerator<Row<TResult>>
+        public readonly struct Enumerator : IEnumerator<Row<TResult>>
         {
-            private readonly ResultConverter<TResult> _converter;
+            private readonly Rows.Enumerator _rowEnumerator;
 
-            private Rows.Enumerator _rowEnumerator;
-
-            internal Enumerator(Rows.Enumerator rowEnumerator, ResultConverter<TResult> converter)
+            internal Enumerator(
+                Rows.Enumerator rowEnumerator,
+                ResultConverter<TResult> converter)
             {
                 _rowEnumerator = rowEnumerator;
-                _converter = converter;
-                Current = default;
+                Current = new Row<TResult>(rowEnumerator, converter);
             }
 
             /// <summary>
-            /// The current result row. Default if MoveNext has not been called or returned false on the most recent call.
+            /// The current result row. Undefined if MoveNext has not been called or returned false on the most recent call.
             /// </summary>
-            public Row<TResult> Current { get; private set; }
+            public Row<TResult> Current { get; }
 
             object IEnumerator.Current => Current;
 
@@ -78,34 +78,17 @@ namespace Sqlite.Fast
             /// Attempts to step to the next result row.
             /// </summary>
             /// <returns>False if there are no more result rows; otherwise true.</returns>
-            public bool MoveNext()
-            {
-                if (!_rowEnumerator.MoveNext())
-                {
-                    Current = default;
-                    return false;
-                }
-                Current = new Row<TResult>(_rowEnumerator.Current, _converter);
-                return true;
-            }
+            public bool MoveNext() => _rowEnumerator.MoveNext();
 
             /// <summary>
             /// Resets the result enumerator and underlying statement.
             /// </summary>
-            public void Reset()
-            {
-                Current = default;
-                _rowEnumerator.Reset();
-            }
+            public void Reset() => _rowEnumerator.Reset();
 
             /// <summary>
             /// Resets the underlying statement.
             /// </summary>
-            public void Dispose()
-            {
-                _rowEnumerator.Dispose();
-                _rowEnumerator = default;
-            }
+            public void Dispose() => _rowEnumerator.Dispose();
         }
     }
 }
