@@ -17,7 +17,7 @@ namespace Sqlite.Fast.Tests
         public void Path_Invalid()
         {
             Assert.Throws<SqliteException>(
-                () => new Connection(@"\\\\\\\\\\\"));
+                () => new Connection(@"\\\///"));
         }
 
         [Fact]
