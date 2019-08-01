@@ -8,9 +8,7 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NullableContextOptions>enable</NullableContextOptions>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NullableContextOptions>enable</NullableContextOptions>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <PropertyGroup>
