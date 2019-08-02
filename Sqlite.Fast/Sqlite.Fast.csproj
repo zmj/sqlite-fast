@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>2.0.4</Version>
+    <Version>2.0.5</Version>
     <Authors>zmj</Authors>
     <Description>A high-performance SQLite wrapper. Details and examples: https://github.com/zmj/sqlite-fast</Description>
     <PackageProjectUrl>https://github.com/zmj/sqlite-fast</PackageProjectUrl>
@@ -28,8 +28,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="1.1.13" />
-    <PackageReference Include="System.Memory" Version="4.5.2" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="1.1.14" />
+    <PackageReference Include="System.Memory" Version="4.5.3" />
   </ItemGroup>
 
 </Project>
