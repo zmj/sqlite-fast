@@ -33,11 +33,11 @@ namespace Sqlite.Fast
         private static object BuildInternal<TParams>(MemberInfo? member)
         {
             Type valueType = member != null ? member.ValueType() : typeof(TParams);
-            ConstructorInfo constructor = typeof(Builder<,>)
+            ConstructorInfo? constructor = typeof(Builder<,>)
                 .MakeGenericType(new[] { typeof(TParams), valueType })
                 .GetTypeInfo()
                 .GetConstructor(new[] { typeof(MemberInfo) });
-            return constructor.Invoke(new[] { member });
+            return constructor!.Invoke(new[] { member });
         }
 
         public interface IBuilder<TParams>

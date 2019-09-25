@@ -12,42 +12,42 @@ namespace Sqlite.Fast
         public static ValueBinder.Converter<T>[] To<T>() =>
             ((ValueBinder.Converter<T>[]?)To(typeof(T)) ?? Array.Empty<ValueBinder.Converter<T>>());
 
-        private static ValueBinder.Converter<string>[] _fromString;
-        private static ValueBinder.Converter<ReadOnlyMemory<char>>[] _fromStringROMemory;
-        private static ValueBinder.Converter<Memory<char>>[] _fromStringMemory;
+        private static ValueBinder.Converter<string>[]? _fromString;
+        private static ValueBinder.Converter<ReadOnlyMemory<char>>[]? _fromStringROMemory;
+        private static ValueBinder.Converter<Memory<char>>[]? _fromStringMemory;
 
-        private static ValueBinder.Converter<Guid>[] _fromGuid;
-        private static ValueBinder.Converter<Guid?>[] _fromGuidNull;
+        private static ValueBinder.Converter<Guid>[]? _fromGuid;
+        private static ValueBinder.Converter<Guid?>[]? _fromGuidNull;
 
-        private static ValueBinder.Converter<long>[] _fromLong;
-        private static ValueBinder.Converter<long?>[] _fromLongNull;
-        private static ValueBinder.Converter<ulong>[] _fromUlong;
-        private static ValueBinder.Converter<ulong?>[] _fromUlongNull;
-        private static ValueBinder.Converter<int>[] _fromInt;
-        private static ValueBinder.Converter<int?>[] _fromIntNull;
-        private static ValueBinder.Converter<uint>[] _fromUint;
-        private static ValueBinder.Converter<uint?>[] _fromUintNull;
-        private static ValueBinder.Converter<short>[] _fromShort;
-        private static ValueBinder.Converter<short?>[] _fromShortNull;
-        private static ValueBinder.Converter<ushort>[] _fromUshort;
-        private static ValueBinder.Converter<ushort?>[] _fromUshortNull;
-        private static ValueBinder.Converter<char>[] _fromChar;
-        private static ValueBinder.Converter<char?>[] _fromCharNull;
-        private static ValueBinder.Converter<byte>[] _fromByte;
-        private static ValueBinder.Converter<byte?>[] _fromByteNull;
-        private static ValueBinder.Converter<sbyte>[] _fromSbyte;
-        private static ValueBinder.Converter<sbyte?>[] _fromSbyteNull;
-        private static ValueBinder.Converter<bool>[] _fromBool;
-        private static ValueBinder.Converter<bool?>[] _fromBoolNull;
-        private static ValueBinder.Converter<DateTimeOffset>[] _fromDateTimeOffset;
-        private static ValueBinder.Converter<DateTimeOffset?>[] _fromDateTimeOffsetNull;
-        private static ValueBinder.Converter<TimeSpan>[] _fromTimeSpan;
-        private static ValueBinder.Converter<TimeSpan?>[] _fromTimeSpanNull;
+        private static ValueBinder.Converter<long>[]? _fromLong;
+        private static ValueBinder.Converter<long?>[]? _fromLongNull;
+        private static ValueBinder.Converter<ulong>[]? _fromUlong;
+        private static ValueBinder.Converter<ulong?>[]? _fromUlongNull;
+        private static ValueBinder.Converter<int>[]? _fromInt;
+        private static ValueBinder.Converter<int?>[]? _fromIntNull;
+        private static ValueBinder.Converter<uint>[]? _fromUint;
+        private static ValueBinder.Converter<uint?>[]? _fromUintNull;
+        private static ValueBinder.Converter<short>[]? _fromShort;
+        private static ValueBinder.Converter<short?>[]? _fromShortNull;
+        private static ValueBinder.Converter<ushort>[]? _fromUshort;
+        private static ValueBinder.Converter<ushort?>[]? _fromUshortNull;
+        private static ValueBinder.Converter<char>[]? _fromChar;
+        private static ValueBinder.Converter<char?>[]? _fromCharNull;
+        private static ValueBinder.Converter<byte>[]? _fromByte;
+        private static ValueBinder.Converter<byte?>[]? _fromByteNull;
+        private static ValueBinder.Converter<sbyte>[]? _fromSbyte;
+        private static ValueBinder.Converter<sbyte?>[]? _fromSbyteNull;
+        private static ValueBinder.Converter<bool>[]? _fromBool;
+        private static ValueBinder.Converter<bool?>[]? _fromBoolNull;
+        private static ValueBinder.Converter<DateTimeOffset>[]? _fromDateTimeOffset;
+        private static ValueBinder.Converter<DateTimeOffset?>[]? _fromDateTimeOffsetNull;
+        private static ValueBinder.Converter<TimeSpan>[]? _fromTimeSpan;
+        private static ValueBinder.Converter<TimeSpan?>[]? _fromTimeSpanNull;
 
-        private static ValueBinder.Converter<float>[] _fromFloat;
-        private static ValueBinder.Converter<float?>[] _fromFloatNull;
-        private static ValueBinder.Converter<double>[] _fromDouble;
-        private static ValueBinder.Converter<double?>[] _fromDoubleNull;
+        private static ValueBinder.Converter<float>[]? _fromFloat;
+        private static ValueBinder.Converter<float?>[]? _fromFloatNull;
+        private static ValueBinder.Converter<double>[]? _fromDouble;
+        private static ValueBinder.Converter<double?>[]? _fromDoubleNull;
 
         private static object? To(Type type)
         {
@@ -209,10 +209,10 @@ namespace Sqlite.Fast
             return null;
         }
 
-        private static object InvokeGeneric(string methodName, Type typeParameter)
+        private static object? InvokeGeneric(string methodName, Type typeParameter)
         {
-            MethodInfo method = typeof(DefaultConverters).GetTypeInfo().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static);
-            return method.MakeGenericMethod(typeParameter).Invoke(obj: null, Array.Empty<object>());
+            MethodInfo? method = typeof(DefaultConverters).GetTypeInfo().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static);
+            return method!.MakeGenericMethod(typeParameter).Invoke(obj: null, Array.Empty<object>());
         }
 
         private static ValueBinder.Converter<T>[] CreateFromEnum<T>()

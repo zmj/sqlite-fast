@@ -21,7 +21,7 @@ namespace Sqlite.Fast
         private static IEnumerable<MemberInfo> OrderByDeclaration(Type declaringType, IEnumerable<MemberInfo> members)
         {
             if (members.Count() == 0) return members;
-            if (declaringType.GetTypeInfo().StructLayoutAttribute.Value
+            if (declaringType.GetTypeInfo().StructLayoutAttribute?.Value
                 == System.Runtime.InteropServices.LayoutKind.Sequential)
             {
                 return members.OrderBy(m => m.MetadataToken);

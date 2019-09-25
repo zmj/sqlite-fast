@@ -27,11 +27,11 @@ namespace Sqlite.Fast
         private static object BuildInternal<TResult>(MemberInfo? member)
         {
             Type valueType = member != null ? member.ValueType() : typeof(TResult);
-            ConstructorInfo constructor = typeof(Builder<,>)
+            ConstructorInfo? constructor = typeof(Builder<,>)
                 .MakeGenericType(new[] { typeof(TResult), valueType })
                 .GetTypeInfo()
                 .GetConstructor(new[] { typeof(MemberInfo) });
-            return constructor.Invoke(new[] { member });
+            return constructor!.Invoke(new[] { member });
         }
    
         public interface IBuilder<TResult>
@@ -96,7 +96,7 @@ namespace Sqlite.Fast
                 }
                 else
                 {
-                    throw new ArgumentException($"Cannot set value of {memberInfo.DeclaringType.Name}.{memberInfo.Name}");
+                    throw new ArgumentException($"Cannot set value of {memberInfo.DeclaringType?.Name}.{memberInfo.Name}");
                 }
                 var value = Expression.Parameter(typeof(TField));
                 var assignment = Expression.Assign(target, value);

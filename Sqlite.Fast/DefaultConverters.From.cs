@@ -29,30 +29,30 @@ namespace Sqlite.Fast
 
         private static class Integer
         {
-            private static Func<long, long> _toLong;
-            private static Func<long, long?> _toLongNull;
-            private static Func<long, ulong> _toUlong;
-            private static Func<long, ulong> _toUlongNull;
-            private static Func<long, int> _toInt;
-            private static Func<long, int?> _toIntNull;
-            private static Func<long, uint> _toUint;
-            private static Func<long, uint?> _toUintNull;
-            private static Func<long, short> _toShort;
-            private static Func<long, short?> _toShortNull;
-            private static Func<long, ushort> _toUshort;
-            private static Func<long, ushort?> _toUshortNull;
-            private static Func<long, char> _toChar;
-            private static Func<long, char?> _toCharNull;
-            private static Func<long, byte> _toByte;
-            private static Func<long, byte?> _toByteNull;
-            private static Func<long, sbyte> _toSbyte;
-            private static Func<long, sbyte?> _toSbyteNull;
-            private static Func<long, bool> _toBool;
-            private static Func<long, bool?> _toBoolNull;
-            private static Func<long, DateTimeOffset> _toDateTimeOffset;
-            private static Func<long, DateTimeOffset?> _toDateTimeOffsetNull;
-            private static Func<long, TimeSpan> _toTimeSpan;
-            private static Func<long, TimeSpan?> _toTimeSpanNull;
+            private static Func<long, long>? _toLong;
+            private static Func<long, long?>? _toLongNull;
+            private static Func<long, ulong>? _toUlong;
+            private static Func<long, ulong>? _toUlongNull;
+            private static Func<long, int>? _toInt;
+            private static Func<long, int?>? _toIntNull;
+            private static Func<long, uint>? _toUint;
+            private static Func<long, uint?>? _toUintNull;
+            private static Func<long, short>? _toShort;
+            private static Func<long, short?>? _toShortNull;
+            private static Func<long, ushort>? _toUshort;
+            private static Func<long, ushort?>? _toUshortNull;
+            private static Func<long, char>? _toChar;
+            private static Func<long, char?>? _toCharNull;
+            private static Func<long, byte>? _toByte;
+            private static Func<long, byte?>? _toByteNull;
+            private static Func<long, sbyte>? _toSbyte;
+            private static Func<long, sbyte?>? _toSbyteNull;
+            private static Func<long, bool>? _toBool;
+            private static Func<long, bool?>? _toBoolNull;
+            private static Func<long, DateTimeOffset>? _toDateTimeOffset;
+            private static Func<long, DateTimeOffset?>? _toDateTimeOffsetNull;
+            private static Func<long, TimeSpan>? _toTimeSpan;
+            private static Func<long, TimeSpan?>? _toTimeSpanNull;
             
             public static Delegate? From(Type type)
             {
@@ -102,10 +102,10 @@ namespace Sqlite.Fast
 
         private static class Float
         {
-            private static Func<double, double> _toDouble;
-            private static Func<double, double?> _toDoubleNull;
-            private static Func<double, float> _toFloat;
-            private static Func<double, float?> _toFloatNull;
+            private static Func<double, double>? _toDouble;
+            private static Func<double, double?>? _toDoubleNull;
+            private static Func<double, float>? _toFloat;
+            private static Func<double, float?>? _toFloatNull;
             
             public static Delegate? From(Type type)
             {
@@ -119,8 +119,8 @@ namespace Sqlite.Fast
 
         private static class Utf16Text
         {
-            private static FromSpan<char, string> _toString;
-            private static FromSpan<char, ReadOnlyMemory<char>> _toStringMemory;
+            private static FromSpan<char, string>? _toString;
+            private static FromSpan<char, ReadOnlyMemory<char>>? _toStringMemory;
 
             public static Delegate? From(Type type)
             {
@@ -134,10 +134,10 @@ namespace Sqlite.Fast
 
         private static class Utf8Text
         {
-            private static FromSpan<byte, Guid> _toGuid;
-            private static FromSpan<byte, Guid?> _toGuidNull;
-            private static FromSpan<byte, TimeSpan> _toTimeSpan;
-            private static FromSpan<byte, TimeSpan?> _toTimeSpanNull;
+            private static FromSpan<byte, Guid>? _toGuid;
+            private static FromSpan<byte, Guid?>? _toGuidNull;
+            private static FromSpan<byte, TimeSpan>? _toTimeSpan;
+            private static FromSpan<byte, TimeSpan?>? _toTimeSpanNull;
 
             public static Delegate? From(Type type)
             {
@@ -210,21 +210,21 @@ namespace Sqlite.Fast
 
         private static class Null
         {
-            private static Func<string?> _toString;
-            private static Func<ReadOnlyMemory<char>> _toStringMemory;
-            private static Func<long?> _toLongNull;
-            private static Func<ulong?> _toUlongNull;
-            private static Func<int?> _toIntNull;
-            private static Func<uint?> _toUintNull;
-            private static Func<short?> _toShortNull;
-            private static Func<ushort?> _toUshortNull;
-            private static Func<char?> _toCharNull;
-            private static Func<byte?> _toByteNull;
-            private static Func<sbyte?> _toSbyteNull;
-            private static Func<decimal?> _toDecimalNull;
-            private static Func<bool?> _toBoolNull;
-            private static Func<DateTimeOffset?> _toDateTimeOffsetNull;
-            private static Func<TimeSpan?> _toTimeSpanNull;
+            private static Func<string?>? _toString;
+            private static Func<ReadOnlyMemory<char>>? _toStringMemory;
+            private static Func<long?>? _toLongNull;
+            private static Func<ulong?>? _toUlongNull;
+            private static Func<int?>? _toIntNull;
+            private static Func<uint?>? _toUintNull;
+            private static Func<short?>? _toShortNull;
+            private static Func<ushort?>? _toUshortNull;
+            private static Func<char?>? _toCharNull;
+            private static Func<byte?>? _toByteNull;
+            private static Func<sbyte?>? _toSbyteNull;
+            private static Func<decimal?>? _toDecimalNull;
+            private static Func<bool?>? _toBoolNull;
+            private static Func<DateTimeOffset?>? _toDateTimeOffsetNull;
+            private static Func<TimeSpan?>? _toTimeSpanNull;
 
             public static Delegate? From(Type type)
             {

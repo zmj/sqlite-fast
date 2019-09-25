@@ -310,9 +310,9 @@ namespace Sqlite.Fast.Tests
                 }
                 System.Collections.IEnumerable rows = select.Execute();
                 int sum = 0;
-                foreach (object obj in rows)
+                foreach (object? obj in rows)
                 {
-                    ((Row<int>)obj).AssignTo(out int x);
+                    ((Row<int>)obj!).AssignTo(out int x);
                     sum += x;
                 }
                 Assert.Equal(expectedSum, sum);

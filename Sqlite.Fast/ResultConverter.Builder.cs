@@ -66,7 +66,7 @@ namespace Sqlite.Fast
                 {
                     return null;
                 }
-                ConstructorInfo defaultConstructor =
+                ConstructorInfo? defaultConstructor =
                     typeof(TResult).GetConstructor(new Type[] { });
                 if (defaultConstructor == null)
                 {
