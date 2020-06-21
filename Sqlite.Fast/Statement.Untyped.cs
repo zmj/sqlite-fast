@@ -59,7 +59,7 @@ namespace Sqlite.Fast
                 .ThrowIfNotOK(nameof(Sqlite.BindDouble));
         }
 
-        internal void BindUtf16Text(int index, in ReadOnlySpan<char> value)
+        internal void BindUtf16Text(int index, ReadOnlySpan<char> value)
         {
             Sqlite.BindText16(
                 _statement,
@@ -70,7 +70,7 @@ namespace Sqlite.Fast
                 .ThrowIfNotOK(nameof(Sqlite.BindText16));
         }
 
-        internal void BindUtf8Text(int index, in ReadOnlySpan<byte> value)
+        internal void BindUtf8Text(int index, ReadOnlySpan<byte> value)
         {
             Sqlite.BindText(
                 _statement,
@@ -81,7 +81,7 @@ namespace Sqlite.Fast
                 .ThrowIfNotOK(nameof(Sqlite.BindText));
         }
 
-        internal void BindBlob(int index, in ReadOnlySpan<byte> value)
+        internal void BindBlob(int index, ReadOnlySpan<byte> value)
         {
             Sqlite.BindBlob(
                 _statement,

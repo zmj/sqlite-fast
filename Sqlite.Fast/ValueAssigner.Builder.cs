@@ -12,7 +12,7 @@ namespace Sqlite.Fast
     /// <typeparam name="TElem">The elemental type of the SQLite value.</typeparam>
     /// <typeparam name="T">The result member type.</typeparam>
     /// <param name="value">A ReadOnlySpan&lt;TElem&gt; view of the SQLite value.</param>
-    public delegate T FromSpan<TElem, T>(in ReadOnlySpan<TElem> value);
+    public delegate T FromSpan<TElem, T>(ReadOnlySpan<TElem> value);
 
     internal delegate void FieldSetter<TResult, TField>(ref TResult result, TField value);
 

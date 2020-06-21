@@ -62,7 +62,7 @@ namespace Sqlite.Fast
                     (_fromGuid = new[]
                     {
                         ValueBinder.Converter.Utf8Text(
-                            (Guid value, in Span<byte> dest) => { if (!Utf8Formatter.TryFormat(value, dest, out _)) throw new FormatException(); },
+                            (Guid value, Span<byte> dest) => { if (!Utf8Formatter.TryFormat(value, dest, out _)) throw new FormatException(); },
                             _ => 36),
                     });
             if (type == typeof(Guid?)) return _fromGuidNull ??
@@ -70,7 +70,7 @@ namespace Sqlite.Fast
                     {
                         ValueBinder.Converter.Utf8Text(
                             (Guid? value) => value.HasValue,
-                            (Guid? value, in Span<byte> dest) => { if (!Utf8Formatter.TryFormat(value!.Value, dest, out _)) throw new FormatException(); },
+                            (Guid? value, Span<byte> dest) => { if (!Utf8Formatter.TryFormat(value!.Value, dest, out _)) throw new FormatException(); },
                             _ => 36),
                         ValueBinder.Converter.Null<Guid?>(),
                     });

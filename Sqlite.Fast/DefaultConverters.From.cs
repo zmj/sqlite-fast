@@ -125,9 +125,9 @@ namespace Sqlite.Fast
             public static Delegate? From(Type type)
             {
                 if (type == typeof(string)) return _toString ?? 
-                        (_toString = (in ReadOnlySpan<char> text) => text.ToString());
+                        (_toString = (ReadOnlySpan<char> text) => text.ToString());
                 if (type == typeof(ReadOnlyMemory<char>)) return _toStringMemory ??
-                        (_toStringMemory = (in ReadOnlySpan<char> text) => text.ToString().AsMemory());
+                        (_toStringMemory = (ReadOnlySpan<char> text) => text.ToString().AsMemory());
                 return null;
             }
         }
@@ -156,13 +156,13 @@ namespace Sqlite.Fast
                 // ulong
                 // ushort
                 if (type == typeof(Guid)) return _toGuid ?? (_toGuid = ToGuid);
-                if (type == typeof(Guid?)) return _toGuidNull ?? (_toGuidNull = (in ReadOnlySpan<byte> value) => (Guid?)ToGuid(value));
+                if (type == typeof(Guid?)) return _toGuidNull ?? (_toGuidNull = (ReadOnlySpan<byte> value) => (Guid?)ToGuid(value));
                 if (type == typeof(TimeSpan)) return _toTimeSpan ?? (_toTimeSpan = ToTimeSpan);
-                if (type == typeof(TimeSpan?)) return _toTimeSpanNull ?? (_toTimeSpanNull = (in ReadOnlySpan<byte> value) => (TimeSpan?)ToTimeSpan(value));
+                if (type == typeof(TimeSpan?)) return _toTimeSpanNull ?? (_toTimeSpanNull = (ReadOnlySpan<byte> value) => (TimeSpan?)ToTimeSpan(value));
                 return null;
             }
 
-            private static Guid ToGuid(in ReadOnlySpan<byte> text)
+            private static Guid ToGuid(ReadOnlySpan<byte> text)
             {
                 char format = default;
                 if (text.Length > 8)
@@ -179,7 +179,7 @@ namespace Sqlite.Fast
                 return ThrowParseFailed<Guid>(text);
             }
 
-            private static TimeSpan ToTimeSpan(in ReadOnlySpan<byte> text)
+            private static TimeSpan ToTimeSpan(ReadOnlySpan<byte> text)
             {
                 if (Utf8Parser.TryParse(text, out TimeSpan value, out _))
                 {
@@ -188,12 +188,12 @@ namespace Sqlite.Fast
                 return ThrowParseFailed<TimeSpan>(text);
             }
 
-            private static T ThrowParseFailed<T>(in ReadOnlySpan<byte> text)
+            private static T ThrowParseFailed<T>(ReadOnlySpan<byte> text)
             {
                 throw new ArgumentException($"Unable to parse '{Utf8ToString(text)}' to {typeof(T).Name}");
             }
 
-            private static unsafe string Utf8ToString(in ReadOnlySpan<byte> text)
+            private static unsafe string Utf8ToString(ReadOnlySpan<byte> text)
             {
                 ref byte b = ref MemoryMarshal.GetReference(text);
                 fixed (byte* ptr = &b)

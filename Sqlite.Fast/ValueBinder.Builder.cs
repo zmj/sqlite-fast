@@ -11,7 +11,7 @@ namespace Sqlite.Fast
     /// </summary>
     /// <typeparam name="T">The parameter member type.</typeparam>
     /// <typeparam name="TElem">The elemental type of the SQLite value.</typeparam>
-    public delegate void ToSpan<T, TElem>(T value, in Span<TElem> destination);
+    public delegate void ToSpan<T, TElem>(T value, Span<TElem> destination);
 
     /// <summary>
     /// Reinterpret casts an instance of T.

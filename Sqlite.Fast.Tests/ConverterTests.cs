@@ -200,7 +200,7 @@ namespace Sqlite.Fast.Tests
         public void Custom_ScalarGuidToText()
         {
             var conv = ParameterConverter.ScalarBuilder<Guid>()
-                .With((Guid g, in Span<char> b) => g.ToString().AsSpan().CopyTo(b), _ => 36)
+                .With((Guid g, Span<char> b) => g.ToString().AsSpan().CopyTo(b), _ => 36)
                 .Compile();
             using (var tbl = new TestTable("create table t (x text)"))
             using (var insert = tbl.Stmt("insert into t values (@x)", conv))
@@ -218,10 +218,10 @@ namespace Sqlite.Fast.Tests
         public void Custom_ToBlob()
         {
             var pc = ParameterConverter.ScalarBuilder<int>()
-                .With((int i, in Span<byte> span) => span[0] = (byte)(i + 1), _ => 1)
+                .With((int i, Span<byte> span) => span[0] = (byte)(i + 1), _ => 1)
                 .Compile();
             var rc = ResultConverter.ScalarBuilder<int>()
-                .With((in ReadOnlySpan<byte> span) => span[0] + 1)
+                .With((ReadOnlySpan<byte> span) => span[0] + 1)
                 .Compile();
             using (var tbl = new TestTable("create table t (x)"))
             using (var insert = tbl.Stmt("insert into t values (@x)", pc))
