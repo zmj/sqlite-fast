@@ -230,13 +230,13 @@ namespace Sqlite.Fast
             {
                 var value = Expression.Parameter(typeof(T));
                 var hasValueProperty = typeof(T).GetTypeInfo().GetProperty(nameof(Nullable<int>.HasValue));
-                hasValue = Expression.Lambda<Func<T, bool>>(Expression.MakeMemberAccess(value, hasValueProperty), value).Compile();
+                hasValue = Expression.Lambda<Func<T, bool>>(Expression.MakeMemberAccess(value, hasValueProperty!), value).Compile();
             }
             Func<T, long> toInteger;
             {
                 var value = Expression.Parameter(typeof(T));
                 var valueProperty = typeof(T).GetTypeInfo().GetProperty(nameof(Nullable<int>.Value));
-                var cast = Expression.Convert(Expression.MakeMemberAccess(value, valueProperty), typeof(long));
+                var cast = Expression.Convert(Expression.MakeMemberAccess(value, valueProperty!), typeof(long));
                 toInteger = Expression.Lambda<Func<T, long>>(cast, value).Compile();
             }
             return new[]
@@ -258,7 +258,7 @@ namespace Sqlite.Fast
         {
             var value = Expression.Parameter(typeof(T));
             var hasValue = typeof(T).GetTypeInfo().GetProperty(nameof(Nullable<int>.HasValue));
-            var isNull = Expression.Not(Expression.MakeMemberAccess(value, hasValue));
+            var isNull = Expression.Not(Expression.MakeMemberAccess(value, hasValue!));
             var canConvert = Expression.Lambda<Func<T, bool>>(isNull, value).Compile();
             return new[] { ValueBinder.Converter.Null(canConvert) };
         }
