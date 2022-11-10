@@ -370,7 +370,7 @@ namespace Sqlite.Fast.Tests
         [Theory]
         [InlineData(3.14159)]
         [InlineData(2e-10)]
-        [InlineData(0)]
+        [InlineData(0d)]
         [InlineData(null)]
         public void Double_Null(double? value)
         {
@@ -410,7 +410,7 @@ namespace Sqlite.Fast.Tests
         [Theory]
         [InlineData(3.14159f)]
         [InlineData(2e-10f)]
-        [InlineData(0)]
+        [InlineData(0f)]
         [InlineData(null)]
         public void Float_Null(float? value)
         {
