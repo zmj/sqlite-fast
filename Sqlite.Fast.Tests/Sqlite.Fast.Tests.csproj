@@ -25,6 +25,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sqlite.Fast\Sqlite.Fast.csproj" />
