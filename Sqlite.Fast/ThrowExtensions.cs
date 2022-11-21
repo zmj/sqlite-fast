@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Sqlite.Fast
 {
@@ -13,27 +14,11 @@ namespace Sqlite.Fast
             }
         }
 
-        public static void ThrowIfDisposed(this bool disposed, string name)
+        public static void ThrowIfClosed(this SafeHandle handle, string name)
         {
-            if (disposed)
+            if (handle.IsClosed)
             {
                 throw new ObjectDisposedException(name);
-            }
-        }
-
-        public static void ThrowIfNotOK(this Sqlite.Result result, string function)
-        {
-            if (result != Sqlite.Result.Ok)
-            {
-                throw new SqliteException(function, result);
-            }
-        }
-
-        public static void ThrowIfNot(this Sqlite.Result result, Sqlite.Result expected, string function)
-        {
-            if (result != expected)
-            {
-                throw new SqliteException(function, result);
             }
         }
     }

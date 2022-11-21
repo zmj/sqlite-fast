@@ -1,13 +1,14 @@
 ﻿using System;
 using BenchmarkDotNet.Running;
+using Sqlite.Fast.Benchmarks;
 
-namespace Sqlite.Fast.Benchmarks
+BenchmarkRunner.Run<AssignmentBenchmark>();
+// Profile();
+
+static void Profile()
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            var summary = BenchmarkRunner.Run<AssignmentBenchmark>();
-        }
-    }
+    var b = new AssignmentBenchmark();
+    b.Setup();
+    b.Assign();
+    b.Cleanup();
 }

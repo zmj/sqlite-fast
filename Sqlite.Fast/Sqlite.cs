@@ -1,87 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Sqlite.Fast
 {
     /// <summary>
-    /// Sqlite contains native function and constant definitions.
+    /// Sqlite contains native constant definitions.
     /// </summary>
-    [System.Security.SuppressUnmanagedCodeSecurity]
     public static class Sqlite
     {
-        private const string DllName = "e_sqlite3";
-        
-        [DllImport(DllName, EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result Open([MarshalAs(UnmanagedType.U1)] ref byte filename, out IntPtr conn);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_close_v2", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result CloseV2(IntPtr conn);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_wal_checkpoint_v2", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result WalCheckpointV2(IntPtr conn, [MarshalAs(UnmanagedType.U1)] ref byte attachedDbName, CheckpointMode mode, out int walLogSize, out int checkpointedFrames);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_prepare16_v2", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result Prepare16V2(IntPtr conn, [MarshalAs(UnmanagedType.U2)] ref char sql, int sqlByteCount, out IntPtr stmt, out IntPtr endSql);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_finalize", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result Finalize(IntPtr stmt);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_bind_int64", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindInt64(IntPtr stmt, int paramIndex, long value);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_bind_double", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindDouble(IntPtr stmt, int paramIndex, double value);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_bind_text", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindText(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U1)] ref byte value, int valueByteCount, IntPtr destructor);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_bind_text16", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindText16(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U2)] ref char value, int valueByteCount, IntPtr destructor);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_bind_blob", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindBlob(IntPtr stmt, int paramIndex, [MarshalAs(UnmanagedType.U1)] ref byte value, int valueByteCount, IntPtr destructor);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_bind_null", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result BindNull(IntPtr stmt, int paramIndex);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_bind_parameter_count", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int BindParameterCount(IntPtr stmt);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result Step(IntPtr stmt);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_reset", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Result Reset(IntPtr stmt);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_column_count", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int ColumnCount(IntPtr stmt);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_column_type", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern DataType ColumnType(IntPtr stmt, int colIndex);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_column_bytes", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int ColumnBytes(IntPtr stmt, int colIndex);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_column_bytes16", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern int ColumnBytes16(IntPtr stmt, int colIndex);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_column_int64", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern long ColumnInt64(IntPtr stmt, int colIndex);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_column_double", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern double ColumnDouble(IntPtr stmt, int colIndex);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_column_text", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr ColumnText(IntPtr stmt, int colIndex);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_column_text16", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr ColumnText16(IntPtr stmt, int colIndex);
-
-        [DllImport(DllName, EntryPoint = "sqlite3_column_blob", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr ColumnBlob(IntPtr stmt, int colIndex);
-
         /// <summary>
         /// SQLite result code
         /// </summary>
@@ -220,12 +145,6 @@ namespace Sqlite.Fast
             Text = 3,
             Blob = 4,
             Null = 5,
-        }
-        
-        internal static class Destructor
-        {
-            public static readonly IntPtr Static = new IntPtr(0);
-            public static readonly IntPtr Transient = new IntPtr(-1);
         }
 
         /// <summary>

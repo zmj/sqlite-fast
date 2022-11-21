@@ -26,7 +26,7 @@
     </PackageReference>
   </ItemGroup>
   
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <None Include="xunit.runner.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
 

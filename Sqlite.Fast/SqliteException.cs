@@ -7,6 +7,7 @@ namespace Sqlite.Fast
     /// <summary>
     /// SqliteException is thrown when a SQLite call returns an unexpected error code.
     /// </summary>
+    [Obsolete("No longer thrown. Catch SQLitePCL.Ugly.ugly.sqlite3_exception instead.")]
     public class SqliteException : Exception
     {
         /// <summary>

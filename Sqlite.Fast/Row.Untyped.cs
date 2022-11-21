@@ -1,31 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using SQLitePCL;
+using SQLitePCL.Ugly;
+using System;
 
 namespace Sqlite.Fast
 {
     internal readonly struct Row
     {
-        private readonly IntPtr _statement;
+        private readonly sqlite3_stmt _statement;
 
-        public Row(IntPtr statement) => _statement = statement;
+        public Row(sqlite3_stmt statement) => _statement = statement;
 
-        public Column this[int index] => new Column(_statement, index);
+        public Column this[int index] => new Column( _statement, index);
     }
 
     internal readonly struct Rows
     {
-        private readonly IntPtr _statement;
+        private readonly sqlite3_stmt _statement;
 
-        public Rows(IntPtr statement) => _statement = statement;
+        public Rows(sqlite3_stmt statement) => _statement = statement;
 
         public Enumerator GetEnumerator() => new Enumerator(_statement);
 
         public readonly struct Enumerator
         {
-            private readonly IntPtr _statement;
+            private readonly sqlite3_stmt _statement;
 
-            public Enumerator(IntPtr statement)
+            public Enumerator(sqlite3_stmt statement)
             {
                 _statement = statement;
                 Current = new Row(statement);
@@ -35,19 +35,21 @@ namespace Sqlite.Fast
 
             public bool MoveNext()
             {
-                Sqlite.Result r = Sqlite.Step(_statement);
+                var r = (Sqlite.Result)_statement.step();
                 if (r == Sqlite.Result.Row)
                 {
                     return true;
                 }
-                r.ThrowIfNot(Sqlite.Result.Done, nameof(Sqlite.Step));
-                return false;
+
+                if (r == Sqlite.Result.Done)
+                {
+                    return false;
+                }
+
+                throw new ugly.sqlite3_exception((int)r);
             }
 
-            public void Reset()
-            {
-                Sqlite.Reset(_statement).ThrowIfNotOK(nameof(Sqlite.Reset));
-            }
+            public void Reset() => _statement.reset();
 
             public void Dispose() => Reset();
         }

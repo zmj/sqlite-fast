@@ -110,7 +110,7 @@ namespace Sqlite.Fast
             }
             else if (_convertTextUtf16 != null)
             {
-                value = _convertTextUtf16(col.AsUtf16Text());
+                value = _convertTextUtf16(col.AsUtf16Text().Span);
                 return true;
             }
             value = default!;
