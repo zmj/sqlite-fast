@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SQLitePCL;
+using SQLitePCL.Ugly;
+using System;
 using System.Runtime.InteropServices;
 
 namespace Sqlite.Fast
@@ -10,17 +12,15 @@ namespace Sqlite.Fast
     /// </summary>
     public sealed class Statement : IDisposable
     {
-        private readonly IntPtr _statement;
+        private readonly sqlite3_stmt _statement;
         internal readonly int ColumnCount;
         internal readonly int ParameterCount;
-        
-        private bool _disposed = false;
 
-        internal Statement(IntPtr statement)
+        internal Statement(sqlite3_stmt statement)
         {
             _statement = statement;
-            ColumnCount = Sqlite.ColumnCount(statement);
-            ParameterCount = Sqlite.BindParameterCount(statement);
+            ColumnCount = statement.column_count();
+            ParameterCount = statement.bind_parameter_count();
         }
 
         /// <summary>
@@ -41,87 +41,53 @@ namespace Sqlite.Fast
 
         internal Rows ExecuteInternal()
         {
-            _disposed.ThrowIfDisposed(nameof(Statement));
+            _statement.ThrowIfClosed(nameof(Statement));
             return new Rows(_statement);
         }
 
-        internal void BeginBinding() => _disposed.ThrowIfDisposed(nameof(Statement));
+        internal void BeginBinding() => _statement.ThrowIfClosed(nameof(Statement));
 
-        internal void BindInteger(int index, long value)
-        {
-            Sqlite.BindInt64(_statement, index, value)
-                .ThrowIfNotOK(nameof(Sqlite.BindInt64));
-        }
+        internal void BindInteger(int index, long value) => _statement.bind_int64(index, value);
 
-        internal void BindFloat(int index, double value)
-        {
-            Sqlite.BindDouble(_statement, index, value)
-                .ThrowIfNotOK(nameof(Sqlite.BindDouble));
-        }
+        internal void BindFloat(int index, double value) => _statement.bind_double(index, value);
 
         internal void BindUtf16Text(int index, ReadOnlySpan<char> value)
         {
-            Sqlite.BindText16(
-                _statement,
-                index,
-                ref MemoryMarshal.GetReference(value),
-                value.Length << 1,
-                Sqlite.Destructor.Transient)
-                .ThrowIfNotOK(nameof(Sqlite.BindText16));
+            if (value.IsEmpty)
+            {
+                BindEmptyString(index);
+            }
+            else
+            {
+                _statement.bind_text16(index, value);
+            }
         }
 
         internal void BindUtf8Text(int index, ReadOnlySpan<byte> value)
         {
-            Sqlite.BindText(
-                _statement,
-                index,
-                ref MemoryMarshal.GetReference(value),
-                value.Length,
-                Sqlite.Destructor.Transient)
-                .ThrowIfNotOK(nameof(Sqlite.BindText));
+            if (value.IsEmpty)
+            {
+                BindEmptyString(index);
+            }
+            else
+            {
+                _statement.bind_text(index, value);
+            }
         }
 
-        internal void BindBlob(int index, ReadOnlySpan<byte> value)
+        private void BindEmptyString(int index)
         {
-            Sqlite.BindBlob(
-                _statement,
-                index,
-                ref MemoryMarshal.GetReference(value),
-                value.Length,
-                Sqlite.Destructor.Transient)
-                .ThrowIfNotOK(nameof(Sqlite.BindBlob));
+            Span<byte> terminator = stackalloc byte[1];
+            _statement.bind_text(index, utf8z.FromSpan(terminator));
         }
 
-        internal void BindNull(int index)
-        {
-            Sqlite.BindNull(_statement, index)
-                .ThrowIfNotOK(nameof(Sqlite.BindNull));
-        }
+        internal void BindBlob(int index, ReadOnlySpan<byte> value) => _statement.bind_blob(index, value);
+
+        internal void BindNull(int index) => _statement.bind_null(index);
 
         /// <summary>
         /// Finalizes the prepared statement. If Dispose is not called, the prepared statement will be finalized by the finalizer thread.
         /// </summary>
-        public void Dispose() => Dispose(disposing: true);
-
-        /// <summary>
-        /// Finalizes the prepared statement.
-        /// </summary>
-        ~Statement() => Dispose(disposing: false);
-
-        private void Dispose(bool disposing)
-        { 
-            if (_disposed)
-            {
-                return;
-            }
-            Sqlite.Result r = Sqlite.Finalize(_statement);
-            if (!disposing)
-            {
-                return;
-            }
-            GC.SuppressFinalize(this);
-            _disposed = true;
-            r.ThrowIfNotOK(nameof(Sqlite.Finalize));
-        }
+        public void Dispose() => _statement.Dispose();
     }
 }

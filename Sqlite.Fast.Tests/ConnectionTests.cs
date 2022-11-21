@@ -1,4 +1,5 @@
 using Sqlite.Fast;
+using SQLitePCL.Ugly;
 using System;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace Sqlite.Fast.Tests
         [Fact]
         public void Path_Invalid()
         {
-            Assert.Throws<SqliteException>(
+            Assert.Throws<ugly.sqlite3_exception>(
                 () => new Connection(@"\\\///:"));
         }
 

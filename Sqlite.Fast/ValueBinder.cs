@@ -30,6 +30,12 @@ namespace Sqlite.Fast
         public void Bind(in TParams parameters, Statement statement, int index)
         {
             TField value = _getter(in parameters);
+            if (value is null)
+            {
+                statement.BindNull(index);
+                return;
+            }
+
             ValueBinder.Converter<TField> converter = GetConverter(value);
             switch (converter.DataType)
             {

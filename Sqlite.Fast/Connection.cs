@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using SQLitePCL;
+using SQLitePCL.Ugly;
+using System;
 
 namespace Sqlite.Fast
 {
@@ -12,11 +11,9 @@ namespace Sqlite.Fast
     /// </summary>
     public sealed class Connection : IDisposable
     {
-        static Connection() => SQLitePCL.Batteries_V2.Init();
+        static Connection() => Batteries_V2.Init();
 
-        private readonly IntPtr _connnection;
-
-        private bool _disposed = false;
+        private readonly sqlite3 _db;
         
         /// <summary>
         /// Opens a database connection handle.
@@ -25,19 +22,7 @@ namespace Sqlite.Fast
         public Connection(string dbFilePath)
         {
             dbFilePath.ThrowIfNull(nameof(dbFilePath));
-            // Marshal screws up the utf16->utf8 reencode, so do it in managed
-            Span<byte> utf8Path = Encoding.UTF8.GetBytes(dbFilePath);
-            Sqlite.Result r = Sqlite.Open(
-                ref MemoryMarshal.GetReference(utf8Path), 
-                out IntPtr conn);
-            _connnection = conn;
-
-            try { r.ThrowIfNotOK(nameof(Sqlite.Open)); }
-            catch
-            {
-                Dispose();
-                throw;
-            }
+            _db = ugly.open(dbFilePath);
         }
 
         /// <summary>
@@ -51,15 +36,9 @@ namespace Sqlite.Fast
         /// </summary>
         public Statement CompileStatement(string sql)
         {
-            _disposed.ThrowIfDisposed(nameof(Connection));
+            _db.ThrowIfClosed(nameof(Connection));
             sql.ThrowIfNull(nameof(sql));
-            Sqlite.Prepare16V2(
-                _connnection,
-                sql: ref MemoryMarshal.GetReference(sql.AsSpan()),
-                sqlByteCount: -1,
-                out IntPtr stmt,
-                out _)
-                .ThrowIfNotOK(nameof(Sqlite.Prepare16V2));
+            var stmt = _db.prepare(sql);
             return new Statement(stmt);
         }
 
@@ -81,7 +60,7 @@ namespace Sqlite.Fast
         /// <param name="converter">A custom converter from the parameter type to SQLite values.</param>
         public Statement<TParams> CompileStatement<TParams>(string sql, ParameterConverter<TParams> converter)
         {
-            _disposed.ThrowIfDisposed(nameof(Connection));
+            _db.ThrowIfClosed(nameof(Connection));
             converter.ThrowIfNull(nameof(ParameterConverter));
             return new Statement<TParams>(CompileStatement(sql), converter);
         }
@@ -104,7 +83,7 @@ namespace Sqlite.Fast
         /// <param name="converter">A custom converter from SQLite values to the result type.</param>
         public ResultStatement<TResult> CompileStatement<TResult>(string sql, ResultConverter<TResult> converter)
         {
-            _disposed.ThrowIfDisposed(nameof(Connection));
+            _db.ThrowIfClosed(nameof(Connection));
             converter.ThrowIfNull(nameof(ResultConverter));
             return new ResultStatement<TResult>(CompileStatement(sql), converter);
         }
@@ -173,42 +152,23 @@ namespace Sqlite.Fast
         /// </summary>
         public bool TryCheckpoint(Sqlite.CheckpointMode mode)
         {
-            _disposed.ThrowIfDisposed(nameof(Connection));
-            byte attachedTableName = default;
-            Sqlite.Result r = Sqlite.WalCheckpointV2(_connnection, ref attachedTableName, mode, out _, out _);
-            if (r == Sqlite.Result.Busy || r == Sqlite.Result.Locked)
+            _db.ThrowIfClosed(nameof(Connection));
+            try
+            {
+                _db.wal_checkpoint(dbName: default, (int)mode, out _, out _);
+                return true;
+            }
+            catch (ugly.sqlite3_exception ex)
+                when (ex.errcode == raw.SQLITE_BUSY || ex.errcode == raw.SQLITE_LOCKED)
             {
                 return false;
             }
-            r.ThrowIfNotOK(nameof(Sqlite.WalCheckpointV2));
-            return true;
         }
 
         /// <summary>
         /// Closes the database connection handle. If Dispose is not called,
         /// the database connection handle will be closed by the finalizer thread.
         /// </summary>
-        public void Dispose() => Dispose(disposing: true);
-
-        /// <summary>
-        /// Closes the database connection handle.
-        /// </summary>
-        ~Connection() => Dispose(disposing: false);
-
-        private void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-            Sqlite.Result r = Sqlite.CloseV2(_connnection);
-            if (!disposing)
-            {
-                return;
-            }
-            GC.SuppressFinalize(this);
-            _disposed = true;
-            r.ThrowIfNotOK(nameof(Sqlite.CloseV2));
-        }
+        public void Dispose() => _db.Dispose();
     }
 }
