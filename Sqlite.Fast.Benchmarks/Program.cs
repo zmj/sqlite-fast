@@ -3,7 +3,8 @@ using BenchmarkDotNet.Running;
 using Sqlite.Fast.Benchmarks;
 
 BenchmarkRunner.Run<AssignmentBenchmark>();
-// Profile();
+
+/* Profile();
 
 static void Profile()
 {
@@ -11,4 +12,4 @@ static void Profile()
     b.Setup();
     b.Assign();
     b.Cleanup();
-}
+}*/
