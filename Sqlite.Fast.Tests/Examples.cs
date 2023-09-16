@@ -39,7 +39,7 @@ namespace Sqlite.Fast.Tests
 
         [Theory]
         [InlineData(1)]
-        public User SelectSingleUser(uint id) 
+        public void SelectSingleUser(uint id) 
         {
             const string sql = "select id, firstname, lastname, created from users where id=@id";
             using (Connection conn = UserDb())
@@ -47,7 +47,7 @@ namespace Sqlite.Fast.Tests
             {
                 if (!select.Bind(id).Execute(out User user))
                     throw new Exception("not found");
-                return user;
+                // return user;
             }
         }
 
